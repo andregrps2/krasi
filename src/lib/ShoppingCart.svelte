@@ -144,27 +144,32 @@
   .cart-section {
     background: #2a2a2a;
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
     display: flex;
     flex-direction: column;
     border: 2px solid var(--primary-color-border);
+    height: 100%;
   }
 
   .cart-section h2 {
     color: var(--text-accent);
-    margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
   }
 
   .empty-cart {
     text-align: center;
     color: #888;
-    padding: 3rem 1rem;
+    padding: 2rem 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .empty-cart p {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     margin-bottom: 0.5rem;
     color: #cccccc;
   }
@@ -175,20 +180,20 @@
 
   .cart-items {
     flex: 1;
-    max-height: 400px;
     overflow-y: auto;
     margin-bottom: 1rem;
+    max-height: calc(100vh - 400px);
   }
 
   .cart-item {
     display: grid;
     grid-template-columns: 1fr auto auto auto;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: center;
-    padding: 1rem;
+    padding: 0.75rem;
     border: 2px solid #555;
     border-radius: 6px;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     background: #333;
     transition: border-color 0.2s;
   }
@@ -203,30 +208,31 @@
 
   .item-name {
     font-weight: 600;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
     color: var(--text-accent);
+    font-size: 0.9rem;
   }
 
   .item-details {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #cccccc;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
   }
 
   .item-price {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #4ade80;
   }
 
   .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .qty-btn {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     border: 2px solid var(--primary-color-border);
     background: #2a2a2a;
     color: var(--text-accent);
@@ -236,6 +242,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    font-size: 0.8rem;
   }
 
   .qty-btn:hover:not(:disabled) {

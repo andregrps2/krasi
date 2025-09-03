@@ -255,31 +255,34 @@
 
 <div class="sales-container">
   <div class="sales-header">
-    <h1>🛒 Ponto de Venda</h1>
+    <div class="header-content">
+      <h1>🛒 Ponto de Venda</h1>
+      <div class="header-controls">
+        <!-- Seletor de Cliente -->
+        <CustomerSelector
+          bind:selectedCustomer
+          bind:this={customerSelector}
+          on:customerSelected={handleCustomerSelected}
+          on:customerCleared={handleCustomerCleared}
+        />
+
+        <!-- Seletor de Tipo de Pagamento -->
+        <PaymentTypeSelector
+          bind:selectedCustomer
+          bind:paymentType
+          bind:numberOfInstallments
+          bind:installmentFrequency
+          bind:dueDay
+          bind:firstInstallmentMonth
+          bind:firstInstallmentYear
+          on:openCustomerModal={openCustomerModal}
+          on:clearCustomer={handleCustomerCleared}
+        />
+      </div>
+    </div>
   </div>
 
-  <!-- Seletor de Cliente -->
-  <CustomerSelector
-    bind:selectedCustomer
-    bind:this={customerSelector}
-    on:customerSelected={handleCustomerSelected}
-    on:customerCleared={handleCustomerCleared}
-  />
-
   <div class="sales-content">
-    <!-- Seletor de Tipo de Pagamento -->
-    <PaymentTypeSelector
-      bind:selectedCustomer
-      bind:paymentType
-      bind:numberOfInstallments
-      bind:installmentFrequency
-      bind:dueDay
-      bind:firstInstallmentMonth
-      bind:firstInstallmentYear
-      on:openCustomerModal={openCustomerModal}
-      on:clearCustomer={handleCustomerCleared}
-    />
-
     <!-- Área Principal: Produtos e Vendas -->
     <div class="main-area">
       <!-- Produtos Disponíveis -->
@@ -311,8 +314,8 @@
 
 <style>
   .sales-container {
-    padding: 2rem;
-    max-width: 1400px;
+    padding: 1rem;
+    max-width: 1600px;
     margin: 0 auto;
     background-color: #1a1a1a;
     min-height: 100vh;
@@ -320,28 +323,44 @@
   }
 
   .sales-header {
-    text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .header-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
   }
 
   .sales-header h1 {
     margin: 0;
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     text-shadow: var(--shadow-small);
+    white-space: nowrap;
   }
 
   .sales-content {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    min-height: 600px;
+    gap: 1rem;
+    min-height: calc(100vh - 120px);
   }
 
   /* Área Principal: Produtos e Vendas */
   .main-area {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
+    grid-template-columns: 1.8fr 1.2fr;
+    gap: 1rem;
+    height: calc(100vh - 200px);
   }
 
   /* Responsivo */

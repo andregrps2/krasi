@@ -99,27 +99,30 @@
   .products-section {
     background: #2a2a2a;
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
     border: 2px solid var(--primary-color-border);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .products-section h2 {
     color: var(--text-accent);
-    margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
   }
 
   .search-bar {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
 
   .search-input {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.5rem;
     border: 2px solid #555;
     border-radius: 4px;
-    font-size: 1rem;
+    font-size: 0.9rem;
     background-color: #333;
     color: white;
   }
@@ -131,16 +134,17 @@
 
   .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-    max-height: 500px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.75rem;
+    flex: 1;
     overflow-y: auto;
+    max-height: calc(100vh - 300px);
   }
 
   .product-card {
     border: 2px solid #555;
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 6px;
+    padding: 0.75rem;
     background: #333;
     transition:
       transform 0.2s,
@@ -155,9 +159,9 @@
   }
 
   .product-title {
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.5rem 0;
     color: var(--text-accent);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: bold;
   }
 
@@ -167,14 +171,14 @@
   }
 
   .product-details {
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
   }
 
   .detail {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
   }
 
   .detail-label {
@@ -187,22 +191,23 @@
   }
 
   .product-price {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: bold;
     color: #4ade80;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   }
 
   .add-btn {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.5rem;
     background-color: var(--text-accent);
     color: #1a1a1a;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
+    font-size: 0.9rem;
     transition: all 0.2s;
   }
 

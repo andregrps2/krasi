@@ -47,6 +47,26 @@
   }
 </script>
 
+<!-- Seleção de Cliente Compacta -->
+<div class="customer-compact">
+  <span class="customer-label">Cliente:</span>
+  {#if selectedCustomer}
+    <div class="selected-customer">
+      <span class="customer-name">{selectedCustomer.name}</span>
+      <button class="change-btn" on:click={openModal} type="button">
+        Alterar
+      </button>
+      <button class="clear-btn" on:click={clearCustomer} type="button">
+        ✕
+      </button>
+    </div>
+  {:else}
+    <button class="select-btn" on:click={openModal} type="button">
+      Selecionar Cliente
+    </button>
+  {/if}
+</div>
+
 <!-- Modal de Seleção de Cliente -->
 <Modal bind:show>
   <h2>Selecionar Cliente</h2>
@@ -102,6 +122,95 @@
 </Modal>
 
 <style>
+  /* Seleção de Cliente Compacta */
+  .customer-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #333;
+    border: 2px solid #555;
+    border-radius: 6px;
+    min-width: 250px;
+  }
+
+  .customer-label {
+    font-weight: 600;
+    color: var(--text-accent);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .selected-customer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .customer-name {
+    color: #4ade80;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .select-btn {
+    background: #555;
+    color: white;
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+
+  .select-btn:hover {
+    background: #666;
+    border-color: var(--primary-color-border);
+  }
+
+  .change-btn {
+    background: var(--text-accent);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 3px;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .change-btn:hover {
+    background: #ffed4e;
+  }
+
+  .clear-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .clear-btn:hover {
+    background: #ef4444;
+  }
+
   /* Modal de Cliente */
   .customer-modal-content {
     display: flex;
