@@ -69,7 +69,7 @@
   button.outline {
     background-color: transparent;
     border: 1px solid var(--primary-color-border);
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
   button.outline:hover {
     background-color: rgba(250, 204, 21, 0.1);

@@ -133,7 +133,7 @@
 
   .modal-header h3 {
     margin: 0;
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   .close-btn {
@@ -206,7 +206,7 @@
   }
 
   .modal-footer button.primary {
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     color: white;
     border: none;
   }
@@ -217,7 +217,7 @@
 
   .modal-footer button.secondary {
     background-color: transparent;
-    color: var(--primary-color);
+    color: var(--text-accent);
     border: 1px solid var(--primary-color-border);
   }
 

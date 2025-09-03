@@ -29,6 +29,9 @@
   let paymentType: PaymentType = "cash";
   let numberOfInstallments = 1;
   let installmentFrequency = 30; // dias entre parcelas
+  let dueDay = 10; // dia do vencimento (1-31)
+  let firstInstallmentMonth = new Date().getMonth() + 1; // mês da primeira parcela (1-12)
+  let firstInstallmentYear = new Date().getFullYear(); // ano da primeira parcela
 
   // Computar total do carrinho
   $: total = cart.reduce(
@@ -139,8 +142,27 @@
       const installmentAmount = total / numberOfInstallments;
 
       for (let i = 0; i < numberOfInstallments; i++) {
-        const dueDate = new Date();
-        dueDate.setDate(dueDate.getDate() + (i + 1) * installmentFrequency);
+        // Calcular a data de vencimento baseada no dia, mês e ano da primeira parcela
+        let month = firstInstallmentMonth + i;
+        let year = firstInstallmentYear;
+
+        // Ajustar o ano se o mês ultrapassar dezembro
+        while (month > 12) {
+          month -= 12;
+          year += 1;
+        }
+
+        // Função para obter o último dia do mês
+        const getLastDayOfMonth = (year: number, month: number) => {
+          return new Date(year, month, 0).getDate();
+        };
+
+        // Verificar se o dia escolhido existe no mês, senão usar o último dia
+        const lastDayOfMonth = getLastDayOfMonth(year, month);
+        const validDay = Math.min(dueDay, lastDayOfMonth);
+
+        // Criar a data com o dia válido
+        const dueDate = new Date(year, month - 1, validDay);
 
         const installment: Installment = {
           id: $installments.length + i + 1,
@@ -186,6 +208,9 @@
     selectedCustomer = null;
     paymentType = "cash";
     numberOfInstallments = 1;
+    dueDay = 10;
+    firstInstallmentMonth = new Date().getMonth() + 1;
+    firstInstallmentYear = new Date().getFullYear();
     searchTerm = "";
 
     const paymentMessage =
@@ -201,6 +226,9 @@
     selectedCustomer = null;
     paymentType = "cash";
     numberOfInstallments = 1;
+    dueDay = 10;
+    firstInstallmentMonth = new Date().getMonth() + 1;
+    firstInstallmentYear = new Date().getFullYear();
   }
 
   function selectCustomer(customer: Customer) {
@@ -355,6 +383,55 @@
             <option value={30}>Mensal</option>
           </select>
         </div>
+
+        <div class="control-group">
+          <label for="due-day-select">Dia de Vencimento:</label>
+          <select
+            id="due-day-select"
+            bind:value={dueDay}
+            class="compact-select"
+          >
+            {#each Array(31) as _, i}
+              <option value={i + 1}>{i + 1}</option>
+            {/each}
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="first-month-select">Mês da 1ª Parcela:</label>
+          <select
+            id="first-month-select"
+            bind:value={firstInstallmentMonth}
+            class="compact-select"
+          >
+            <option value={1}>Janeiro</option>
+            <option value={2}>Fevereiro</option>
+            <option value={3}>Março</option>
+            <option value={4}>Abril</option>
+            <option value={5}>Maio</option>
+            <option value={6}>Junho</option>
+            <option value={7}>Julho</option>
+            <option value={8}>Agosto</option>
+            <option value={9}>Setembro</option>
+            <option value={10}>Outubro</option>
+            <option value={11}>Novembro</option>
+            <option value={12}>Dezembro</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="first-year-select">Ano da 1ª Parcela:</label>
+          <select
+            id="first-year-select"
+            bind:value={firstInstallmentYear}
+            class="compact-select"
+          >
+            {#each Array(106) as _, i}
+              {@const year = new Date().getFullYear() - 5 + i}
+              <option value={year}>{year}</option>
+            {/each}
+          </select>
+        </div>
       {/if}
     </div>
 
@@ -496,6 +573,17 @@
                   {numberOfInstallments}x de R$ {(
                     total / numberOfInstallments
                   ).toFixed(2)}
+                  <div class="installment-details">
+                    Vencimento: Dia {dueDay} de cada mês
+                    <br />
+                    Primeira parcela: {new Date(
+                      firstInstallmentYear,
+                      firstInstallmentMonth - 1
+                    ).toLocaleDateString("pt-BR", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </div>
                 </div>
               {/if}
             </div>
@@ -535,10 +623,9 @@
   }
 
   .sales-header h1 {
-    color: var(--primary-color);
     margin: 0;
     font-size: 2.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: var(--shadow-small);
   }
 
   .sales-content {
@@ -578,7 +665,7 @@
 
   .control-group label,
   .control-group .control-label {
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 0.85rem;
     font-weight: 600;
   }
@@ -615,7 +702,7 @@
   }
 
   .customer-name {
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-weight: 600;
   }
 
@@ -708,7 +795,7 @@
 
   .customer-card h3 {
     margin: 0;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 1.1rem;
   }
 
@@ -730,7 +817,7 @@
   }
 
   .detail-label {
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-weight: 500;
   }
 
@@ -777,7 +864,7 @@
   }
 
   .products-section h2 {
-    color: var(--primary-color);
+    color: var(--text-accent);
     margin-top: 0;
     margin-bottom: 1.5rem;
   }
@@ -828,14 +915,14 @@
 
   .product-title {
     margin: 0 0 0.75rem 0;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 1.1rem;
     font-weight: bold;
   }
 
   .property-value {
     margin-right: 0.5rem;
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   .product-details {
@@ -869,7 +956,7 @@
   .add-btn {
     width: 100%;
     padding: 0.75rem;
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     color: #1a1a1a;
     border: none;
     border-radius: 4px;
@@ -902,7 +989,7 @@
   }
 
   .cart-section h2 {
-    color: var(--primary-color);
+    color: var(--text-accent);
     margin-top: 0;
     margin-bottom: 1.5rem;
   }
@@ -954,7 +1041,7 @@
   .item-name {
     font-weight: 600;
     margin-bottom: 0.25rem;
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   .item-details {
@@ -979,7 +1066,7 @@
     height: 30px;
     border: 2px solid var(--primary-color-border);
     background: #2a2a2a;
-    color: var(--primary-color);
+    color: var(--text-accent);
     cursor: pointer;
     border-radius: 4px;
     display: flex;
@@ -1035,7 +1122,7 @@
     font-size: 1.3rem;
     text-align: center;
     margin-bottom: 1rem;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-weight: bold;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   }
@@ -1045,6 +1132,16 @@
     color: #ccc;
     margin-top: 0.25rem;
     font-weight: normal;
+  }
+
+  .installment-details {
+    font-size: 0.8rem;
+    color: var(--text-accent);
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--color-gold-transparent);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--border-primary);
   }
 
   .cart-actions {

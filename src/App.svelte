@@ -90,14 +90,14 @@
   }
 
   :global(button:hover) {
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px var(--primary-color-light);
   }
 
   :global(button.secondary) {
     background-color: transparent;
-    color: var(--primary-color);
+    color: var(--text-accent);
     border: 2px solid var(--primary-color-border);
   }
 
@@ -122,7 +122,7 @@
 
   :global(button.outline) {
     background-color: transparent;
-    color: var(--primary-color);
+    color: var(--text-accent);
     border: 1px solid var(--primary-color-border);
   }
 
@@ -150,7 +150,7 @@
   }
 
   :global(h1, h2, h3, h4, h5, h6) {
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   :global(table) {
@@ -173,7 +173,7 @@
   }
 
   :global(:root) {
-    --primary-color: var(--primary-color);
+    --primary-color: var(--text-accent);
     --background-color: #1a1a1a;
     --surface-color: #2a2a2a;
     --border-color: #555;

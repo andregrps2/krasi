@@ -209,7 +209,7 @@
     padding: 0.5rem 1rem;
     background-color: transparent;
     border: 1px solid var(--primary-color-border);
-    color: var(--primary-color);
+    color: var(--text-accent);
     border-radius: 4px;
     cursor: pointer;
     white-space: nowrap;
@@ -235,7 +235,7 @@
 
   .header-row th {
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--text-accent);
     background-color: rgba(250, 204, 21, 0.05);
     position: sticky;
     top: 0;
@@ -283,14 +283,14 @@
 
   .filter-icon.active {
     opacity: 1;
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     color: white;
   }
 
   .sort-indicator {
     margin-left: 0.5rem;
     font-size: 0.8em;
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   .quantity-header,

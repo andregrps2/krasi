@@ -198,43 +198,36 @@
 
 <style>
   .stock-container {
-    padding: 2rem;
+    padding: var(--spacing-xl);
     max-width: 1200px;
     margin: 0 auto;
-    background-color: #1a1a1a;
+    background-color: var(--bg-primary);
     min-height: 100vh;
-    color: #ffffff;
+    color: var(--text-primary);
   }
 
   .stock-header {
     text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .stock-header h1 {
-    color: var(--primary-color);
-    margin: 0;
-    font-size: 2.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: var(--spacing-xl);
   }
 
   h2 {
     margin-top: 0;
-    margin-bottom: 1.5rem;
-    color: var(--primary-color);
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-accent);
   }
 
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 1rem;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--border-primary);
+    padding-bottom: var(--spacing-md);
   }
 
   .header-actions {
     display: flex;
-    gap: 1rem;
+    gap: var(--spacing-md);
   }
 </style>

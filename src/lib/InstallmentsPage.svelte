@@ -440,10 +440,9 @@
   }
 
   .installments-header h1 {
-    color: var(--primary-color);
     margin: 0;
     font-size: 2.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: var(--shadow-small);
   }
 
   .installments-content {
@@ -507,7 +506,7 @@
 
   .stat-content h3 {
     margin: 0 0 0.5rem 0;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 1rem;
   }
 
@@ -544,7 +543,7 @@
   }
 
   .filter-group label {
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-weight: 600;
     font-size: 0.9rem;
   }
@@ -568,7 +567,7 @@
 
   /* Seletor de Cliente */
   .filter-label {
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-weight: 600;
     font-size: 0.9rem;
   }
@@ -589,7 +588,7 @@
   }
 
   .customer-name {
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-weight: 600;
   }
 
@@ -682,7 +681,7 @@
 
   .customer-card h3 {
     margin: 0;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 1.1rem;
   }
 
@@ -704,7 +703,7 @@
   }
 
   .detail-label {
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-weight: 500;
   }
 
@@ -756,7 +755,7 @@
 
   th {
     background: #333;
-    color: var(--primary-color);
+    color: var(--text-accent);
     padding: 1rem;
     text-align: left;
     font-weight: 600;
@@ -782,7 +781,7 @@
 
   .customer-info {
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   .date-info {
@@ -813,7 +812,7 @@
   }
 
   .status-badge.pending {
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
   .status-badge.overdue {
     color: #ef4444;
@@ -852,7 +851,7 @@
   }
 
   .undo-btn:hover {
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     border-color: var(--primary-color-border);
   }
 
@@ -864,7 +863,7 @@
   }
 
   .empty-state h3 {
-    color: var(--primary-color);
+    color: var(--text-accent);
     margin-bottom: 1rem;
   }
 

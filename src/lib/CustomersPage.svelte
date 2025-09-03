@@ -223,10 +223,9 @@
   }
 
   .customers-header h1 {
-    color: var(--primary-color);
     margin: 0;
     font-size: 2.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: var(--shadow-small);
   }
 
   .customers-content {
@@ -265,7 +264,7 @@
   }
 
   .add-customer-btn {
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     color: #1a1a1a;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -310,7 +309,7 @@
 
   .stat-content h3 {
     margin: 0 0 0.5rem 0;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 1rem;
   }
 
@@ -328,7 +327,7 @@
   }
 
   .empty-state h3 {
-    color: var(--primary-color);
+    color: var(--text-accent);
     margin-bottom: 1rem;
   }
 
@@ -363,7 +362,7 @@
 
   .customer-name h3 {
     margin: 0;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 1.2rem;
   }
 
@@ -397,7 +396,7 @@
   }
 
   .edit-btn:hover {
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     border-color: var(--primary-color-border);
   }
 
@@ -420,7 +419,7 @@
 
   .detail-label {
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   .detail-value {

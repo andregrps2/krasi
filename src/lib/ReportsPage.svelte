@@ -315,7 +315,6 @@
   }
 
   .reports-header h1 {
-    color: var(--primary-color);
     margin: 0;
     font-size: 2.5rem;
   }
@@ -330,7 +329,7 @@
   }
 
   .filters-section h2 {
-    color: var(--primary-color);
+    color: var(--text-accent);
     margin-top: 0;
     margin-bottom: 1rem;
   }
@@ -350,7 +349,7 @@
 
   .filter-group label {
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   .filter-group input {
@@ -362,7 +361,7 @@
   }
 
   .clear-filters-btn {
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     color: #1a1a1a;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -411,7 +410,7 @@
 
   .card-content h3 {
     margin: 0 0 0.5rem 0;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 1rem;
   }
 
@@ -437,7 +436,7 @@
   }
 
   .report-section h2 {
-    color: var(--primary-color);
+    color: var(--text-accent);
     margin-top: 0;
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
@@ -460,7 +459,7 @@
   }
 
   th {
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     color: #1a1a1a;
     font-weight: 600;
   }
@@ -481,7 +480,7 @@
 
   .product-name {
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--text-accent);
   }
 
   .product-details {
@@ -503,7 +502,7 @@
   }
 
   .customer-name {
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-weight: 500;
   }
 

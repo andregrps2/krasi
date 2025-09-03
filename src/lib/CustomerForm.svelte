@@ -135,7 +135,7 @@
 
   .form-group label {
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--text-accent);
     font-size: 1rem;
   }
 
@@ -172,7 +172,7 @@
 
   .cancel-btn {
     background-color: transparent;
-    color: var(--primary-color);
+    color: var(--text-accent);
     border: 2px solid var(--primary-color-border);
     padding: 0.75rem 1.5rem;
     border-radius: 4px;
@@ -182,7 +182,7 @@
   }
 
   .cancel-btn:hover {
-    background-color: var(--primary-color);
+    background-color: var(--text-accent);
     color: #1a1a1a;
   }
 
