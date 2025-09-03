@@ -14,11 +14,11 @@
   // Form data - campos de endereço
   let cep = "";
   let logradouro = "";
+  let numero = "";
   let complemento = "";
   let bairro = "";
   let localidade = "";
   let uf = "";
-  let estado = "";
 
   // Estado para busca de CEP
   let isLoadingCep = false;
@@ -31,11 +31,11 @@
     whatsappNumber = customer.whatsappNumber || "";
     cep = customer.cep || "";
     logradouro = customer.logradouro || "";
+    numero = customer.numero || "";
     complemento = customer.complemento || "";
     bairro = customer.bairro || "";
     localidade = customer.localidade || "";
     uf = customer.uf || "";
-    estado = customer.estado || "";
   } else {
     // Limpar campos para novo cliente
     name = "";
@@ -43,11 +43,11 @@
     whatsappNumber = "";
     cep = "";
     logradouro = "";
+    numero = "";
     complemento = "";
     bairro = "";
     localidade = "";
     uf = "";
-    estado = "";
   }
 
   // Validação dos campos obrigatórios
@@ -72,11 +72,11 @@
       createdAt: customer?.createdAt || new Date(),
       cep: cep.trim() || undefined,
       logradouro: logradouro.trim() || undefined,
+      numero: numero.trim() || undefined,
       complemento: complemento.trim() || undefined,
       bairro: bairro.trim() || undefined,
       localidade: localidade.trim() || undefined,
       uf: uf.trim() || undefined,
-      estado: estado.trim() || undefined,
     };
 
     dispatch("save", customerData);
@@ -161,7 +161,6 @@
       bairro = data.bairro || "";
       localidade = data.localidade || "";
       uf = data.uf || "";
-      estado = data.estado || "";
 
       // Complemento apenas se não estiver preenchido
       if (data.complemento && !complemento.trim()) {
@@ -267,7 +266,7 @@
         {/if}
       </div>
 
-      <!-- Campos de Endereço em Linha -->
+      <!-- Logradouro e Número na mesma linha -->
       <div class="form-row">
         <div class="form-group flex-2">
           <label for="logradouro">Logradouro:</label>
@@ -281,29 +280,43 @@
         </div>
 
         <div class="form-group flex-1">
-          <label for="complemento">Complemento:</label>
+          <label for="numero">Número:</label>
           <input
-            id="complemento"
+            id="numero"
             type="text"
-            bind:value={complemento}
-            placeholder="Apto, Casa, etc."
+            bind:value={numero}
+            placeholder="123"
             class="form-input"
           />
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group flex-1">
-          <label for="bairro">Bairro:</label>
-          <input
-            id="bairro"
-            type="text"
-            bind:value={bairro}
-            placeholder="Nome do bairro"
-            class="form-input"
-          />
-        </div>
+      <!-- Complemento -->
+      <div class="form-group">
+        <label for="complemento">Complemento:</label>
+        <input
+          id="complemento"
+          type="text"
+          bind:value={complemento}
+          placeholder="Apto, Casa, etc."
+          class="form-input"
+        />
+      </div>
 
+      <!-- Bairro -->
+      <div class="form-group">
+        <label for="bairro">Bairro:</label>
+        <input
+          id="bairro"
+          type="text"
+          bind:value={bairro}
+          placeholder="Nome do bairro"
+          class="form-input"
+        />
+      </div>
+
+      <!-- Cidade e UF na mesma linha -->
+      <div class="form-row">
         <div class="form-group flex-2">
           <label for="localidade">Cidade:</label>
           <input
@@ -314,9 +327,7 @@
             class="form-input"
           />
         </div>
-      </div>
 
-      <div class="form-row">
         <div class="form-group flex-1">
           <label for="uf">UF:</label>
           <input
@@ -326,17 +337,6 @@
             placeholder="SP"
             class="form-input uf-input"
             maxlength="2"
-          />
-        </div>
-
-        <div class="form-group flex-2">
-          <label for="estado">Estado:</label>
-          <input
-            id="estado"
-            type="text"
-            bind:value={estado}
-            placeholder="Nome do estado"
-            class="form-input"
           />
         </div>
       </div>

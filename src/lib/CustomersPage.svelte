@@ -58,11 +58,11 @@
           createdAt: new Date(),
           cep: customerData.cep,
           logradouro: customerData.logradouro,
+          numero: customerData.numero,
           complemento: customerData.complemento,
           bairro: customerData.bairro,
           localidade: customerData.localidade,
           uf: customerData.uf,
-          estado: customerData.estado,
         };
         $customers = [...$customers, newCustomer];
       }
@@ -100,7 +100,18 @@
   function formatAddress(customer: Customer): string {
     const parts = [];
 
-    if (customer.logradouro) parts.push(customer.logradouro);
+    // Combinar logradouro e número
+    let endereco = "";
+    if (customer.logradouro) {
+      endereco = customer.logradouro;
+      if (customer.numero) {
+        endereco += `, ${customer.numero}`;
+      }
+      parts.push(endereco);
+    } else if (customer.numero) {
+      parts.push(customer.numero);
+    }
+
     if (customer.complemento) parts.push(customer.complemento);
     if (customer.bairro) parts.push(customer.bairro);
     if (customer.localidade && customer.uf) {
@@ -117,6 +128,7 @@
     return !!(
       customer.cep ||
       customer.logradouro ||
+      customer.numero ||
       customer.bairro ||
       customer.localidade
     );
