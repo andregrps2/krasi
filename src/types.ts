@@ -27,6 +27,17 @@ export interface StockItem {
 }
 
 /**
+ * Representa um cliente
+ */
+export interface Customer {
+  id: number;
+  name: string;
+  congregation: string;
+  whatsappNumber: string;
+  createdAt: Date;
+}
+
+/**
  * Representa um item vendido
  */
 export interface SaleItem {
@@ -43,6 +54,8 @@ export interface SaleItem {
 export interface Sale {
   id: number;
   date: Date;
+  customerId?: number;
+  customer?: Customer;
   items: SaleItem[];
   totalAmount: number;
 }

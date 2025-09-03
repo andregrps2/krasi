@@ -21,6 +21,11 @@
       icon: "📦",
     },
     {
+      id: "clientes",
+      label: "Clientes",
+      icon: "👥",
+    },
+    {
       id: "relatorios",
       label: "Relatórios",
       icon: "📊",

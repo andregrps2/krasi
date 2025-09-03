@@ -3,6 +3,7 @@
   import StockPage from "./lib/StockPage.svelte";
   import SalesPage from "./lib/SalesPage.svelte";
   import ReportsPage from "./lib/ReportsPage.svelte";
+  import CustomersPage from "./lib/CustomersPage.svelte";
 
   // Estado da navegação
   let currentPage = "estoque";
@@ -20,6 +21,8 @@
       <SalesPage />
     {:else if currentPage === "estoque"}
       <StockPage />
+    {:else if currentPage === "clientes"}
+      <CustomersPage />
     {:else if currentPage === "relatorios"}
       <ReportsPage />
     {/if}

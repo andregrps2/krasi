@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { stock, propertyDefinitions, salesHistory } from "../stores";
-  import type { StockItem, Sale, SaleItem } from "../types";
+  import { stock, propertyDefinitions, salesHistory, customers } from "../stores";
+  import type { StockItem, Sale, SaleItem, Customer } from "../types";
 
   const dispatch = createEventDispatcher();
 
@@ -9,6 +9,7 @@
   let searchTerm = "";
   let cart: { item: StockItem; quantity: number }[] = [];
   let total = 0;
+  let selectedCustomer: Customer | null = null;
 
   // Computar total do carrinho
   $: total = cart.reduce(
@@ -98,6 +99,8 @@
       date: new Date(),
       items: saleItems,
       totalAmount: total,
+      customerId: selectedCustomer?.id,
+      customerName: selectedCustomer?.name,
     };
 
     // Adicionar venda ao histórico
@@ -114,6 +117,7 @@
 
     // Limpar carrinho
     cart = [];
+    selectedCustomer = null;
     searchTerm = "";
 
     alert(
@@ -123,6 +127,7 @@
 
   function clearCart() {
     cart = [];
+    selectedCustomer = null;
   }
 </script>
 
@@ -132,6 +137,26 @@
   </div>
 
   <div class="sales-content">
+    <!-- Seleção de Cliente -->
+    <div class="customer-section">
+      <h2>Cliente</h2>
+      <div class="customer-selection">
+        <select bind:value={selectedCustomer} class="customer-select">
+          <option value={null}>Venda sem cliente cadastrado</option>
+          {#each $customers as customer (customer.id)}
+            <option value={customer}>{customer.name} - {customer.congregation}</option>
+          {/each}
+        </select>
+        {#if selectedCustomer}
+          <div class="selected-customer-info">
+            <strong>Cliente:</strong> {selectedCustomer.name}<br>
+            <strong>Congregação:</strong> {selectedCustomer.congregation}<br>
+            <strong>WhatsApp:</strong> {selectedCustomer.whatsappNumber}
+          </div>
+        {/if}
+      </div>
+    </div>
+
     <!-- Produtos Disponíveis -->
     <div class="products-section">
       <h2>Produtos Disponíveis</h2>
@@ -300,6 +325,53 @@
     grid-template-columns: 2fr 1fr;
     gap: 2rem;
     min-height: 600px;
+  }
+
+  /* Cliente */
+  .customer-section {
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
+    border: 2px solid #ffd700;
+  }
+
+  .customer-section h2 {
+    color: #ffd700;
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
+  }
+
+  .customer-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .customer-select {
+    padding: 0.75rem;
+    border: 2px solid #555;
+    border-radius: 4px;
+    background-color: #333;
+    color: white;
+    font-size: 1rem;
+  }
+
+  .customer-select:focus {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+  }
+
+  .selected-customer-info {
+    background: #333;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid #ffd700;
+    color: #ccc;
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
 
   /* Produtos */

@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { PropertyDefinition, StockItem, Sale } from './types';
+import type { PropertyDefinition, StockItem, Sale, Customer } from './types';
 
 /**
  * Cria uma Svelte store (writable) que sincroniza seu estado com o localStorage.
@@ -57,6 +57,12 @@ export const propertyDefinitions = createPersistentStore<PropertyDefinition[]>('
 const initialStock: StockItem[] = [];
 
 export const stock = createPersistentStore<StockItem[]>('stock-items', initialStock);
+
+// --- Clientes ---
+
+const initialCustomers: Customer[] = [];
+
+export const customers = createPersistentStore<Customer[]>('customers', initialCustomers);
 
 // --- Histórico de Vendas ---
 
