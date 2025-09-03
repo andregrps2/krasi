@@ -25,3 +25,24 @@ export interface StockItem {
   // ex: { marca: 'Marca Fina', cor: 'Azul' }
   properties: Record<string, string>; 
 }
+
+/**
+ * Representa um item vendido
+ */
+export interface SaleItem {
+  stockItemId: number;
+  stockItem: StockItem;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+/**
+ * Representa uma venda completa
+ */
+export interface Sale {
+  id: number;
+  date: Date;
+  items: SaleItem[];
+  totalAmount: number;
+}

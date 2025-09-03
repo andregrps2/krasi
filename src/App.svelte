@@ -1,201 +1,170 @@
 <script lang="ts">
-  import { stock, propertyDefinitions } from './stores';
-  import type { StockItem } from './types';
-  import StockList from './lib/StockList.svelte';
-  import FilterForm from './lib/FilterForm.svelte';
-  import Modal from './lib/Modal.svelte';
-  import ProductForm from './lib/ProductForm.svelte';
-  import PropertyManager from './lib/PropertyManager.svelte';
-  import { onMount } from 'svelte';
+  import Sidebar from "./lib/Sidebar.svelte";
+  import StockPage from "./lib/StockPage.svelte";
+  import SalesPage from "./lib/SalesPage.svelte";
+  import ReportsPage from "./lib/ReportsPage.svelte";
 
-  // --- State ---
-  let showProductModal = false;
-  let showPropertyModal = false;
-  let editingItem: StockItem | null = null;
+  // Estado da navegação
+  let currentPage = "estoque";
 
-  // --- Filtering & Sorting State ---
-  let searchTerm = '';
-  let filters: Record<string, string> = {};
-  let sortKey: string | null = null; // The ID of the property to sort by
-  let sortDirection: 'asc' | 'desc' = 'asc';
-
-  onMount(() => {
-    propertyDefinitions.subscribe(defs => {
-      const newFilters: Record<string, string> = {};
-      defs.forEach(prop => {
-        newFilters[prop.id] = '';
-      });
-      filters = newFilters;
-    });
-  });
-
-  // --- Derived State (Computed) ---
-  $: processedStock = (() => {
-    // Create a new array from $stock to avoid modifying the original store data directly.
-    let items = [...$stock];
-
-    // 1. Filtering
-    items = items.filter(item => {
-      // Gracefully handle items that might not have a properties object
-      if (!item || !item.properties) {
-        return false;
-      }
-
-      const term = searchTerm.toLowerCase().trim();
-      if (term) {
-        const matchesSearchTerm = Object.values(item.properties)
-          .some(val => String(val).toLowerCase().includes(term));
-        if (!matchesSearchTerm) return false;
-      }
-
-      for (const propId in filters) {
-        const filterValue = filters[propId]?.toLowerCase().trim();
-        if (filterValue) {
-          const itemValue = item.properties[propId]?.toLowerCase().trim();
-          if (!itemValue || !itemValue.includes(filterValue)) {
-            return false;
-          }
-        }
-      }
-      return true;
-    });
-
-    // 2. Sorting
-    if (sortKey) {
-      items.sort((a, b) => {
-        let valA, valB;
-
-        if (sortKey === 'quantity') {
-          valA = a.quantity;
-          valB = b.quantity;
-        } else {
-          // Safely access properties for sorting
-          valA = a.properties ? a.properties[sortKey] : undefined;
-          valB = b.properties ? b.properties[sortKey] : undefined;
-        }
-
-        // Handle cases where property might be null or undefined for robust sorting
-        const strA = String(valA ?? '');
-        const strB = String(valB ?? '');
-
-        const comparison = strA.localeCompare(strB, undefined, { numeric: true });
-        
-        return sortDirection === 'asc' ? comparison : -comparison;
-      });
-    }
-
-    return items;
-  })();
-
-  // --- Event Handlers ---
-  function handleSort(event: CustomEvent<string>) {
-    const newKey = event.detail;
-    if (sortKey === newKey) {
-      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      sortKey = newKey;
-      sortDirection = 'asc';
-    }
-  }
-
-  function openAddProductModal() {
-    editingItem = null;
-    showProductModal = true;
-  }
-
-  function openEditProductModal(event: CustomEvent<StockItem>) {
-    editingItem = event.detail;
-    showProductModal = true;
-  }
-
-  function handleSaveProduct(event: CustomEvent<Omit<StockItem, 'id'> & { id?: number }>) {
-    const savedItemData = event.detail;
-    if (savedItemData.id) {
-      $stock = $stock.map(item => (item.id === savedItemData.id ? { ...item, ...savedItemData, id: item.id } : item));
-    } else {
-      const newId = $stock.length > 0 ? Math.max(...$stock.map(i => i.id)) + 1 : 1;
-      const newItem: StockItem = {
-        id: newId,
-        quantity: savedItemData.quantity,
-        properties: savedItemData.properties
-      };
-      $stock = [...$stock, newItem];
-    }
-    showProductModal = false;
-  }
-
-  function handleDeleteProduct(event: CustomEvent<number>) {
-    $stock = $stock.filter(item => item.id !== event.detail);
-  }
-  
-  function handleUpdateQuantity(event: CustomEvent<{ id: number; quantity: number }>) {
-    const { id, quantity } = event.detail;
-    $stock = $stock.map(item => (item.id === id ? { ...item, quantity } : item));
+  function handleNavigation(event: CustomEvent<string>) {
+    currentPage = event.detail;
   }
 </script>
 
-<main>
-  <h1>Controle de Estoque Dinâmico</h1>
+<div class="app-container">
+  <Sidebar {currentPage} on:navigate={handleNavigation} />
 
-  <Modal bind:show={showProductModal}>
-    <h2>{editingItem ? 'Editar Item' : 'Adicionar Item'}</h2>
-    <ProductForm item={editingItem} on:save={handleSaveProduct} />
-  </Modal>
-
-  <Modal bind:show={showPropertyModal}>
-    <h2>Gerenciar Propriedades</h2>
-    <PropertyManager />
-  </Modal>
-
-  <div class="card search-card">
-    <h2>Pesquisar & Filtrar</h2>
-    <FilterForm bind:searchTerm bind:filters />
-  </div>
-
-  <div class="card list-card">
-    <div class="card-header">
-      <h2>Estoque Atual ({processedStock.length})</h2>
-      <div class="header-actions">
-        <button class="secondary" on:click={() => showPropertyModal = true}>Gerenciar Propriedades</button>
-        <button on:click={openAddProductModal}>+ Adicionar Novo Item</button>
-      </div>
-    </div>
-    <StockList
-      stock={processedStock}
-      {sortKey}
-      {sortDirection}
-      on:sort={handleSort}
-      on:editItem={openEditProductModal}
-      on:deleteItem={handleDeleteProduct}
-      on:updateQuantity={handleUpdateQuantity}
-    />
-  </div>
-</main>
+  <main class="main-content">
+    {#if currentPage === "vendas"}
+      <SalesPage />
+    {:else if currentPage === "estoque"}
+      <StockPage />
+    {:else if currentPage === "relatorios"}
+      <ReportsPage />
+    {/if}
+  </main>
+</div>
 
 <style>
-  main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-  h1 {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  h2 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-  }
-  .card-header {
+  .app-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 1rem;
+    min-height: 100vh;
+    background-color: #1a1a1a;
   }
-  .header-actions {
-      display: flex;
-      gap: 1rem;
+
+  .main-content {
+    margin-left: 250px;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  /* Responsivo */
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+  }
+
+  :global(body) {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      sans-serif;
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  :global(.card) {
+    background: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
+    overflow: hidden;
+    border: 2px solid #ffd700;
+  }
+
+  :global(.list-card) {
+    padding: 1.5rem;
+  }
+
+  :global(button) {
+    background-color: #ffd700;
+    color: #1a1a1a;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  :global(button:hover) {
+    background-color: #ffed4e;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+  }
+
+  :global(button.secondary) {
+    background-color: transparent;
+    color: #ffd700;
+    border: 2px solid #ffd700;
+  }
+
+  :global(button.secondary:hover) {
+    background-color: #ffd700;
+    color: #1a1a1a;
+  }
+
+  :global(button.danger) {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  :global(button.danger:hover) {
+    background-color: #c82333;
+  }
+
+  :global(button.sm) {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  :global(button.outline) {
+    background-color: transparent;
+    color: #ffd700;
+    border: 1px solid #ffd700;
+  }
+
+  :global(button.outline:hover) {
+    background-color: #ffd700;
+    color: #1a1a1a;
+  }
+
+  :global(input, select, textarea) {
+    border: 2px solid #555;
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+    background-color: #333;
+    color: white;
+  }
+
+  :global(input:focus, select:focus, textarea:focus) {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+  }
+
+  :global(h1, h2, h3, h4, h5, h6) {
+    color: #ffd700;
+  }
+
+  :global(table) {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+  }
+
+  :global(th) {
+    background-color: #ffd700;
+    color: #1a1a1a;
+  }
+
+  :global(td) {
+    color: white;
+    border-bottom: 1px solid #555;
+  }
+
+  :global(tr:hover) {
+    background-color: #333;
+  }
+
+  :global(:root) {
+    --primary-color: #ffd700;
+    --background-color: #1a1a1a;
+    --surface-color: #2a2a2a;
+    --border-color: #555;
+    --text-color: #ffffff;
   }
 </style>

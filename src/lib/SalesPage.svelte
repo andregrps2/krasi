@@ -1,0 +1,630 @@
+<script lang="ts">
+  import { createEventDispatcher } from "svelte";
+  import { stock, propertyDefinitions, salesHistory } from "../stores";
+  import type { StockItem, Sale, SaleItem } from "../types";
+
+  const dispatch = createEventDispatcher();
+
+  // Estado da venda
+  let searchTerm = "";
+  let cart: { item: StockItem; quantity: number }[] = [];
+  let total = 0;
+
+  // Computar total do carrinho
+  $: total = cart.reduce(
+    (sum, cartItem) => sum + cartItem.quantity * getPrice(cartItem.item),
+    0
+  );
+
+  // Filtrar produtos disponíveis
+  $: availableProducts = $stock.filter((item) => {
+    if (item.quantity <= 0) return false;
+
+    if (!searchTerm.trim()) return true;
+
+    const term = searchTerm.toLowerCase();
+    return Object.values(item.properties).some((val) =>
+      String(val).toLowerCase().includes(term)
+    );
+  });
+
+  // Função para obter preço (por enquanto usando um valor fixo, pode ser expandido)
+  function getPrice(item: StockItem): number {
+    // Por enquanto, vamos usar um preço baseado no tipo de produto
+    const type = item.properties.type?.toLowerCase();
+    switch (type) {
+      case "terno":
+        return 299.99;
+      case "palitó":
+        return 199.99;
+      case "camisa":
+        return 89.99;
+      case "camiseta":
+        return 49.99;
+      case "sapato":
+        return 159.99;
+      default:
+        return 99.99;
+    }
+  }
+
+  function addToCart(item: StockItem) {
+    const existingItem = cart.find((cartItem) => cartItem.item.id === item.id);
+
+    if (existingItem) {
+      if (existingItem.quantity < item.quantity) {
+        existingItem.quantity += 1;
+        cart = [...cart];
+      }
+    } else {
+      cart = [...cart, { item, quantity: 1 }];
+    }
+  }
+
+  function removeFromCart(itemId: number) {
+    cart = cart.filter((cartItem) => cartItem.item.id !== itemId);
+  }
+
+  function updateCartQuantity(itemId: number, newQuantity: number) {
+    if (newQuantity <= 0) {
+      removeFromCart(itemId);
+      return;
+    }
+
+    const cartItem = cart.find((item) => item.item.id === itemId);
+    if (cartItem && newQuantity <= cartItem.item.quantity) {
+      cartItem.quantity = newQuantity;
+      cart = [...cart];
+    }
+  }
+
+  function finalizeSale() {
+    if (cart.length === 0) return;
+
+    // Criar registro da venda
+    const saleItems: SaleItem[] = cart.map((cartItem) => ({
+      stockItemId: cartItem.item.id,
+      stockItem: cartItem.item,
+      quantity: cartItem.quantity,
+      unitPrice: getPrice(cartItem.item),
+      totalPrice: cartItem.quantity * getPrice(cartItem.item),
+    }));
+
+    const newSale: Sale = {
+      id:
+        $salesHistory.length > 0
+          ? Math.max(...$salesHistory.map((s) => s.id)) + 1
+          : 1,
+      date: new Date(),
+      items: saleItems,
+      totalAmount: total,
+    };
+
+    // Adicionar venda ao histórico
+    $salesHistory = [...$salesHistory, newSale];
+
+    // Atualizar estoque
+    cart.forEach((cartItem) => {
+      $stock = $stock.map((stockItem) =>
+        stockItem.id === cartItem.item.id
+          ? { ...stockItem, quantity: stockItem.quantity - cartItem.quantity }
+          : stockItem
+      );
+    });
+
+    // Limpar carrinho
+    cart = [];
+    searchTerm = "";
+
+    alert(
+      `Venda #${newSale.id} finalizada com sucesso!\nTotal: R$ ${total.toFixed(2)}`
+    );
+  }
+
+  function clearCart() {
+    cart = [];
+  }
+</script>
+
+<div class="sales-container">
+  <div class="sales-header">
+    <h1>🛒 Ponto de Venda</h1>
+  </div>
+
+  <div class="sales-content">
+    <!-- Produtos Disponíveis -->
+    <div class="products-section">
+      <h2>Produtos Disponíveis</h2>
+
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Buscar produtos..."
+          bind:value={searchTerm}
+          class="search-input"
+        />
+      </div>
+
+      <div class="products-grid">
+        {#each availableProducts as item (item.id)}
+          <div class="product-card">
+            <div class="product-info">
+              <h3 class="product-title">
+                {#each $propertyDefinitions as prop}
+                  {#if prop.id === "type" || prop.id === "brand"}
+                    <span class="property-value"
+                      >{item.properties[prop.id] || "-"}</span
+                    >
+                  {/if}
+                {/each}
+              </h3>
+
+              <div class="product-details">
+                {#each $propertyDefinitions as prop}
+                  {#if prop.id !== "type" && prop.id !== "brand"}
+                    <div class="detail">
+                      <span class="detail-label">{prop.name}:</span>
+                      <span class="detail-value"
+                        >{item.properties[prop.id] || "-"}</span
+                      >
+                    </div>
+                  {/if}
+                {/each}
+
+                <div class="detail">
+                  <span class="detail-label">Estoque:</span>
+                  <span class="detail-value">{item.quantity} un.</span>
+                </div>
+              </div>
+
+              <div class="product-price">
+                R$ {getPrice(item).toFixed(2)}
+              </div>
+            </div>
+
+            <button
+              class="add-btn"
+              on:click={() => addToCart(item)}
+              disabled={item.quantity <= 0}
+            >
+              Adicionar
+            </button>
+          </div>
+        {/each}
+      </div>
+    </div>
+
+    <!-- Carrinho -->
+    <div class="cart-section">
+      <h2>Carrinho de Vendas</h2>
+
+      {#if cart.length === 0}
+        <div class="empty-cart">
+          <p>Carrinho vazio</p>
+          <span>Adicione produtos para iniciar uma venda</span>
+        </div>
+      {:else}
+        <div class="cart-items">
+          {#each cart as cartItem (cartItem.item.id)}
+            <div class="cart-item">
+              <div class="item-info">
+                <div class="item-name">
+                  {cartItem.item.properties.type}
+                  {cartItem.item.properties.brand}
+                </div>
+                <div class="item-details">
+                  {cartItem.item.properties.color} - {cartItem.item.properties
+                    .size}
+                </div>
+                <div class="item-price">
+                  R$ {getPrice(cartItem.item).toFixed(2)} cada
+                </div>
+              </div>
+
+              <div class="quantity-controls">
+                <button
+                  class="qty-btn"
+                  on:click={() =>
+                    updateCartQuantity(cartItem.item.id, cartItem.quantity - 1)}
+                >
+                  -
+                </button>
+                <span class="quantity">{cartItem.quantity}</span>
+                <button
+                  class="qty-btn"
+                  on:click={() =>
+                    updateCartQuantity(cartItem.item.id, cartItem.quantity + 1)}
+                  disabled={cartItem.quantity >= cartItem.item.quantity}
+                >
+                  +
+                </button>
+              </div>
+
+              <div class="item-total">
+                R$ {(cartItem.quantity * getPrice(cartItem.item)).toFixed(2)}
+              </div>
+
+              <button
+                class="remove-btn"
+                on:click={() => removeFromCart(cartItem.item.id)}
+              >
+                ❌
+              </button>
+            </div>
+          {/each}
+        </div>
+
+        <div class="cart-summary">
+          <div class="total">
+            <strong>Total: R$ {total.toFixed(2)}</strong>
+          </div>
+
+          <div class="cart-actions">
+            <button class="clear-btn" on:click={clearCart}>
+              Limpar Carrinho
+            </button>
+            <button class="finalize-btn" on:click={finalizeSale}>
+              Finalizar Venda
+            </button>
+          </div>
+        </div>
+      {/if}
+    </div>
+  </div>
+</div>
+
+<style>
+  .sales-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: #1a1a1a;
+    min-height: 100vh;
+    color: #ffffff;
+  }
+
+  .sales-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .sales-header h1 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 2.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .sales-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    min-height: 600px;
+  }
+
+  /* Produtos */
+  .products-section {
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
+    border: 2px solid #ffd700;
+  }
+
+  .products-section h2 {
+    color: #ffd700;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-bar {
+    margin-bottom: 1.5rem;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #555;
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: #333;
+    color: white;
+  }
+
+  .search-input:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .product-card {
+    border: 2px solid #555;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #333;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s,
+      border-color 0.2s;
+  }
+
+  .product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+    border-color: #ffd700;
+  }
+
+  .product-title {
+    margin: 0 0 0.75rem 0;
+    color: #ffd700;
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+
+  .property-value {
+    margin-right: 0.5rem;
+    color: #ffd700;
+  }
+
+  .product-details {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .detail {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: #cccccc;
+  }
+
+  .detail-value {
+    color: #ffffff;
+  }
+
+  .product-price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #4ade80;
+    margin-bottom: 1rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  .add-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #ffd700;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .add-btn:hover:not(:disabled) {
+    background-color: #ffed4e;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+  }
+
+  .add-btn:disabled {
+    background-color: #555;
+    color: #888;
+    cursor: not-allowed;
+  }
+
+  /* Carrinho */
+  .cart-section {
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #ffd700;
+  }
+
+  .cart-section h2 {
+    color: #ffd700;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .empty-cart {
+    text-align: center;
+    color: #888;
+    padding: 3rem 1rem;
+  }
+
+  .empty-cart p {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: #cccccc;
+  }
+
+  .empty-cart span {
+    color: #888;
+  }
+
+  .cart-items {
+    flex: 1;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+
+  .cart-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    border: 2px solid #555;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    background: #333;
+    transition: border-color 0.2s;
+  }
+
+  .cart-item:hover {
+    border-color: #ffd700;
+  }
+
+  .item-info {
+    min-width: 0;
+  }
+
+  .item-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #ffd700;
+  }
+
+  .item-details {
+    font-size: 0.9rem;
+    color: #cccccc;
+    margin-bottom: 0.25rem;
+  }
+
+  .item-price {
+    font-size: 0.85rem;
+    color: #4ade80;
+  }
+
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .qty-btn {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #ffd700;
+    background: #2a2a2a;
+    color: #ffd700;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .qty-btn:hover:not(:disabled) {
+    background: #ffd700;
+    color: #1a1a1a;
+  }
+
+  .qty-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #555;
+    color: #555;
+  }
+
+  .quantity {
+    min-width: 30px;
+    text-align: center;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  .item-total {
+    font-weight: 600;
+    color: #4ade80;
+    text-align: right;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.25rem;
+    transition: transform 0.2s;
+  }
+
+  .remove-btn:hover {
+    transform: scale(1.2);
+  }
+
+  .cart-summary {
+    border-top: 2px solid #ffd700;
+    padding-top: 1rem;
+  }
+
+  .total {
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #ffd700;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .cart-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .clear-btn,
+  .finalize-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .clear-btn {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .clear-btn:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+  }
+
+  .finalize-btn {
+    background-color: #4ade80;
+    color: #1a1a1a;
+  }
+
+  .finalize-btn:hover {
+    background-color: #22c55e;
+    transform: translateY(-1px);
+  }
+
+  /* Responsivo */
+  @media (max-width: 768px) {
+    .sales-content {
+      grid-template-columns: 1fr;
+    }
+
+    .products-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cart-item {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      text-align: center;
+    }
+  }
+</style>

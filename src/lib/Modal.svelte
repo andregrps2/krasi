@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from "svelte";
 
   export let show = false;
 
@@ -7,26 +7,33 @@
 
   function close() {
     show = false;
-    dispatch('close');
+    dispatch("close");
   }
 
   function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
+    if (event.key === "Escape") {
       close();
     }
   }
 
   onMount(() => {
-    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener("keydown", handleKeydown);
   });
 
   onDestroy(() => {
-    window.removeEventListener('keydown', handleKeydown);
+    window.removeEventListener("keydown", handleKeydown);
   });
 </script>
 
 {#if show}
-  <div class="backdrop" on:click={close}></div>
+  <div
+    class="backdrop"
+    on:click={close}
+    on:keydown={(e) => e.key === "Escape" && close()}
+    role="button"
+    tabindex="0"
+    aria-label="Fechar modal"
+  ></div>
   <div class="modal">
     <div class="modal-content">
       <slot></slot>
