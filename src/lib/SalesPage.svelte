@@ -42,17 +42,158 @@
     0
   );
 
-  // Filtrar produtos disponíveis
-  $: availableProducts = $stock.filter((item) => {
-    if (item.quantity <= 0) return false;
+  // Filtrar produtos disponíveis com busca fuzzy
+  $: availableProducts = (() => {
+    if (!searchTerm.trim()) {
+      return $stock.filter((item) => item.quantity > 0);
+    }
 
-    if (!searchTerm.trim()) return true;
+    const searchTerms = searchTerm
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((term) => term.length > 0);
 
-    const term = searchTerm.toLowerCase();
-    return Object.values(item.properties).some((val) =>
-      String(val).toLowerCase().includes(term)
-    );
-  });
+    const scoredItems = $stock
+      .filter((item) => item.quantity > 0)
+      .map((item) => {
+        const score = calculateFuzzyScore(item, searchTerms);
+        return { item, score };
+      })
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(({ item }) => item);
+
+    return scoredItems;
+  })();
+
+  // Função para calcular pontuação fuzzy
+  function calculateFuzzyScore(item: StockItem, searchTerms: string[]): number {
+    let score = 0;
+    const itemText = Object.values(item.properties)
+      .map((val) => normalizeText(String(val)))
+      .join(" ");
+
+    searchTerms.forEach((term) => {
+      const normalizedTerm = normalizeText(term);
+
+      // Pontuação para correspondência exata
+      if (itemText.includes(normalizedTerm)) {
+        score += 10;
+      }
+
+      // Pontuação para correspondência parcial em cada propriedade
+      Object.values(item.properties).forEach((propValue) => {
+        const value = normalizeText(String(propValue));
+
+        // Correspondência exata na propriedade
+        if (value === normalizedTerm) {
+          score += 20;
+        }
+        // Correspondência no início da palavra
+        else if (value.startsWith(normalizedTerm)) {
+          score += 15;
+        }
+        // Correspondência parcial
+        else if (value.includes(normalizedTerm)) {
+          score += 8;
+        }
+        // Busca por abreviações (poli = poliéster)
+        else if (isAbbreviation(normalizedTerm, value)) {
+          score += 12;
+        }
+        // Correspondência fuzzy (caracteres similares)
+        else {
+          const fuzzyMatch = calculateLevenshteinSimilarity(
+            value,
+            normalizedTerm
+          );
+          if (fuzzyMatch > 0.7) {
+            score += Math.floor(fuzzyMatch * 5);
+          }
+        }
+      });
+    });
+
+    // Bônus se todos os termos foram encontrados
+    const foundTerms = searchTerms.filter((term) => {
+      const normalizedTerm = normalizeText(term);
+      return (
+        itemText.includes(normalizedTerm) ||
+        Object.values(item.properties).some((val) => {
+          const value = normalizeText(String(val));
+          return (
+            value.includes(normalizedTerm) ||
+            isAbbreviation(normalizedTerm, value)
+          );
+        })
+      );
+    });
+
+    if (foundTerms.length === searchTerms.length) {
+      score += 15;
+    }
+
+    return score;
+  }
+
+  // Função para normalizar texto (remover acentos, converter para minúscula)
+  function normalizeText(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+      .replace(/[^a-z0-9\s]/g, "") // Remove caracteres especiais
+      .trim();
+  }
+
+  // Função para verificar se um termo é abreviação de outro
+  function isAbbreviation(abbrev: string, fullText: string): boolean {
+    if (abbrev.length >= fullText.length) return false;
+
+    // Verifica se as letras da abreviação aparecem em ordem no texto completo
+    let abbrevIndex = 0;
+    for (let i = 0; i < fullText.length && abbrevIndex < abbrev.length; i++) {
+      if (fullText[i] === abbrev[abbrevIndex]) {
+        abbrevIndex++;
+      }
+    }
+
+    return abbrevIndex === abbrev.length;
+  }
+
+  // Função para calcular similaridade usando Levenshtein
+  function calculateLevenshteinSimilarity(str1: string, str2: string): number {
+    const matrix = [];
+    const len1 = str1.length;
+    const len2 = str2.length;
+
+    if (len1 === 0) return len2 === 0 ? 1 : 0;
+    if (len2 === 0) return 0;
+
+    // Criar matriz
+    for (let i = 0; i <= len1; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+      matrix[0][j] = j;
+    }
+
+    // Preencher matriz
+    for (let i = 1; i <= len1; i++) {
+      for (let j = 1; j <= len2; j++) {
+        const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1, // Deleção
+          matrix[i][j - 1] + 1, // Inserção
+          matrix[i - 1][j - 1] + cost // Substituição
+        );
+      }
+    }
+
+    const distance = matrix[len1][len2];
+    const maxLen = Math.max(len1, len2);
+    return 1 - distance / maxLen;
+  }
 
   // Função para obter preço (por enquanto usando um valor fixo, pode ser expandido)
   function getPrice(item: StockItem): number {

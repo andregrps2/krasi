@@ -54,7 +54,74 @@ export const propertyDefinitions = createPersistentStore<PropertyDefinition[]>('
 
 // --- Estoque ---
 
-const initialStock: StockItem[] = [];
+const initialStock: StockItem[] = [
+  {
+    id: 1,
+    quantity: 19,
+    properties: {
+      brand: 'Breda',
+      type: 'Camisa',
+      fabric: 'Poliéster',
+      size: 'GG',
+      color: 'Preto'
+    }
+  },
+  {
+    id: 2,
+    quantity: 12,
+    properties: {
+      brand: 'Breda',
+      type: 'Camisa',
+      fabric: 'Algodão',
+      size: 'M',
+      color: 'Azul'
+    }
+  },
+  {
+    id: 3,
+    quantity: 8,
+    properties: {
+      brand: 'Ricardo',
+      type: 'Terno',
+      fabric: 'Lã',
+      size: 'G',
+      color: 'Preto'
+    }
+  },
+  {
+    id: 4,
+    quantity: 15,
+    properties: {
+      brand: 'Breda',
+      type: 'Palitó',
+      fabric: 'Poliéster',
+      size: 'P',
+      color: 'Cinza'
+    }
+  },
+  {
+    id: 5,
+    quantity: 25,
+    properties: {
+      brand: 'Style',
+      type: 'Camiseta',
+      fabric: 'Algodão',
+      size: 'M',
+      color: 'Branco'
+    }
+  },
+  {
+    id: 6,
+    quantity: 6,
+    properties: {
+      brand: 'Comfort',
+      type: 'Sapato',
+      fabric: 'Couro',
+      size: '42',
+      color: 'Marrom'
+    }
+  }
+];
 
 export const stock = createPersistentStore<StockItem[]>('stock-items', initialStock);
 

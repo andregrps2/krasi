@@ -31,6 +31,39 @@
   function handleAddToCart(item: StockItem) {
     dispatch("addToCart", item);
   }
+
+  // Função para destacar termos de busca
+  function highlightSearchTerms(text: string, searchTerm: string): string {
+    if (!searchTerm.trim()) return text;
+
+    const terms = searchTerm
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((term) => term.length > 0);
+    let highlightedText = text;
+
+    terms.forEach((term) => {
+      // Busca por correspondência exata
+      const exactRegex = new RegExp(`\\b(${escapeRegex(term)})\\b`, "gi");
+      highlightedText = highlightedText.replace(exactRegex, "<mark>$1</mark>");
+
+      // Busca por correspondência parcial se não houver correspondência exata
+      if (!exactRegex.test(text)) {
+        const partialRegex = new RegExp(`(${escapeRegex(term)})`, "gi");
+        highlightedText = highlightedText.replace(
+          partialRegex,
+          "<mark>$1</mark>"
+        );
+      }
+    });
+
+    return highlightedText;
+  }
+
+  // Função para escapar caracteres especiais em regex
+  function escapeRegex(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
 </script>
 
 <div class="products-section">
@@ -39,10 +72,28 @@
   <div class="search-bar">
     <input
       type="text"
-      placeholder="Buscar produtos..."
+      placeholder="Busca inteligente: digite qualquer combinação (ex: breda poli preto)"
       bind:value={searchTerm}
       class="search-input"
     />
+    {#if searchTerm.trim()}
+      <div class="search-info">
+        <span class="results-count"
+          >{availableProducts.length} produto(s) encontrado(s)</span
+        >
+        <button
+          class="clear-search"
+          on:click={() => (searchTerm = "")}
+          title="Limpar busca"
+        >
+          ✕
+        </button>
+      </div>
+    {:else}
+      <div class="search-help">
+        💡 Dica: Digite qualquer combinação de marca, tecido, cor ou tamanho
+      </div>
+    {/if}
   </div>
 
   <div class="products-grid">
@@ -53,7 +104,10 @@
             {#each propertyDefinitions as prop}
               {#if prop.id === "type" || prop.id === "brand"}
                 <span class="property-value">
-                  {item.properties[prop.id] || "-"}
+                  {@html highlightSearchTerms(
+                    item.properties[prop.id] || "-",
+                    searchTerm
+                  )}
                 </span>
               {/if}
             {/each}
@@ -65,7 +119,10 @@
                 <div class="detail">
                   <span class="detail-label">{prop.name}:</span>
                   <span class="detail-value">
-                    {item.properties[prop.id] || "-"}
+                    {@html highlightSearchTerms(
+                      item.properties[prop.id] || "-",
+                      searchTerm
+                    )}
                   </span>
                 </div>
               {/if}
@@ -125,11 +182,57 @@
     font-size: 0.9rem;
     background-color: #333;
     color: white;
+    margin-bottom: 0.5rem;
   }
 
   .search-input:focus {
     border-color: var(--primary-color-border);
     box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+  }
+
+  .search-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #ccc;
+  }
+
+  .results-count {
+    color: var(--text-accent);
+    font-weight: 600;
+  }
+
+  .clear-search {
+    background: #555;
+    border: 1px solid #666;
+    color: #ccc;
+    border-radius: 3px;
+    padding: 0.2rem 0.4rem;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+  }
+
+  .clear-search:hover {
+    background: #666;
+    color: white;
+  }
+
+  .search-help {
+    font-size: 0.75rem;
+    color: #888;
+    font-style: italic;
+    margin-top: 0.3rem;
+  }
+
+  /* Destaque dos termos de busca */
+  :global(.product-card mark) {
+    background-color: var(--text-accent);
+    color: #1a1a1a;
+    padding: 0.1rem 0.2rem;
+    border-radius: 2px;
+    font-weight: bold;
   }
 
   .products-grid {
