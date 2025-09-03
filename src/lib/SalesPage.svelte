@@ -315,122 +315,132 @@
   <div class="sales-content">
     <!-- Controles de Venda -->
     <div class="sale-controls">
-      <div class="control-group">
-        <span class="control-label">Cliente:</span>
-        <div class="customer-selector">
-          {#if selectedCustomer}
-            <div class="selected-customer">
-              <span class="customer-name">{selectedCustomer.name}</span>
-              <span class="customer-congregation"
-                >({selectedCustomer.congregation})</span
-              >
-              <button
-                class="clear-customer-btn"
-                on:click={clearCustomer}
-                title="Remover cliente"
-              >
-                ✕
+      <!-- Linha do Cliente -->
+      <div class="client-row">
+        <div class="control-group">
+          <span class="control-label">Cliente:</span>
+          <div class="customer-selector">
+            {#if selectedCustomer}
+              <div class="selected-customer">
+                <span class="customer-name">{selectedCustomer.name}</span>
+                <span class="customer-congregation"
+                  >({selectedCustomer.congregation})</span
+                >
+                <button
+                  class="clear-customer-btn"
+                  on:click={clearCustomer}
+                  title="Remover cliente"
+                >
+                  ✕
+                </button>
+              </div>
+            {:else}
+              <button class="select-customer-btn" on:click={openCustomerModal}>
+                Selecionar Cliente
               </button>
-            </div>
-          {:else}
-            <button class="select-customer-btn" on:click={openCustomerModal}>
-              Selecionar Cliente
-            </button>
-          {/if}
+            {/if}
+          </div>
         </div>
       </div>
 
-      <div class="control-group">
-        <label for="payment-select">Pagamento:</label>
-        <select
-          id="payment-select"
-          bind:value={paymentType}
-          class="compact-select"
-        >
-          <option value="cash">À Vista</option>
-          <option value="installments">A Prazo</option>
-        </select>
+      <!-- Linha dos Controles de Pagamento -->
+      <div class="payment-row">
+        <div class="control-group">
+          <label for="payment-select">Pagamento:</label>
+          <select
+            id="payment-select"
+            bind:value={paymentType}
+            class="compact-select"
+          >
+            <option value="cash">À Vista</option>
+            <option value="installments">A Prazo</option>
+          </select>
+        </div>
+
+        {#if paymentType === "installments"}
+          <div class="control-group">
+            <label for="installments-select">Parcelas:</label>
+            <select
+              id="installments-select"
+              bind:value={numberOfInstallments}
+              class="compact-select"
+            >
+              <option value={1}>1x</option>
+              <option value={2}>2x</option>
+              <option value={3}>3x</option>
+              <option value={4}>4x</option>
+              <option value={5}>5x</option>
+              <option value={6}>6x</option>
+              <option value={10}>10x</option>
+              <option value={12}>12x</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="frequency-select">Intervalo:</label>
+            <select
+              id="frequency-select"
+              bind:value={installmentFrequency}
+              class="compact-select"
+            >
+              <option value={7}>Semanal</option>
+              <option value={15}>Quinzenal</option>
+              <option value={30}>Mensal</option>
+            </select>
+          </div>
+        {/if}
       </div>
 
       {#if paymentType === "installments"}
-        <div class="control-group">
-          <label for="installments-select">Parcelas:</label>
-          <select
-            id="installments-select"
-            bind:value={numberOfInstallments}
-            class="compact-select"
-          >
-            <option value={1}>1x</option>
-            <option value={2}>2x</option>
-            <option value={3}>3x</option>
-            <option value={4}>4x</option>
-            <option value={5}>5x</option>
-            <option value={6}>6x</option>
-            <option value={10}>10x</option>
-            <option value={12}>12x</option>
-          </select>
-        </div>
+        <div class="installment-second-row">
+          <div class="control-group">
+            <label for="due-day-select">Dia Vencimento:</label>
+            <select
+              id="due-day-select"
+              bind:value={dueDay}
+              class="compact-select"
+            >
+              {#each Array(31) as _, i}
+                <option value={i + 1}>{i + 1}</option>
+              {/each}
+            </select>
+          </div>
 
-        <div class="control-group">
-          <label for="frequency-select">Intervalo (dias):</label>
-          <select
-            id="frequency-select"
-            bind:value={installmentFrequency}
-            class="compact-select"
-          >
-            <option value={7}>Semanal</option>
-            <option value={15}>Quinzenal</option>
-            <option value={30}>Mensal</option>
-          </select>
-        </div>
+          <div class="control-group">
+            <label for="first-month-select">Mês 1ª Parcela:</label>
+            <select
+              id="first-month-select"
+              bind:value={firstInstallmentMonth}
+              class="compact-select"
+            >
+              <option value={1}>Janeiro</option>
+              <option value={2}>Fevereiro</option>
+              <option value={3}>Março</option>
+              <option value={4}>Abril</option>
+              <option value={5}>Maio</option>
+              <option value={6}>Junho</option>
+              <option value={7}>Julho</option>
+              <option value={8}>Agosto</option>
+              <option value={9}>Setembro</option>
+              <option value={10}>Outubro</option>
+              <option value={11}>Novembro</option>
+              <option value={12}>Dezembro</option>
+            </select>
+          </div>
 
-        <div class="control-group">
-          <label for="due-day-select">Dia de Vencimento:</label>
-          <select
-            id="due-day-select"
-            bind:value={dueDay}
-            class="compact-select"
-          >
-            {#each Array(31) as _, i}
-              <option value={i + 1}>{i + 1}</option>
-            {/each}
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="first-month-select">Mês da 1ª Parcela:</label>
-          <select
-            id="first-month-select"
-            bind:value={firstInstallmentMonth}
-            class="compact-select"
-          >
-            <option value={1}>Janeiro</option>
-            <option value={2}>Fevereiro</option>
-            <option value={3}>Março</option>
-            <option value={4}>Abril</option>
-            <option value={5}>Maio</option>
-            <option value={6}>Junho</option>
-            <option value={7}>Julho</option>
-            <option value={8}>Agosto</option>
-            <option value={9}>Setembro</option>
-            <option value={10}>Outubro</option>
-            <option value={11}>Novembro</option>
-            <option value={12}>Dezembro</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="first-year-select">Ano da 1ª Parcela:</label>
-          <select
-            id="first-year-select"
-            bind:value={firstInstallmentYear}
-            class="compact-select"
-          >
-            {#each Array(106) as _, i}
-              {@const year = new Date().getFullYear() - 5 + i}
-              <option value={year}>{year}</option>
-            {/each}
-          </select>
+          <div class="control-group">
+            <label for="first-year-select">Ano 1ª Parcela:</label>
+            <select
+              id="first-year-select"
+              bind:value={firstInstallmentYear}
+              class="compact-select"
+            >
+              {#each Array(106) as _, i}
+                {@const year = new Date().getFullYear() - 5 + i}
+                <option value={year}>{year}</option>
+              {/each}
+            </select>
+          </div>
         </div>
       {/if}
     </div>
@@ -651,6 +661,20 @@
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
     border: 2px solid var(--primary-color-border);
     display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Linha do Cliente */
+  .client-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* Linha dos Controles de Pagamento */
+  .payment-row {
+    display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     align-items: center;
@@ -683,6 +707,15 @@
     outline: none;
     border-color: var(--primary-color-border);
     box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+  }
+
+  /* Segunda linha dos campos de parcelamento */
+  .installment-second-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+    margin-top: 1rem;
   }
 
   /* Seletor de Cliente */
