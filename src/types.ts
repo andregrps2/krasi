@@ -35,6 +35,14 @@ export interface Customer {
   congregation: string;
   whatsappNumber: string;
   createdAt: Date;
+  // Campos de endereço
+  cep?: string;
+  logradouro?: string;
+  complemento?: string;
+  bairro?: string;
+  localidade?: string;
+  uf?: string;
+  estado?: string;
 }
 
 /**

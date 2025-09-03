@@ -58,13 +58,15 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: var(--surface-color);
+    background-color: var(--bg-secondary);
     border-radius: 8px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-primary);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     z-index: 20;
     width: 90%;
-    max-width: 500px;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .modal-content {
@@ -79,13 +81,13 @@
     border: none;
     font-size: 2rem;
     line-height: 1;
-    color: #aaa;
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0;
     margin: 0;
   }
   .close-button:hover {
-    color: var(--text-color);
+    color: var(--text-primary);
     background-color: transparent;
   }
 </style>

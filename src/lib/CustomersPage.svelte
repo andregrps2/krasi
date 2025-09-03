@@ -36,30 +36,41 @@
   ) {
     const customerData = event.detail;
 
-    if (customerData.id) {
-      // Update existing customer
-      $customers = $customers.map((customer) =>
-        customer.id === customerData.id
-          ? ({ ...customerData, id: customer.id } as Customer)
-          : customer
-      );
-    } else {
-      // Add new customer
-      const newId =
-        $customers.length > 0
-          ? Math.max(...$customers.map((c) => c.id)) + 1
-          : 1;
-      const newCustomer: Customer = {
-        id: newId,
-        name: customerData.name,
-        congregation: customerData.congregation,
-        whatsappNumber: customerData.whatsappNumber,
-        createdAt: new Date(),
-      };
-      $customers = [...$customers, newCustomer];
-    }
+    try {
+      if (customerData.id) {
+        // Update existing customer
+        $customers = $customers.map((customer) =>
+          customer.id === customerData.id
+            ? ({ ...customerData, id: customer.id } as Customer)
+            : customer
+        );
+      } else {
+        // Add new customer
+        const newId =
+          $customers.length > 0
+            ? Math.max(...$customers.map((c) => c.id)) + 1
+            : 1;
+        const newCustomer: Customer = {
+          id: newId,
+          name: customerData.name,
+          congregation: customerData.congregation,
+          whatsappNumber: customerData.whatsappNumber,
+          createdAt: new Date(),
+          cep: customerData.cep,
+          logradouro: customerData.logradouro,
+          complemento: customerData.complemento,
+          bairro: customerData.bairro,
+          localidade: customerData.localidade,
+          uf: customerData.uf,
+          estado: customerData.estado,
+        };
+        $customers = [...$customers, newCustomer];
+      }
 
-    showCustomerModal = false;
+      showCustomerModal = false;
+    } catch (error) {
+      console.error("Erro ao salvar cliente:", error);
+    }
   }
 
   function handleCancelCustomer() {
@@ -84,6 +95,31 @@
 
   function openWhatsApp(number: string) {
     window.open(formatWhatsApp(number), "_blank");
+  }
+
+  function formatAddress(customer: Customer): string {
+    const parts = [];
+
+    if (customer.logradouro) parts.push(customer.logradouro);
+    if (customer.complemento) parts.push(customer.complemento);
+    if (customer.bairro) parts.push(customer.bairro);
+    if (customer.localidade && customer.uf) {
+      parts.push(`${customer.localidade}/${customer.uf}`);
+    } else if (customer.localidade) {
+      parts.push(customer.localidade);
+    }
+    if (customer.cep) parts.push(`CEP: ${customer.cep}`);
+
+    return parts.length > 0 ? parts.join(", ") : "";
+  }
+
+  function hasAddress(customer: Customer): boolean {
+    return !!(
+      customer.cep ||
+      customer.logradouro ||
+      customer.bairro ||
+      customer.localidade
+    );
   }
 </script>
 
@@ -192,6 +228,15 @@
                 <span class="detail-label">WhatsApp:</span>
                 <span class="detail-value">{customer.whatsappNumber}</span>
               </div>
+
+              {#if hasAddress(customer)}
+                <div class="detail-item">
+                  <span class="detail-label">Endereço:</span>
+                  <span class="detail-value address-text"
+                    >{formatAddress(customer)}</span
+                  >
+                </div>
+              {/if}
 
               <div class="detail-item">
                 <span class="detail-label">Cadastrado em:</span>
@@ -424,6 +469,12 @@
 
   .detail-value {
     color: #cccccc;
+  }
+
+  .address-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-wrap: break-word;
   }
 
   /* Responsivo */
