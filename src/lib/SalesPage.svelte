@@ -1,7 +1,20 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { stock, propertyDefinitions, salesHistory, customers } from "../stores";
-  import type { StockItem, Sale, SaleItem, Customer } from "../types";
+  import {
+    stock,
+    propertyDefinitions,
+    salesHistory,
+    customers,
+    installments,
+  } from "../stores";
+  import type {
+    StockItem,
+    Sale,
+    SaleItem,
+    Customer,
+    PaymentType,
+    Installment,
+  } from "../types";
 
   const dispatch = createEventDispatcher();
 
@@ -10,6 +23,9 @@
   let cart: { item: StockItem; quantity: number }[] = [];
   let total = 0;
   let selectedCustomer: Customer | null = null;
+  let paymentType: PaymentType = "cash";
+  let numberOfInstallments = 1;
+  let installmentFrequency = 30; // dias entre parcelas
 
   // Computar total do carrinho
   $: total = cart.reduce(
@@ -82,6 +98,12 @@
   function finalizeSale() {
     if (cart.length === 0) return;
 
+    // Para vendas a prazo, cliente é obrigatório
+    if (paymentType === "installments" && !selectedCustomer) {
+      alert("Para vendas a prazo, é necessário selecionar um cliente!");
+      return;
+    }
+
     // Criar registro da venda
     const saleItems: SaleItem[] = cart.map((cartItem) => ({
       stockItemId: cartItem.item.id,
@@ -91,16 +113,45 @@
       totalPrice: cartItem.quantity * getPrice(cartItem.item),
     }));
 
+    const saleId =
+      $salesHistory.length > 0
+        ? Math.max(...$salesHistory.map((s) => s.id)) + 1
+        : 1;
+
+    // Criar parcelas se for venda a prazo
+    let saleInstallments: Installment[] = [];
+    if (paymentType === "installments") {
+      const installmentAmount = total / numberOfInstallments;
+
+      for (let i = 0; i < numberOfInstallments; i++) {
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + (i + 1) * installmentFrequency);
+
+        const installment: Installment = {
+          id: $installments.length + i + 1,
+          saleId: saleId,
+          installmentNumber: i + 1,
+          dueDate: dueDate,
+          amount: installmentAmount,
+          status: "pending",
+        };
+
+        saleInstallments.push(installment);
+      }
+
+      // Adicionar parcelas ao store
+      $installments = [...$installments, ...saleInstallments];
+    }
+
     const newSale: Sale = {
-      id:
-        $salesHistory.length > 0
-          ? Math.max(...$salesHistory.map((s) => s.id)) + 1
-          : 1,
+      id: saleId,
       date: new Date(),
       items: saleItems,
       totalAmount: total,
       customerId: selectedCustomer?.id,
       customerName: selectedCustomer?.name,
+      paymentType: paymentType,
+      installments: saleInstallments,
     };
 
     // Adicionar venda ao histórico
@@ -118,16 +169,23 @@
     // Limpar carrinho
     cart = [];
     selectedCustomer = null;
+    paymentType = "cash";
+    numberOfInstallments = 1;
     searchTerm = "";
 
-    alert(
-      `Venda #${newSale.id} finalizada com sucesso!\nTotal: R$ ${total.toFixed(2)}`
-    );
+    const paymentMessage =
+      paymentType === "cash"
+        ? `Venda #${newSale.id} finalizada com sucesso!\nTotal: R$ ${total.toFixed(2)}`
+        : `Venda #${newSale.id} finalizada a prazo!\nTotal: R$ ${total.toFixed(2)}\nParcelas: ${numberOfInstallments}x de R$ ${(total / numberOfInstallments).toFixed(2)}`;
+
+    alert(paymentMessage);
   }
 
   function clearCart() {
     cart = [];
     selectedCustomer = null;
+    paymentType = "cash";
+    numberOfInstallments = 1;
   }
 </script>
 
@@ -137,24 +195,66 @@
   </div>
 
   <div class="sales-content">
-    <!-- Seleção de Cliente -->
-    <div class="customer-section">
-      <h2>Cliente</h2>
-      <div class="customer-selection">
-        <select bind:value={selectedCustomer} class="customer-select">
-          <option value={null}>Venda sem cliente cadastrado</option>
+    <!-- Controles de Venda -->
+    <div class="sale-controls">
+      <div class="control-group">
+        <label for="customer-select">Cliente:</label>
+        <select
+          id="customer-select"
+          bind:value={selectedCustomer}
+          class="compact-select"
+        >
+          <option value={null}>Sem cliente</option>
           {#each $customers as customer (customer.id)}
-            <option value={customer}>{customer.name} - {customer.congregation}</option>
+            <option value={customer}>{customer.name}</option>
           {/each}
         </select>
-        {#if selectedCustomer}
-          <div class="selected-customer-info">
-            <strong>Cliente:</strong> {selectedCustomer.name}<br>
-            <strong>Congregação:</strong> {selectedCustomer.congregation}<br>
-            <strong>WhatsApp:</strong> {selectedCustomer.whatsappNumber}
-          </div>
-        {/if}
       </div>
+
+      <div class="control-group">
+        <label for="payment-select">Pagamento:</label>
+        <select
+          id="payment-select"
+          bind:value={paymentType}
+          class="compact-select"
+        >
+          <option value="cash">À Vista</option>
+          <option value="installments">A Prazo</option>
+        </select>
+      </div>
+
+      {#if paymentType === "installments"}
+        <div class="control-group">
+          <label for="installments-select">Parcelas:</label>
+          <select
+            id="installments-select"
+            bind:value={numberOfInstallments}
+            class="compact-select"
+          >
+            <option value={1}>1x</option>
+            <option value={2}>2x</option>
+            <option value={3}>3x</option>
+            <option value={4}>4x</option>
+            <option value={5}>5x</option>
+            <option value={6}>6x</option>
+            <option value={10}>10x</option>
+            <option value={12}>12x</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="frequency-select">Intervalo (dias):</label>
+          <select
+            id="frequency-select"
+            bind:value={installmentFrequency}
+            class="compact-select"
+          >
+            <option value={7}>Semanal</option>
+            <option value={15}>Quinzenal</option>
+            <option value={30}>Mensal</option>
+          </select>
+        </div>
+      {/if}
     </div>
 
     <!-- Produtos Disponíveis -->
@@ -282,13 +382,24 @@
         <div class="cart-summary">
           <div class="total">
             <strong>Total: R$ {total.toFixed(2)}</strong>
+            {#if paymentType === "installments" && total > 0}
+              <div class="installment-info">
+                {numberOfInstallments}x de R$ {(
+                  total / numberOfInstallments
+                ).toFixed(2)}
+              </div>
+            {/if}
           </div>
 
           <div class="cart-actions">
             <button class="clear-btn" on:click={clearCart}>
               Limpar Carrinho
             </button>
-            <button class="finalize-btn" on:click={finalizeSale}>
+            <button
+              class="finalize-btn"
+              on:click={finalizeSale}
+              disabled={paymentType === "installments" && !selectedCustomer}
+            >
               Finalizar Venda
             </button>
           </div>
@@ -327,51 +438,46 @@
     min-height: 600px;
   }
 
-  /* Cliente */
-  .customer-section {
+  /* Controles de Venda */
+  .sale-controls {
     background: #2a2a2a;
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
     border: 2px solid #ffd700;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
   }
 
-  .customer-section h2 {
-    color: #ffd700;
-    margin: 0 0 1rem 0;
-    font-size: 1.3rem;
-  }
-
-  .customer-selection {
+  .control-group {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.25rem;
+    min-width: 120px;
   }
 
-  .customer-select {
-    padding: 0.75rem;
-    border: 2px solid #555;
+  .control-group label {
+    color: #ffd700;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .compact-select {
+    padding: 0.5rem;
+    border: 1px solid #555;
     border-radius: 4px;
     background-color: #333;
     color: white;
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
-  .customer-select:focus {
+  .compact-select:focus {
     outline: none;
     border-color: #ffd700;
-    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
-  }
-
-  .selected-customer-info {
-    background: #333;
-    padding: 1rem;
-    border-radius: 4px;
-    border-left: 4px solid #ffd700;
-    color: #ccc;
-    font-size: 0.9rem;
-    line-height: 1.4;
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
   }
 
   /* Produtos */
@@ -647,6 +753,13 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   }
 
+  .installment-info {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-top: 0.25rem;
+    font-weight: normal;
+  }
+
   .cart-actions {
     display: flex;
     gap: 0.75rem;
@@ -678,9 +791,16 @@
     color: #1a1a1a;
   }
 
-  .finalize-btn:hover {
+  .finalize-btn:hover:not(:disabled) {
     background-color: #22c55e;
     transform: translateY(-1px);
+  }
+
+  .finalize-btn:disabled {
+    background-color: #555;
+    color: #888;
+    cursor: not-allowed;
+    transform: none;
   }
 
   /* Responsivo */

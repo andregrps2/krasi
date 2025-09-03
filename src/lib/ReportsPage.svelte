@@ -260,6 +260,7 @@
               <tr>
                 <th>ID</th>
                 <th>Data/Hora</th>
+                <th>Cliente</th>
                 <th>Itens</th>
                 <th>Total</th>
               </tr>
@@ -269,6 +270,13 @@
                 <tr>
                   <td>#{sale.id}</td>
                   <td>{formatDate(sale.date)}</td>
+                  <td>
+                    {#if sale.customerName}
+                      <span class="customer-name">{sale.customerName}</span>
+                    {:else}
+                      <span class="no-customer">Sem cliente</span>
+                    {/if}
+                  </td>
                   <td>
                     <div class="items-list">
                       {#each sale.items as item}
@@ -492,6 +500,16 @@
   .sale-total {
     font-weight: 600;
     text-align: right;
+  }
+
+  .customer-name {
+    color: #ffd700;
+    font-weight: 500;
+  }
+
+  .no-customer {
+    color: #888;
+    font-style: italic;
   }
 
   .revenue,

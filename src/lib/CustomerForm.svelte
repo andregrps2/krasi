@@ -27,7 +27,7 @@
 
   function handleSubmit(event: Event) {
     event.preventDefault();
-    
+
     if (!isValid) return;
 
     const customerData = {
@@ -35,7 +35,7 @@
       name: name.trim(),
       congregation: congregation.trim(),
       whatsappNumber: whatsappNumber.trim(),
-      createdAt: customer?.createdAt || new Date()
+      createdAt: customer?.createdAt || new Date(),
     };
 
     dispatch("save", customerData);
@@ -47,8 +47,8 @@
 
   function formatPhoneNumber(value: string) {
     // Remove todos os caracteres não numéricos
-    const numbers = value.replace(/\D/g, '');
-    
+    const numbers = value.replace(/\D/g, "");
+
     // Aplica a máscara (xx) xxxxx-xxxx
     if (numbers.length <= 2) {
       return `(${numbers}`;
@@ -103,7 +103,9 @@
       class="form-input"
       maxlength="15"
     />
-    <small class="help-text">Digite apenas os números. A formatação será aplicada automaticamente.</small>
+    <small class="help-text"
+      >Digite apenas os números. A formatação será aplicada automaticamente.</small
+    >
   </div>
 
   <div class="form-actions">
@@ -111,7 +113,7 @@
       Cancelar
     </button>
     <button type="submit" class="save-btn" disabled={!isValid}>
-      {customer ? 'Atualizar' : 'Salvar'} Cliente
+      {customer ? "Atualizar" : "Salvar"} Cliente
     </button>
   </div>
 </form>
@@ -144,7 +146,9 @@
     font-size: 1rem;
     background-color: #333;
     color: white;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
   }
 
   .form-input:focus {

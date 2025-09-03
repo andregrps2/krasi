@@ -26,6 +26,11 @@
       icon: "👥",
     },
     {
+      id: "fiado",
+      label: "Controle de Fiado",
+      icon: "💳",
+    },
+    {
       id: "relatorios",
       label: "Relatórios",
       icon: "📊",

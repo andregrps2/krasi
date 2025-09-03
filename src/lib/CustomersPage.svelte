@@ -10,9 +10,9 @@
   let searchTerm = "";
 
   // Filtered customers
-  $: filteredCustomers = $customers.filter(customer => {
+  $: filteredCustomers = $customers.filter((customer) => {
     if (!searchTerm.trim()) return true;
-    
+
     const term = searchTerm.toLowerCase();
     return (
       customer.name.toLowerCase().includes(term) ||
@@ -31,29 +31,34 @@
     showCustomerModal = true;
   }
 
-  function handleSaveCustomer(event: CustomEvent<Omit<Customer, "id"> & { id?: number }>) {
+  function handleSaveCustomer(
+    event: CustomEvent<Omit<Customer, "id"> & { id?: number }>
+  ) {
     const customerData = event.detail;
-    
+
     if (customerData.id) {
       // Update existing customer
-      $customers = $customers.map(customer =>
+      $customers = $customers.map((customer) =>
         customer.id === customerData.id
-          ? { ...customerData, id: customer.id } as Customer
+          ? ({ ...customerData, id: customer.id } as Customer)
           : customer
       );
     } else {
       // Add new customer
-      const newId = $customers.length > 0 ? Math.max(...$customers.map(c => c.id)) + 1 : 1;
+      const newId =
+        $customers.length > 0
+          ? Math.max(...$customers.map((c) => c.id)) + 1
+          : 1;
       const newCustomer: Customer = {
         id: newId,
         name: customerData.name,
         congregation: customerData.congregation,
         whatsappNumber: customerData.whatsappNumber,
-        createdAt: new Date()
+        createdAt: new Date(),
       };
       $customers = [...$customers, newCustomer];
     }
-    
+
     showCustomerModal = false;
   }
 
@@ -62,23 +67,23 @@
   }
 
   function deleteCustomer(customerId: number) {
-    if (confirm('Tem certeza que deseja excluir este cliente?')) {
-      $customers = $customers.filter(customer => customer.id !== customerId);
+    if (confirm("Tem certeza que deseja excluir este cliente?")) {
+      $customers = $customers.filter((customer) => customer.id !== customerId);
     }
   }
 
   function formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('pt-BR');
+    return new Date(date).toLocaleDateString("pt-BR");
   }
 
   function formatWhatsApp(number: string): string {
     // Remove formatting and add WhatsApp link
-    const cleanNumber = number.replace(/\D/g, '');
+    const cleanNumber = number.replace(/\D/g, "");
     return `https://wa.me/55${cleanNumber}`;
   }
 
   function openWhatsApp(number: string) {
-    window.open(formatWhatsApp(number), '_blank');
+    window.open(formatWhatsApp(number), "_blank");
   }
 </script>
 
@@ -88,9 +93,9 @@
   </div>
 
   <Modal bind:show={showCustomerModal}>
-    <h2>{editingCustomer ? 'Editar Cliente' : 'Novo Cliente'}</h2>
-    <CustomerForm 
-      customer={editingCustomer} 
+    <h2>{editingCustomer ? "Editar Cliente" : "Novo Cliente"}</h2>
+    <CustomerForm
+      customer={editingCustomer}
       on:save={handleSaveCustomer}
       on:cancel={handleCancelCustomer}
     />
@@ -106,7 +111,7 @@
           class="search-input"
         />
       </div>
-      
+
       <button class="add-customer-btn" on:click={openAddCustomerModal}>
         + Novo Cliente
       </button>
@@ -120,7 +125,7 @@
           <p class="stat-value">{$customers.length}</p>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-icon">🔍</div>
         <div class="stat-content">
@@ -134,7 +139,10 @@
       <div class="empty-state">
         {#if $customers.length === 0}
           <h3>Nenhum cliente cadastrado</h3>
-          <p>Comece adicionando o primeiro cliente clicando no botão "Novo Cliente"</p>
+          <p>
+            Comece adicionando o primeiro cliente clicando no botão "Novo
+            Cliente"
+          </p>
         {:else}
           <h3>Nenhum cliente encontrado</h3>
           <p>Tente ajustar os termos da sua busca</p>
@@ -150,21 +158,21 @@
                 <span class="customer-id">#{customer.id}</span>
               </div>
               <div class="customer-actions">
-                <button 
+                <button
                   class="action-btn whatsapp-btn"
                   on:click={() => openWhatsApp(customer.whatsappNumber)}
                   title="Abrir WhatsApp"
                 >
                   💬
                 </button>
-                <button 
+                <button
                   class="action-btn edit-btn"
                   on:click={() => openEditCustomerModal(customer)}
                   title="Editar Cliente"
                 >
                   ✏️
                 </button>
-                <button 
+                <button
                   class="action-btn delete-btn"
                   on:click={() => deleteCustomer(customer.id)}
                   title="Excluir Cliente"
@@ -173,21 +181,23 @@
                 </button>
               </div>
             </div>
-            
+
             <div class="customer-details">
               <div class="detail-item">
                 <span class="detail-label">Congregação:</span>
                 <span class="detail-value">{customer.congregation}</span>
               </div>
-              
+
               <div class="detail-item">
                 <span class="detail-label">WhatsApp:</span>
                 <span class="detail-value">{customer.whatsappNumber}</span>
               </div>
-              
+
               <div class="detail-item">
                 <span class="detail-label">Cadastrado em:</span>
-                <span class="detail-value">{formatDate(customer.createdAt)}</span>
+                <span class="detail-value"
+                  >{formatDate(customer.createdAt)}</span
+                >
               </div>
             </div>
           </div>
@@ -423,21 +433,21 @@
       flex-direction: column;
       align-items: stretch;
     }
-    
+
     .search-section {
       max-width: none;
     }
-    
+
     .customers-grid {
       grid-template-columns: 1fr;
     }
-    
+
     .customer-header {
       flex-direction: column;
       gap: 1rem;
       align-items: stretch;
     }
-    
+
     .customer-actions {
       justify-content: center;
     }

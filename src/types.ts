@@ -49,13 +49,38 @@ export interface SaleItem {
 }
 
 /**
+ * Tipo de pagamento
+ */
+export type PaymentType = 'cash' | 'installments';
+
+/**
+ * Status da parcela
+ */
+export type InstallmentStatus = 'pending' | 'paid' | 'overdue';
+
+/**
+ * Representa uma parcela
+ */
+export interface Installment {
+  id: number;
+  saleId: number;
+  installmentNumber: number;
+  dueDate: Date;
+  amount: number;
+  paidDate?: Date;
+  status: InstallmentStatus;
+}
+
+/**
  * Representa uma venda completa
  */
 export interface Sale {
   id: number;
   date: Date;
   customerId?: number;
-  customer?: Customer;
+  customerName?: string;
   items: SaleItem[];
   totalAmount: number;
+  paymentType: PaymentType;
+  installments?: Installment[];
 }
