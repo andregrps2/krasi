@@ -208,7 +208,7 @@
   .clear-btn {
     padding: 0.5rem 1rem;
     background-color: transparent;
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--primary-color-border);
     color: var(--primary-color);
     border-radius: 4px;
     cursor: pointer;

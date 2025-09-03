@@ -135,7 +135,7 @@
 
   .form-group label {
     font-weight: 600;
-    color: #ffd700;
+    color: var(--primary-color);
     font-size: 1rem;
   }
 
@@ -153,7 +153,7 @@
 
   .form-input:focus {
     outline: none;
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
     box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
   }
 
@@ -172,8 +172,8 @@
 
   .cancel-btn {
     background-color: transparent;
-    color: #ffd700;
-    border: 2px solid #ffd700;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color-border);
     padding: 0.75rem 1.5rem;
     border-radius: 4px;
     cursor: pointer;
@@ -182,7 +182,7 @@
   }
 
   .cancel-btn:hover {
-    background-color: #ffd700;
+    background-color: var(--primary-color);
     color: #1a1a1a;
   }
 

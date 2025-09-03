@@ -315,7 +315,7 @@
   }
 
   .reports-header h1 {
-    color: #ffd700;
+    color: var(--primary-color);
     margin: 0;
     font-size: 2.5rem;
   }
@@ -326,11 +326,11 @@
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 2rem;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--primary-color-border);
   }
 
   .filters-section h2 {
-    color: #ffd700;
+    color: var(--primary-color);
     margin-top: 0;
     margin-bottom: 1rem;
   }
@@ -350,7 +350,7 @@
 
   .filter-group label {
     font-weight: 600;
-    color: #ffd700;
+    color: var(--primary-color);
   }
 
   .filter-group input {
@@ -362,7 +362,7 @@
   }
 
   .clear-filters-btn {
-    background-color: #ffd700;
+    background-color: var(--primary-color);
     color: #1a1a1a;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -394,13 +394,13 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--primary-color-border);
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
   }
 
   .card-icon {
     font-size: 2.5rem;
-    background: #ffd700;
+    background: var(--primary-color-transparent);
     border-radius: 50%;
     width: 60px;
     height: 60px;
@@ -411,7 +411,7 @@
 
   .card-content h3 {
     margin: 0 0 0.5rem 0;
-    color: #ffd700;
+    color: var(--primary-color);
     font-size: 1rem;
   }
 
@@ -433,11 +433,11 @@
     background: #2a2a2a;
     border-radius: 8px;
     padding: 1.5rem;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--primary-color-border);
   }
 
   .report-section h2 {
-    color: #ffd700;
+    color: var(--primary-color);
     margin-top: 0;
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
@@ -460,7 +460,7 @@
   }
 
   th {
-    background-color: #ffd700;
+    background-color: var(--primary-color);
     color: #1a1a1a;
     font-weight: 600;
   }
@@ -481,7 +481,7 @@
 
   .product-name {
     font-weight: 600;
-    color: #ffd700;
+    color: var(--primary-color);
   }
 
   .product-details {
@@ -503,7 +503,7 @@
   }
 
   .customer-name {
-    color: #ffd700;
+    color: var(--primary-color);
     font-weight: 500;
   }
 

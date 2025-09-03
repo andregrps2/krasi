@@ -180,7 +180,7 @@
   .filter-input:focus,
   .filter-select:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--primary-color-border);
     box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2);
   }
 
@@ -218,7 +218,7 @@
   .modal-footer button.secondary {
     background-color: transparent;
     color: var(--primary-color);
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--primary-color-border);
   }
 
   .modal-footer button.secondary:hover {

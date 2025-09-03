@@ -136,7 +136,7 @@
       case "paid":
         return "#4ade80";
       case "pending":
-        return "#ffd700";
+        return "var(--primary-color)";
       case "overdue":
         return "#ef4444";
       default:
@@ -440,7 +440,7 @@
   }
 
   .installments-header h1 {
-    color: #ffd700;
+    color: var(--primary-color);
     margin: 0;
     font-size: 2.5rem;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -470,10 +470,10 @@
   }
 
   .stat-card.total {
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
   }
   .stat-card.pending {
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
   }
   .stat-card.overdue {
     border-color: #ef4444;
@@ -493,10 +493,10 @@
   }
 
   .stat-card.total .stat-icon {
-    background: #ffd700;
+    background: var(--primary-color-transparent);
   }
   .stat-card.pending .stat-icon {
-    background: #ffd700;
+    background: var(--primary-color-transparent);
   }
   .stat-card.overdue .stat-icon {
     background: #ef4444;
@@ -507,7 +507,7 @@
 
   .stat-content h3 {
     margin: 0 0 0.5rem 0;
-    color: #ffd700;
+    color: var(--primary-color);
     font-size: 1rem;
   }
 
@@ -529,7 +529,7 @@
     background: #2a2a2a;
     border-radius: 8px;
     padding: 1.5rem;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--primary-color-border);
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
@@ -544,7 +544,7 @@
   }
 
   .filter-group label {
-    color: #ffd700;
+    color: var(--primary-color);
     font-weight: 600;
     font-size: 0.9rem;
   }
@@ -562,13 +562,13 @@
   .filter-select:focus,
   .search-input:focus {
     outline: none;
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
     box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
   }
 
   /* Seletor de Cliente */
   .filter-label {
-    color: #ffd700;
+    color: var(--primary-color);
     font-weight: 600;
     font-size: 0.9rem;
   }
@@ -583,13 +583,13 @@
     gap: 0.5rem;
     padding: 0.75rem;
     background-color: #333;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--primary-color-border);
     border-radius: 4px;
     font-size: 1rem;
   }
 
   .customer-name {
-    color: #ffd700;
+    color: var(--primary-color);
     font-weight: 600;
   }
 
@@ -627,7 +627,7 @@
   }
 
   .select-customer-btn:hover {
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
     background-color: #444;
   }
 
@@ -666,7 +666,7 @@
   }
 
   .customer-card:hover {
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.2);
   }
@@ -682,7 +682,7 @@
 
   .customer-card h3 {
     margin: 0;
-    color: #ffd700;
+    color: var(--primary-color);
     font-size: 1.1rem;
   }
 
@@ -704,7 +704,7 @@
   }
 
   .detail-label {
-    color: #ffd700;
+    color: var(--primary-color);
     font-weight: 500;
   }
 
@@ -731,7 +731,7 @@
   }
 
   .btn-secondary:hover {
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
     background-color: #444;
   }
 
@@ -746,7 +746,7 @@
     background: #2a2a2a;
     border-radius: 8px;
     overflow: hidden;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--primary-color-border);
   }
 
   table {
@@ -756,11 +756,11 @@
 
   th {
     background: #333;
-    color: #ffd700;
+    color: var(--primary-color);
     padding: 1rem;
     text-align: left;
     font-weight: 600;
-    border-bottom: 2px solid #ffd700;
+    border-bottom: 2px solid var(--primary-color);
   }
 
   td {
@@ -782,7 +782,7 @@
 
   .customer-info {
     font-weight: 600;
-    color: #ffd700;
+    color: var(--primary-color);
   }
 
   .date-info {
@@ -813,7 +813,7 @@
   }
 
   .status-badge.pending {
-    color: #ffd700;
+    color: var(--primary-color);
   }
   .status-badge.overdue {
     color: #ef4444;
@@ -852,8 +852,8 @@
   }
 
   .undo-btn:hover {
-    background-color: #ffd700;
-    border-color: #ffd700;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color-border);
   }
 
   /* Estado vazio */
@@ -864,7 +864,7 @@
   }
 
   .empty-state h3 {
-    color: #ffd700;
+    color: var(--primary-color);
     margin-bottom: 1rem;
   }
 

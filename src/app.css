@@ -4,7 +4,9 @@
   /* Nova Paleta de Cores */
   --bg-color: #1a1a1a; /* Preto/Cinza bem escuro para o fundo */
   --surface-color: #2c2c2c; /* Cinza escuro para superfícies como cards */
-  --primary-color: #facc15; /* Amarelo como cor de destaque e primária */
+  --primary-color: #ffd000; /* Dourado como cor de destaque e primária */
+  --primary-color-border: #e8bb19d2; /* Dourado mais claro para bordas */
+  --primary-color-transparent: rgba(255, 215, 0, 0.15); /* Dourado transparente */
   --text-color: #f0f0f0; /* Branco suave para texto */
   --border-color: #444; /* Cinza para bordas */
 

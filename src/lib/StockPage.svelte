@@ -212,7 +212,7 @@
   }
 
   .stock-header h1 {
-    color: #ffd700;
+    color: var(--primary-color);
     margin: 0;
     font-size: 2.5rem;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -221,7 +221,7 @@
   h2 {
     margin-top: 0;
     margin-bottom: 1.5rem;
-    color: #ffd700;
+    color: var(--primary-color);
   }
 
   .card-header {
@@ -229,7 +229,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid #ffd700;
+    border-bottom: 2px solid var(--primary-color);
     padding-bottom: 1rem;
   }
 

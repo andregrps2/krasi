@@ -68,7 +68,7 @@
   }
   button.outline {
     background-color: transparent;
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--primary-color-border);
     color: var(--primary-color);
   }
   button.outline:hover {

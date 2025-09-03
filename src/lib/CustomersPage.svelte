@@ -223,7 +223,7 @@
   }
 
   .customers-header h1 {
-    color: #ffd700;
+    color: var(--primary-color);
     margin: 0;
     font-size: 2.5rem;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -260,12 +260,12 @@
 
   .search-input:focus {
     outline: none;
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
     box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
   }
 
   .add-customer-btn {
-    background-color: #ffd700;
+    background-color: var(--primary-color);
     color: #1a1a1a;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -294,12 +294,12 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--primary-color-border);
   }
 
   .stat-icon {
     font-size: 2.5rem;
-    background: #ffd700;
+    background: var(--primary-color-transparent);
     border-radius: 50%;
     width: 60px;
     height: 60px;
@@ -310,7 +310,7 @@
 
   .stat-content h3 {
     margin: 0 0 0.5rem 0;
-    color: #ffd700;
+    color: var(--primary-color);
     font-size: 1rem;
   }
 
@@ -328,7 +328,7 @@
   }
 
   .empty-state h3 {
-    color: #ffd700;
+    color: var(--primary-color);
     margin-bottom: 1rem;
   }
 
@@ -347,7 +347,7 @@
   }
 
   .customer-card:hover {
-    border-color: #ffd700;
+    border-color: var(--primary-color-border);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.2);
   }
@@ -363,7 +363,7 @@
 
   .customer-name h3 {
     margin: 0;
-    color: #ffd700;
+    color: var(--primary-color);
     font-size: 1.2rem;
   }
 
@@ -397,8 +397,8 @@
   }
 
   .edit-btn:hover {
-    background-color: #ffd700;
-    border-color: #ffd700;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color-border);
   }
 
   .delete-btn:hover {
@@ -420,7 +420,7 @@
 
   .detail-label {
     font-weight: 600;
-    color: #ffd700;
+    color: var(--primary-color);
   }
 
   .detail-value {

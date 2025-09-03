@@ -52,20 +52,26 @@
     }
   }
 
-  :global(body) {
+  :global(html) {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-      sans-serif;
+    padding: 0;
+    height: 100%;
     background-color: #1a1a1a;
-    color: #ffffff;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+    --primary-color: #d4af37;
+    --primary-color-transparent: rgba(212, 175, 55, 0.8);
+    --primary-color-light: rgba(212, 175, 55, 0.6);
+    --primary-color-border: rgba(212, 175, 55, 0.9);
   }
 
   :global(.card) {
     background: #2a2a2a;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
+    box-shadow: 0 4px 8px var(--primary-color-light);
     overflow: hidden;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--primary-color-border);
   }
 
   :global(.list-card) {
@@ -73,7 +79,7 @@
   }
 
   :global(button) {
-    background-color: #ffd700;
+    background-color: var(--primary-color-transparent);
     color: #1a1a1a;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -84,19 +90,19 @@
   }
 
   :global(button:hover) {
-    background-color: #ffed4e;
+    background-color: var(--primary-color);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 4px 8px var(--primary-color-light);
   }
 
   :global(button.secondary) {
     background-color: transparent;
-    color: #ffd700;
-    border: 2px solid #ffd700;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color-border);
   }
 
   :global(button.secondary:hover) {
-    background-color: #ffd700;
+    background-color: var(--primary-color-transparent);
     color: #1a1a1a;
   }
 
@@ -116,12 +122,12 @@
 
   :global(button.outline) {
     background-color: transparent;
-    color: #ffd700;
-    border: 1px solid #ffd700;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color-border);
   }
 
   :global(button.outline:hover) {
-    background-color: #ffd700;
+    background-color: var(--primary-color-transparent);
     color: #1a1a1a;
   }
 
@@ -139,12 +145,12 @@
 
   :global(input:focus, select:focus, textarea:focus) {
     outline: none;
-    border-color: #ffd700;
-    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+    border-color: var(--primary-color-border);
+    box-shadow: 0 0 0 3px var(--primary-color-light);
   }
 
   :global(h1, h2, h3, h4, h5, h6) {
-    color: #ffd700;
+    color: var(--primary-color);
   }
 
   :global(table) {
@@ -153,7 +159,7 @@
   }
 
   :global(th) {
-    background-color: #ffd700;
+    background-color: var(--primary-color-transparent);
     color: #1a1a1a;
   }
 
@@ -167,7 +173,7 @@
   }
 
   :global(:root) {
-    --primary-color: #ffd700;
+    --primary-color: var(--primary-color);
     --background-color: #1a1a1a;
     --surface-color: #2a2a2a;
     --border-color: #555;
