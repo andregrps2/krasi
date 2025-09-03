@@ -10,6 +10,7 @@
   import Modal from "./Modal.svelte";
   import PaymentTypeSelector from "./PaymentTypeSelector.svelte";
   import ProductsList from "./ProductsList.svelte";
+  import ShoppingCart from "./ShoppingCart.svelte";
   import type {
     StockItem,
     Sale,
@@ -113,6 +114,24 @@
       cartItem.quantity = newQuantity;
       cart = [...cart];
     }
+  }
+
+  function handleCartUpdateQuantity(event: CustomEvent) {
+    const { itemId, newQuantity } = event.detail;
+    updateCartQuantity(itemId, newQuantity);
+  }
+
+  function handleCartRemoveItem(event: CustomEvent) {
+    const itemId = event.detail;
+    removeFromCart(itemId);
+  }
+
+  function handleCartClear() {
+    clearCart();
+  }
+
+  function handleCartFinalize() {
+    finalizeSale();
   }
 
   function finalizeSale() {
@@ -328,7 +347,7 @@
       on:clearCustomer={clearCustomer}
     />
 
-    <!-- Área Principal: Produtos e Carrinho -->
+    <!-- Área Principal: Produtos e Vendas -->
     <div class="main-area">
       <!-- Produtos Disponíveis -->
       <ProductsList
@@ -338,110 +357,21 @@
         on:addToCart={(e) => addToCart(e.detail)}
       />
 
-      <!-- Carrinho -->
-      <div class="cart-section">
-        <h2>Carrinho de Vendas</h2>
-
-        {#if cart.length === 0}
-          <div class="empty-cart">
-            <p>Carrinho vazio</p>
-            <span>Adicione produtos para iniciar uma venda</span>
-          </div>
-        {:else}
-          <div class="cart-items">
-            {#each cart as cartItem (cartItem.item.id)}
-              <div class="cart-item">
-                <div class="item-info">
-                  <div class="item-name">
-                    {cartItem.item.properties.type}
-                    {cartItem.item.properties.brand}
-                  </div>
-                  <div class="item-details">
-                    {cartItem.item.properties.color} - {cartItem.item.properties
-                      .size}
-                  </div>
-                  <div class="item-price">
-                    R$ {getPrice(cartItem.item).toFixed(2)} cada
-                  </div>
-                </div>
-
-                <div class="quantity-controls">
-                  <button
-                    class="qty-btn"
-                    on:click={() =>
-                      updateCartQuantity(
-                        cartItem.item.id,
-                        cartItem.quantity - 1
-                      )}
-                  >
-                    -
-                  </button>
-                  <span class="quantity">{cartItem.quantity}</span>
-                  <button
-                    class="qty-btn"
-                    on:click={() =>
-                      updateCartQuantity(
-                        cartItem.item.id,
-                        cartItem.quantity + 1
-                      )}
-                    disabled={cartItem.quantity >= cartItem.item.quantity}
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div class="item-total">
-                  R$ {(cartItem.quantity * getPrice(cartItem.item)).toFixed(2)}
-                </div>
-
-                <button
-                  class="remove-btn"
-                  on:click={() => removeFromCart(cartItem.item.id)}
-                >
-                  ❌
-                </button>
-              </div>
-            {/each}
-          </div>
-
-          <div class="cart-summary">
-            <div class="total">
-              <strong>Total: R$ {total.toFixed(2)}</strong>
-              {#if paymentType === "installments" && total > 0}
-                <div class="installment-info">
-                  {numberOfInstallments}x de R$ {(
-                    total / numberOfInstallments
-                  ).toFixed(2)}
-                  <div class="installment-details">
-                    Vencimento: Dia {dueDay} de cada mês
-                    <br />
-                    Primeira parcela: {new Date(
-                      firstInstallmentYear,
-                      firstInstallmentMonth - 1
-                    ).toLocaleDateString("pt-BR", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </div>
-                </div>
-              {/if}
-            </div>
-
-            <div class="cart-actions">
-              <button class="clear-btn" on:click={clearCart}>
-                Limpar Carrinho
-              </button>
-              <button
-                class="finalize-btn"
-                on:click={finalizeSale}
-                disabled={paymentType === "installments" && !selectedCustomer}
-              >
-                Finalizar Venda
-              </button>
-            </div>
-          </div>
-        {/if}
-      </div>
+      <!-- Carrinho de Vendas -->
+      <ShoppingCart
+        {cart}
+        {total}
+        {paymentType}
+        {numberOfInstallments}
+        {dueDay}
+        {firstInstallmentMonth}
+        {firstInstallmentYear}
+        {selectedCustomer}
+        on:updateQuantity={handleCartUpdateQuantity}
+        on:removeItem={handleCartRemoveItem}
+        on:clearCart={handleCartClear}
+        on:finalizeSale={handleCartFinalize}
+      />
     </div>
   </div>
 </div>
@@ -481,7 +411,7 @@
     min-height: 600px;
   }
 
-  /* Área Principal: Produtos e Carrinho */
+  /* Área Principal: Produtos e Vendas */
   .main-area {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -613,216 +543,6 @@
     color: #888;
   }
 
-  /* Carrinho */
-  .cart-section {
-    background: #2a2a2a;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    border: 2px solid var(--primary-color-border);
-  }
-
-  .cart-section h2 {
-    color: var(--text-accent);
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-  }
-
-  .empty-cart {
-    text-align: center;
-    color: #888;
-    padding: 3rem 1rem;
-  }
-
-  .empty-cart p {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-    color: #cccccc;
-  }
-
-  .empty-cart span {
-    color: #888;
-  }
-
-  .cart-items {
-    flex: 1;
-    max-height: 400px;
-    overflow-y: auto;
-    margin-bottom: 1rem;
-  }
-
-  .cart-item {
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    gap: 1rem;
-    align-items: center;
-    padding: 1rem;
-    border: 2px solid #555;
-    border-radius: 6px;
-    margin-bottom: 0.75rem;
-    background: #333;
-    transition: border-color 0.2s;
-  }
-
-  .cart-item:hover {
-    border-color: var(--primary-color-border);
-  }
-
-  .item-info {
-    min-width: 0;
-  }
-
-  .item-name {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    color: var(--text-accent);
-  }
-
-  .item-details {
-    font-size: 0.9rem;
-    color: #cccccc;
-    margin-bottom: 0.25rem;
-  }
-
-  .item-price {
-    font-size: 0.85rem;
-    color: #4ade80;
-  }
-
-  .quantity-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .qty-btn {
-    width: 30px;
-    height: 30px;
-    border: 2px solid var(--primary-color-border);
-    background: #2a2a2a;
-    color: var(--text-accent);
-    cursor: pointer;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-
-  .qty-btn:hover:not(:disabled) {
-    background: var(--primary-color-transparent);
-    color: #1a1a1a;
-  }
-
-  .qty-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    border-color: #555;
-    color: #555;
-  }
-
-  .quantity {
-    min-width: 30px;
-    text-align: center;
-    font-weight: 600;
-    color: #ffffff;
-  }
-
-  .item-total {
-    font-weight: 600;
-    color: #4ade80;
-    text-align: right;
-  }
-
-  .remove-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 0.25rem;
-    transition: transform 0.2s;
-  }
-
-  .remove-btn:hover {
-    transform: scale(1.2);
-  }
-
-  .cart-summary {
-    border-top: 2px solid var(--primary-color);
-    padding-top: 1rem;
-  }
-
-  .total {
-    font-size: 1.3rem;
-    text-align: center;
-    margin-bottom: 1rem;
-    color: var(--text-accent);
-    font-weight: bold;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  }
-
-  .installment-info {
-    font-size: 0.9rem;
-    color: #ccc;
-    margin-top: 0.25rem;
-    font-weight: normal;
-  }
-
-  .installment-details {
-    font-size: 0.8rem;
-    color: var(--text-accent);
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    background: var(--color-gold-transparent);
-    border-radius: var(--radius-sm);
-    border-left: 3px solid var(--border-primary);
-  }
-
-  .cart-actions {
-    display: flex;
-    gap: 0.75rem;
-  }
-
-  .clear-btn,
-  .finalize-btn {
-    flex: 1;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
-
-  .clear-btn {
-    background-color: #dc3545;
-    color: white;
-  }
-
-  .clear-btn:hover {
-    background-color: #c82333;
-    transform: translateY(-1px);
-  }
-
-  .finalize-btn {
-    background-color: #4ade80;
-    color: #1a1a1a;
-  }
-
-  .finalize-btn:hover:not(:disabled) {
-    background-color: #22c55e;
-    transform: translateY(-1px);
-  }
-
-  .finalize-btn:disabled {
-    background-color: #555;
-    color: #888;
-    cursor: not-allowed;
-    transform: none;
-  }
-
   /* Responsivo */
   @media (max-width: 768px) {
     .main-area {
@@ -836,12 +556,6 @@
 
     .control-group {
       min-width: auto;
-    }
-
-    .cart-item {
-      grid-template-columns: 1fr;
-      gap: 0.5rem;
-      text-align: center;
     }
   }
 </style>
