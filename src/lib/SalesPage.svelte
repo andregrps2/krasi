@@ -315,6 +315,11 @@
   <div class="sales-content">
     <!-- Controles de Venda -->
     <div class="sale-controls">
+      <!-- Título dentro do card -->
+      <div class="controls-header">
+        <h2>Tipo de Pagamento</h2>
+      </div>
+
       <!-- Linha do Cliente -->
       <div class="client-row">
         <div class="control-group">
@@ -343,106 +348,108 @@
         </div>
       </div>
 
-      <!-- Linha dos Controles de Pagamento -->
-      <div class="payment-row">
-        <div class="control-group">
-          <label for="payment-select">Pagamento:</label>
-          <select
-            id="payment-select"
-            bind:value={paymentType}
-            class="compact-select"
-          >
-            <option value="cash">À Vista</option>
-            <option value="installments">A Prazo</option>
-          </select>
+      <!-- Controles de Pagamento -->
+      <div class="payment-section">
+        <div class="payment-row">
+          <div class="control-group">
+            <label for="payment-select">Pagamento:</label>
+            <select
+              id="payment-select"
+              bind:value={paymentType}
+              class="compact-select"
+            >
+              <option value="cash">À Vista</option>
+              <option value="installments">A Prazo</option>
+            </select>
+          </div>
+
+          {#if paymentType === "installments"}
+            <div class="control-group">
+              <label for="installments-select">Parcelas:</label>
+              <select
+                id="installments-select"
+                bind:value={numberOfInstallments}
+                class="compact-select"
+              >
+                <option value={1}>1x</option>
+                <option value={2}>2x</option>
+                <option value={3}>3x</option>
+                <option value={4}>4x</option>
+                <option value={5}>5x</option>
+                <option value={6}>6x</option>
+                <option value={10}>10x</option>
+                <option value={12}>12x</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="frequency-select">Intervalo:</label>
+              <select
+                id="frequency-select"
+                bind:value={installmentFrequency}
+                class="compact-select"
+              >
+                <option value={7}>Semanal</option>
+                <option value={15}>Quinzenal</option>
+                <option value={30}>Mensal</option>
+              </select>
+            </div>
+          {/if}
         </div>
 
         {#if paymentType === "installments"}
-          <div class="control-group">
-            <label for="installments-select">Parcelas:</label>
-            <select
-              id="installments-select"
-              bind:value={numberOfInstallments}
-              class="compact-select"
-            >
-              <option value={1}>1x</option>
-              <option value={2}>2x</option>
-              <option value={3}>3x</option>
-              <option value={4}>4x</option>
-              <option value={5}>5x</option>
-              <option value={6}>6x</option>
-              <option value={10}>10x</option>
-              <option value={12}>12x</option>
-            </select>
-          </div>
+          <div class="installment-second-row">
+            <div class="control-group">
+              <label for="due-day-select">Dia Vencimento:</label>
+              <select
+                id="due-day-select"
+                bind:value={dueDay}
+                class="compact-select"
+              >
+                {#each Array(31) as _, i}
+                  <option value={i + 1}>{i + 1}</option>
+                {/each}
+              </select>
+            </div>
 
-          <div class="control-group">
-            <label for="frequency-select">Intervalo:</label>
-            <select
-              id="frequency-select"
-              bind:value={installmentFrequency}
-              class="compact-select"
-            >
-              <option value={7}>Semanal</option>
-              <option value={15}>Quinzenal</option>
-              <option value={30}>Mensal</option>
-            </select>
+            <div class="control-group">
+              <label for="first-month-select">Mês 1ª Parcela:</label>
+              <select
+                id="first-month-select"
+                bind:value={firstInstallmentMonth}
+                class="compact-select"
+              >
+                <option value={1}>Janeiro</option>
+                <option value={2}>Fevereiro</option>
+                <option value={3}>Março</option>
+                <option value={4}>Abril</option>
+                <option value={5}>Maio</option>
+                <option value={6}>Junho</option>
+                <option value={7}>Julho</option>
+                <option value={8}>Agosto</option>
+                <option value={9}>Setembro</option>
+                <option value={10}>Outubro</option>
+                <option value={11}>Novembro</option>
+                <option value={12}>Dezembro</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="first-year-select">Ano 1ª Parcela:</label>
+              <select
+                id="first-year-select"
+                bind:value={firstInstallmentYear}
+                class="compact-select"
+              >
+                {#each Array(106) as _, i}
+                  {@const year = new Date().getFullYear() - 5 + i}
+                  <option value={year}>{year}</option>
+                {/each}
+              </select>
+            </div>
           </div>
         {/if}
       </div>
-
-      {#if paymentType === "installments"}
-        <div class="installment-second-row">
-          <div class="control-group">
-            <label for="due-day-select">Dia Vencimento:</label>
-            <select
-              id="due-day-select"
-              bind:value={dueDay}
-              class="compact-select"
-            >
-              {#each Array(31) as _, i}
-                <option value={i + 1}>{i + 1}</option>
-              {/each}
-            </select>
-          </div>
-
-          <div class="control-group">
-            <label for="first-month-select">Mês 1ª Parcela:</label>
-            <select
-              id="first-month-select"
-              bind:value={firstInstallmentMonth}
-              class="compact-select"
-            >
-              <option value={1}>Janeiro</option>
-              <option value={2}>Fevereiro</option>
-              <option value={3}>Março</option>
-              <option value={4}>Abril</option>
-              <option value={5}>Maio</option>
-              <option value={6}>Junho</option>
-              <option value={7}>Julho</option>
-              <option value={8}>Agosto</option>
-              <option value={9}>Setembro</option>
-              <option value={10}>Outubro</option>
-              <option value={11}>Novembro</option>
-              <option value={12}>Dezembro</option>
-            </select>
-          </div>
-
-          <div class="control-group">
-            <label for="first-year-select">Ano 1ª Parcela:</label>
-            <select
-              id="first-year-select"
-              bind:value={firstInstallmentYear}
-              class="compact-select"
-            >
-              {#each Array(106) as _, i}
-                {@const year = new Date().getFullYear() - 5 + i}
-                <option value={year}>{year}</option>
-              {/each}
-            </select>
-          </div>
-        </div>
-      {/if}
     </div>
 
     <!-- Área Principal: Produtos e Carrinho -->
@@ -638,6 +645,13 @@
     text-shadow: var(--shadow-small);
   }
 
+  .sales-header h2 {
+    margin: 0;
+    color: var(--text-accent);
+    font-size: 1.5rem;
+    text-shadow: var(--shadow-small);
+  }
+
   .sales-content {
     display: flex;
     flex-direction: column;
@@ -665,11 +679,33 @@
     gap: 1rem;
   }
 
+  /* Cabeçalho dos Controles */
+  .controls-header {
+    text-align: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--primary-color-border);
+    margin-bottom: 0.5rem;
+  }
+
+  .controls-header h2 {
+    margin: 0;
+    color: var(--text-accent);
+    font-size: 1.5rem;
+    text-shadow: var(--shadow-small);
+  }
+
   /* Linha do Cliente */
   .client-row {
     display: flex;
     align-items: center;
     width: 100%;
+  }
+
+  /* Seção de Pagamento */
+  .payment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   /* Linha dos Controles de Pagamento */
