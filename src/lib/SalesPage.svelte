@@ -257,154 +257,163 @@
       {/if}
     </div>
 
-    <!-- Produtos Disponíveis -->
-    <div class="products-section">
-      <h2>Produtos Disponíveis</h2>
+    <!-- Área Principal: Produtos e Carrinho -->
+    <div class="main-area">
+      <!-- Produtos Disponíveis -->
+      <div class="products-section">
+        <h2>Produtos Disponíveis</h2>
 
-      <div class="search-bar">
-        <input
-          type="text"
-          placeholder="Buscar produtos..."
-          bind:value={searchTerm}
-          class="search-input"
-        />
-      </div>
+        <div class="search-bar">
+          <input
+            type="text"
+            placeholder="Buscar produtos..."
+            bind:value={searchTerm}
+            class="search-input"
+          />
+        </div>
 
-      <div class="products-grid">
-        {#each availableProducts as item (item.id)}
-          <div class="product-card">
-            <div class="product-info">
-              <h3 class="product-title">
-                {#each $propertyDefinitions as prop}
-                  {#if prop.id === "type" || prop.id === "brand"}
-                    <span class="property-value"
-                      >{item.properties[prop.id] || "-"}</span
-                    >
-                  {/if}
-                {/each}
-              </h3>
-
-              <div class="product-details">
-                {#each $propertyDefinitions as prop}
-                  {#if prop.id !== "type" && prop.id !== "brand"}
-                    <div class="detail">
-                      <span class="detail-label">{prop.name}:</span>
-                      <span class="detail-value"
+        <div class="products-grid">
+          {#each availableProducts as item (item.id)}
+            <div class="product-card">
+              <div class="product-info">
+                <h3 class="product-title">
+                  {#each $propertyDefinitions as prop}
+                    {#if prop.id === "type" || prop.id === "brand"}
+                      <span class="property-value"
                         >{item.properties[prop.id] || "-"}</span
                       >
-                    </div>
-                  {/if}
-                {/each}
+                    {/if}
+                  {/each}
+                </h3>
 
-                <div class="detail">
-                  <span class="detail-label">Estoque:</span>
-                  <span class="detail-value">{item.quantity} un.</span>
+                <div class="product-details">
+                  {#each $propertyDefinitions as prop}
+                    {#if prop.id !== "type" && prop.id !== "brand"}
+                      <div class="detail">
+                        <span class="detail-label">{prop.name}:</span>
+                        <span class="detail-value"
+                          >{item.properties[prop.id] || "-"}</span
+                        >
+                      </div>
+                    {/if}
+                  {/each}
+
+                  <div class="detail">
+                    <span class="detail-label">Estoque:</span>
+                    <span class="detail-value">{item.quantity} un.</span>
+                  </div>
                 </div>
-              </div>
 
-              <div class="product-price">
-                R$ {getPrice(item).toFixed(2)}
-              </div>
-            </div>
-
-            <button
-              class="add-btn"
-              on:click={() => addToCart(item)}
-              disabled={item.quantity <= 0}
-            >
-              Adicionar
-            </button>
-          </div>
-        {/each}
-      </div>
-    </div>
-
-    <!-- Carrinho -->
-    <div class="cart-section">
-      <h2>Carrinho de Vendas</h2>
-
-      {#if cart.length === 0}
-        <div class="empty-cart">
-          <p>Carrinho vazio</p>
-          <span>Adicione produtos para iniciar uma venda</span>
-        </div>
-      {:else}
-        <div class="cart-items">
-          {#each cart as cartItem (cartItem.item.id)}
-            <div class="cart-item">
-              <div class="item-info">
-                <div class="item-name">
-                  {cartItem.item.properties.type}
-                  {cartItem.item.properties.brand}
+                <div class="product-price">
+                  R$ {getPrice(item).toFixed(2)}
                 </div>
-                <div class="item-details">
-                  {cartItem.item.properties.color} - {cartItem.item.properties
-                    .size}
-                </div>
-                <div class="item-price">
-                  R$ {getPrice(cartItem.item).toFixed(2)} cada
-                </div>
-              </div>
-
-              <div class="quantity-controls">
-                <button
-                  class="qty-btn"
-                  on:click={() =>
-                    updateCartQuantity(cartItem.item.id, cartItem.quantity - 1)}
-                >
-                  -
-                </button>
-                <span class="quantity">{cartItem.quantity}</span>
-                <button
-                  class="qty-btn"
-                  on:click={() =>
-                    updateCartQuantity(cartItem.item.id, cartItem.quantity + 1)}
-                  disabled={cartItem.quantity >= cartItem.item.quantity}
-                >
-                  +
-                </button>
-              </div>
-
-              <div class="item-total">
-                R$ {(cartItem.quantity * getPrice(cartItem.item)).toFixed(2)}
               </div>
 
               <button
-                class="remove-btn"
-                on:click={() => removeFromCart(cartItem.item.id)}
+                class="add-btn"
+                on:click={() => addToCart(item)}
+                disabled={item.quantity <= 0}
               >
-                ❌
+                Adicionar
               </button>
             </div>
           {/each}
         </div>
+      </div>
 
-        <div class="cart-summary">
-          <div class="total">
-            <strong>Total: R$ {total.toFixed(2)}</strong>
-            {#if paymentType === "installments" && total > 0}
-              <div class="installment-info">
-                {numberOfInstallments}x de R$ {(
-                  total / numberOfInstallments
-                ).toFixed(2)}
+      <!-- Carrinho -->
+      <div class="cart-section">
+        <h2>Carrinho de Vendas</h2>
+
+        {#if cart.length === 0}
+          <div class="empty-cart">
+            <p>Carrinho vazio</p>
+            <span>Adicione produtos para iniciar uma venda</span>
+          </div>
+        {:else}
+          <div class="cart-items">
+            {#each cart as cartItem (cartItem.item.id)}
+              <div class="cart-item">
+                <div class="item-info">
+                  <div class="item-name">
+                    {cartItem.item.properties.type}
+                    {cartItem.item.properties.brand}
+                  </div>
+                  <div class="item-details">
+                    {cartItem.item.properties.color} - {cartItem.item.properties
+                      .size}
+                  </div>
+                  <div class="item-price">
+                    R$ {getPrice(cartItem.item).toFixed(2)} cada
+                  </div>
+                </div>
+
+                <div class="quantity-controls">
+                  <button
+                    class="qty-btn"
+                    on:click={() =>
+                      updateCartQuantity(
+                        cartItem.item.id,
+                        cartItem.quantity - 1
+                      )}
+                  >
+                    -
+                  </button>
+                  <span class="quantity">{cartItem.quantity}</span>
+                  <button
+                    class="qty-btn"
+                    on:click={() =>
+                      updateCartQuantity(
+                        cartItem.item.id,
+                        cartItem.quantity + 1
+                      )}
+                    disabled={cartItem.quantity >= cartItem.item.quantity}
+                  >
+                    +
+                  </button>
+                </div>
+
+                <div class="item-total">
+                  R$ {(cartItem.quantity * getPrice(cartItem.item)).toFixed(2)}
+                </div>
+
+                <button
+                  class="remove-btn"
+                  on:click={() => removeFromCart(cartItem.item.id)}
+                >
+                  ❌
+                </button>
               </div>
-            {/if}
+            {/each}
           </div>
 
-          <div class="cart-actions">
-            <button class="clear-btn" on:click={clearCart}>
-              Limpar Carrinho
-            </button>
-            <button
-              class="finalize-btn"
-              on:click={finalizeSale}
-              disabled={paymentType === "installments" && !selectedCustomer}
-            >
-              Finalizar Venda
-            </button>
+          <div class="cart-summary">
+            <div class="total">
+              <strong>Total: R$ {total.toFixed(2)}</strong>
+              {#if paymentType === "installments" && total > 0}
+                <div class="installment-info">
+                  {numberOfInstallments}x de R$ {(
+                    total / numberOfInstallments
+                  ).toFixed(2)}
+                </div>
+              {/if}
+            </div>
+
+            <div class="cart-actions">
+              <button class="clear-btn" on:click={clearCart}>
+                Limpar Carrinho
+              </button>
+              <button
+                class="finalize-btn"
+                on:click={finalizeSale}
+                disabled={paymentType === "installments" && !selectedCustomer}
+              >
+                Finalizar Venda
+              </button>
+            </div>
           </div>
-        </div>
-      {/if}
+        {/if}
+      </div>
     </div>
   </div>
 </div>
@@ -432,10 +441,17 @@
   }
 
   .sales-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-height: 600px;
+  }
+
+  /* Área Principal: Produtos e Carrinho */
+  .main-area {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 2rem;
-    min-height: 600px;
   }
 
   /* Controles de Venda */
@@ -805,8 +821,17 @@
 
   /* Responsivo */
   @media (max-width: 768px) {
-    .sales-content {
+    .main-area {
       grid-template-columns: 1fr;
+    }
+
+    .sale-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .control-group {
+      min-width: auto;
     }
 
     .products-grid {
