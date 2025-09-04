@@ -12,8 +12,10 @@
     dispatch("close");
   }
 
-  function formatCurrency(value: number): string {
-    return `R$ ${value.toFixed(2).replace(".", ",")}`;
+  function formatCurrency(value: any): string {
+    // Converter para número se necessário
+    const numValue = typeof value === "number" ? value : parseFloat(value) || 0;
+    return `R$ ${numValue.toFixed(2).replace(".", ",")}`;
   }
 
   function getPaymentTypeLabel(type: string): string {

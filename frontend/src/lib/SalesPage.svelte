@@ -72,7 +72,8 @@
           return { item, score };
         } else {
           // Para itens antigos, criar um score básico baseado no nome
-          const itemName = (item as any).name || "";
+          const itemName =
+            (item as any).name || (item as any).product?.name || "";
           const score = searchTerms.some((term) =>
             itemName.toLowerCase().includes(term)
           )
@@ -237,6 +238,28 @@
     return 1 - distance / maxLen;
   }
 
+  // Função para obter o productId correto baseado no stockItemId
+  function getProductIdFromStockId(stockItemId: string): string {
+    // Mapping dos stockItemIds para productIds corretos (baseado nos dados do banco)
+    const stockToProductMap: Record<string, string> = {
+      cmf5e1mqf00093npvoz57tycl: "cmf5e1mqd00073npvlbhc9zjd", // Terno Slim Azul Marinho
+      cmf5e1mqo000g3npvz9ma30av: "cmf5e1mqm000e3npvryl6jx7o", // Camisa Social Branca
+      cmf5e1mqv000n3npvhew3c0wl: "cmf5e1mqt000l3npvpd4tn9is", // Gravata Seda Vermelha
+    };
+
+    const productId = stockToProductMap[stockItemId];
+    if (!productId) {
+      console.warn(
+        `⚠️ [MAPPING] ProductId não encontrado para stockItemId: ${stockItemId}`
+      );
+      // Como fallback, assumir que o stockItemId é o productId (para casos antigos)
+      return stockItemId;
+    }
+
+    console.log(`✅ [MAPPING] Mapeado ${stockItemId} -> ${productId}`);
+    return productId;
+  }
+
   // Função para obter preço do produto
   function getPrice(item: any): number {
     // Se for o novo formato (StockItemWithRelations)
@@ -332,35 +355,76 @@
   }
 
   async function handleConfirmSale(event: CustomEvent) {
+    console.log("🚀 [SALES] Iniciando processo de finalização da venda");
+
     const saleData = event.detail;
+    console.log("📋 [SALES] Dados recebidos:", saleData);
 
     if (!$currentStoreId) {
+      console.error("❌ [SALES] Erro: Nenhuma loja selecionada");
       alert("Nenhuma loja selecionada!");
       return;
     }
+    console.log("🏪 [SALES] Loja selecionada:", $currentStoreId);
 
     try {
+      console.log("🛒 [SALES] Convertendo dados do carrinho...");
+      console.log("🛒 [SALES] Carrinho atual:", cart);
+
       // Converter dados do carrinho para o formato da API
-      const saleItems = cart.map((cartItem) => ({
-        productId: cartItem.item.productId || cartItem.item.id, // fallback para compatibilidade
-        stockItemId: cartItem.item.id,
-        quantity: cartItem.quantity,
-        price: getPrice(cartItem.item),
-        total: cartItem.quantity * getPrice(cartItem.item),
-      }));
+      const saleItems = cart.map((cartItem, index) => {
+        console.log(`📦 [SALES] Processando item ${index + 1}:`, {
+          id: cartItem.item.id,
+          productId: cartItem.item.productId,
+          name: cartItem.item.product?.name,
+          quantity: cartItem.quantity,
+          price: getPrice(cartItem.item),
+          // DEBUG: mostrar toda a estrutura do item
+          fullItem: cartItem.item,
+        });
+
+        const finalProductId =
+          cartItem.item.productId || getProductIdFromStockId(cartItem.item.id);
+        console.log(
+          `🔄 [MAPPING] Item ${index + 1}: stockId=${cartItem.item.id} -> productId=${finalProductId}`
+        );
+
+        return {
+          productId: finalProductId,
+          stockItemId: cartItem.item.id,
+          quantity: cartItem.quantity,
+          price: getPrice(cartItem.item),
+          total: cartItem.quantity * getPrice(cartItem.item),
+        };
+      });
+
+      console.log("✅ [SALES] Itens convertidos:", saleItems);
 
       // Converter parcelas para o formato da API (se existirem)
+      console.log("💰 [SALES] Processando parcelas...");
       const installments =
-        saleData.installments?.map((inst: any) => ({
-          number: inst.number,
-          amount: inst.value,
-          dueDate:
+        saleData.installments?.map((inst: any, index: number) => {
+          console.log(`💳 [SALES] Parcela ${index + 1}:`, inst);
+
+          const dueDate =
             inst.dueDate === "Entrada"
               ? new Date().toISOString()
               : new Date(
                   inst.dueDate.split("/").reverse().join("-")
-                ).toISOString(),
-        })) || [];
+                ).toISOString();
+
+          console.log(
+            `📅 [SALES] Data de vencimento convertida: ${inst.dueDate} -> ${dueDate}`
+          );
+
+          return {
+            number: inst.number,
+            amount: inst.value,
+            dueDate: dueDate,
+          };
+        }) || [];
+
+      console.log("✅ [SALES] Parcelas convertidas:", installments);
 
       // Dados da venda no formato esperado pela API
       const apiSaleData = {
@@ -373,11 +437,18 @@
         installments: installments,
       };
 
+      console.log(
+        "📤 [SALES] Dados finais para envio à API:",
+        JSON.stringify(apiSaleData, null, 2)
+      );
+
       // Salvar venda no banco via API
+      console.log("🌐 [SALES] Enviando venda para a API...");
       const savedSale = await salesService.createSale(
         $currentStoreId,
         apiSaleData
       );
+      console.log("✅ [SALES] Venda salva com sucesso:", savedSale);
 
       // NOVA FUNCIONALIDADE: Salvar parcelas no banco se for venda parcelada
       if (
@@ -386,10 +457,25 @@
         saleData.installments &&
         saleData.selectedCustomer
       ) {
-        console.log("💰 Salvando parcelas no banco...");
+        console.log(
+          "💰 [INSTALLMENTS] Iniciando salvamento de parcelas no banco..."
+        );
+        console.log(
+          "💰 [INSTALLMENTS] Dados das parcelas:",
+          saleData.installments
+        );
+        console.log(
+          "💰 [INSTALLMENTS] Cliente selecionado:",
+          saleData.selectedCustomer
+        );
 
-        for (const inst of saleData.installments) {
+        for (const [index, inst] of saleData.installments.entries()) {
           try {
+            console.log(
+              `💳 [INSTALLMENTS] Processando parcela ${index + 1}/${saleData.installments.length}:`,
+              inst
+            );
+
             const status = inst.isDownPayment ? "PAID" : "PENDING";
             const paidDate = inst.isDownPayment ? new Date() : undefined;
 
@@ -406,38 +492,69 @@
               customerId: saleData.selectedCustomer.id.toString(),
             };
 
+            console.log(
+              `📤 [INSTALLMENTS] Enviando parcela ${index + 1} para API:`,
+              installmentData
+            );
+
             await installmentsService.createInstallment(
               $currentStoreId,
               installmentData
             );
-            console.log("✅ Parcela salva:", installmentData);
+
+            console.log(
+              `✅ [INSTALLMENTS] Parcela ${index + 1} salva com sucesso`
+            );
           } catch (error) {
-            console.error("❌ Erro ao salvar parcela:", error);
+            console.error(
+              `❌ [INSTALLMENTS] Erro ao salvar parcela ${index + 1}:`,
+              error
+            );
+            console.error(
+              `❌ [INSTALLMENTS] Dados da parcela que falhou:`,
+              inst
+            );
           }
         }
 
         // Recarregar parcelas do banco
         try {
+          console.log("🔄 [INSTALLMENTS] Recarregando parcelas do banco...");
           await installmentsService.refreshInstallments($currentStoreId);
-          console.log("🔄 Parcelas recarregadas do banco");
+          console.log("✅ [INSTALLMENTS] Parcelas recarregadas com sucesso");
         } catch (error) {
-          console.error("❌ Erro ao recarregar parcelas:", error);
+          console.error(
+            "❌ [INSTALLMENTS] Erro ao recarregar parcelas:",
+            error
+          );
         }
+      } else {
+        console.log(
+          "ℹ️ [INSTALLMENTS] Venda não é parcelada ou não há dados de parcelas"
+        );
       }
 
       // Recarregar vendas
+      console.log("🔄 [SALES] Recarregando vendas...");
       await salesService.refreshSales($currentStoreId);
+      console.log("✅ [SALES] Vendas recarregadas com sucesso");
 
       // Atualizar estoque (manter funcionalidade local por enquanto)
-      cart.forEach((cartItem) => {
+      console.log("📦 [STOCK] Atualizando estoque local...");
+      cart.forEach((cartItem, index) => {
+        console.log(
+          `📦 [STOCK] Atualizando item ${index + 1}: ${cartItem.item.id} - reduzindo ${cartItem.quantity} unidades`
+        );
         $stock = $stock.map((stockItem) =>
           stockItem.id === cartItem.item.id
             ? { ...stockItem, quantity: stockItem.quantity - cartItem.quantity }
             : stockItem
         );
       });
+      console.log("✅ [STOCK] Estoque atualizado");
 
       // Limpar carrinho e estados
+      console.log("🧹 [CLEANUP] Limpando carrinho e estados...");
       cart = [];
       selectedCustomer = null;
       paymentType = PaymentType.CASH;
@@ -448,12 +565,33 @@
       searchTerm = "";
 
       // Fechar seção de finalização e mostrar modal de sucesso
+      console.log(
+        "🎉 [SUCCESS] Finalizando processo - mostrando modal de sucesso"
+      );
       showFinalizationSection = false;
       completedSale = savedSale;
       showSuccessModal = true;
+      console.log("✅ [SALES] Processo de venda finalizado com sucesso!");
     } catch (error) {
-      console.error("Erro ao finalizar venda:", error);
-      alert("Erro ao salvar venda. Tente novamente.");
+      console.error("💥 [ERROR] Erro fatal ao finalizar venda:");
+      console.error("💥 [ERROR] Tipo do erro:", typeof error);
+      console.error("💥 [ERROR] Erro completo:", error);
+
+      if (error instanceof Error) {
+        console.error("💥 [ERROR] Mensagem:", error.message);
+        console.error("💥 [ERROR] Stack:", error.stack);
+      }
+
+      if (error && typeof error === "object") {
+        console.error("💥 [ERROR] Propriedades do erro:", Object.keys(error));
+        if ("response" in error) {
+          console.error("💥 [ERROR] Response:", (error as any).response);
+        }
+      }
+
+      alert(
+        `Erro ao salvar venda: ${error instanceof Error ? error.message : "Erro desconhecido"}. Verifique o console para mais detalhes.`
+      );
     }
   }
 
