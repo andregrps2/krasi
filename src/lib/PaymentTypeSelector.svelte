@@ -220,26 +220,35 @@
         <h4>📋 Prévia das Parcelas</h4>
       {/if}
 
-      <!-- Uma coluna para todas as parcelas -->
-      <div class="installments-table single-column">
-        <div class="table-header">
-          <span>Parcela</span>
-          <span>Vencimento</span>
-          <span>Valor</span>
-        </div>
-        {#each installmentsList as installment}
-          <div class="table-row">
-            <span class="installment-number">{installment.number}ª</span>
-            <span class="installment-date">{installment.dueDate}</span>
-            <span class="installment-value"
-              >{formatCurrency(installment.value)}</span
-            >
+      <!-- Tabela compacta e elegante -->
+      <div class="installments-table-container">
+        <div class="installments-grid">
+          <!-- Header -->
+          <div class="grid-header">
+            <div class="header-cell">Parcela</div>
+            <div class="header-cell">Vencimento</div>
+            <div class="header-cell">Valor</div>
           </div>
-        {/each}
-        <div class="table-footer">
-          <span>Total:</span>
-          <span></span>
-          <span class="total-value">{formatCurrency(total)}</span>
+
+          <!-- Rows -->
+          <div class="grid-body">
+            {#each installmentsList as installment, index}
+              <div class="grid-row" class:even={index % 2 === 0}>
+                <div class="cell installment-number">{installment.number}ª</div>
+                <div class="cell installment-date">{installment.dueDate}</div>
+                <div class="cell installment-value">
+                  {formatCurrency(installment.value)}
+                </div>
+              </div>
+            {/each}
+          </div>
+
+          <!-- Footer -->
+          <div class="grid-footer">
+            <div class="footer-cell">Total</div>
+            <div class="footer-cell"></div>
+            <div class="footer-cell total-amount">{formatCurrency(total)}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -299,7 +308,7 @@
   /* Prévia das Parcelas */
   .installments-preview {
     margin-top: 1rem;
-    padding: 1rem;
+    padding: 0;
     max-height: none;
     overflow: visible;
     display: flex;
@@ -307,79 +316,135 @@
   }
 
   .installments-preview h4 {
-    margin: 0 0 0.8rem 0;
+    margin: 0 0 0.5rem 0;
     color: var(--text-accent);
-    font-size: 0.9rem;
-    padding-bottom: 0.5rem;
+    font-size: 0.8rem;
+    padding-bottom: 0.3rem;
     flex-shrink: 0;
   }
 
-  .installments-table {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
+  /* Container da tabela */
+  .installments-table-container {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+    border-radius: 6px;
+    padding: 0.6rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    border: 1px solid #333;
   }
 
-  .installments-table.single-column {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
+  .installments-grid {
+    width: 100%;
+    overflow: hidden;
   }
 
-  .table-header {
+  /* Header da tabela */
+  .grid-header {
     display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr;
+    grid-template-columns: 60px 1fr 100px;
     gap: 0.5rem;
-    padding: 0.4rem 0.6rem;
-    font-weight: 600;
+    padding: 0.5rem 0.7rem;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #e6b800 100%);
+    border-radius: 4px 4px 0 0;
+    margin-bottom: 1px;
+  }
+
+  .header-cell {
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: #000;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* Body da tabela */
+  .grid-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .grid-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px;
+    gap: 0.5rem;
+    padding: 0.4rem 0.7rem;
+    background: #1a1a1a;
+    transition: all 0.15s ease;
+  }
+
+  .grid-row:hover {
+    background: #252525;
+    transform: translateX(1px);
+  }
+
+  .grid-row.even {
+    background: #1e1e1e;
+  }
+
+  .grid-row.even:hover {
+    background: #282828;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+
+  .installment-number {
+    justify-content: center;
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 0.8rem;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 3px;
+    padding: 0.1rem 0.3rem;
+  }
+
+  .installment-date {
+    justify-content: center;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.75rem;
+  }
+
+  .installment-value {
+    justify-content: flex-end;
+    color: #4ade80;
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+
+  /* Footer da tabela */
+  .grid-footer {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px;
+    gap: 0.5rem;
+    padding: 0.5rem 0.7rem;
+    background: linear-gradient(135deg, #333 0%, #2a2a2a 100%);
+    border-radius: 0 0 4px 4px;
+    border-top: 2px solid var(--primary-color);
+    margin-top: 1px;
+  }
+
+  .footer-cell {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
     font-size: 0.75rem;
     color: var(--text-accent);
   }
 
-  .table-row {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr;
-    gap: 0.5rem;
-    padding: 0.4rem 0.6rem;
-    font-size: 0.8rem;
-    align-items: center;
+  .footer-cell:first-child {
+    justify-content: center;
   }
 
-  .table-row:hover {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .installment-number {
-    color: var(--primary-color);
-    font-weight: 600;
-  }
-
-  .installment-date {
-    color: #fff;
-    text-align: center;
-  }
-
-  .installment-value {
-    color: #4ade80;
-    font-weight: 600;
-    text-align: right;
-  }
-
-  .table-footer {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr;
-    gap: 0.5rem;
-    padding: 0.4rem 0.6rem;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--text-accent);
-    margin-top: 0.3rem;
-  }
-
-  .total-value {
-    color: #4ade80;
-    text-align: right;
-    font-size: 0.9rem;
+  .total-amount {
+    justify-content: flex-end !important;
+    color: #4ade80 !important;
+    font-size: 0.85rem !important;
+    text-shadow: 0 0 6px rgba(74, 222, 128, 0.3);
   }
 
   /* Responsivo */
@@ -392,6 +457,50 @@
 
     .control-group {
       justify-content: space-between;
+    }
+
+    .installments-table-container {
+      padding: 0.5rem;
+    }
+
+    .grid-header,
+    .grid-row,
+    .grid-footer {
+      grid-template-columns: 50px 1fr 90px;
+      gap: 0.4rem;
+      padding: 0.4rem 0.6rem;
+    }
+
+    .header-cell,
+    .footer-cell {
+      font-size: 0.65rem;
+    }
+
+    .cell {
+      font-size: 0.7rem;
+    }
+
+    .installment-number {
+      font-size: 0.7rem;
+      padding: 0.05rem 0.2rem;
+    }
+
+    .total-amount {
+      font-size: 0.8rem !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .grid-header,
+    .grid-row,
+    .grid-footer {
+      grid-template-columns: 45px 1fr 80px;
+      gap: 0.3rem;
+      padding: 0.3rem 0.5rem;
+    }
+
+    .installments-table-container {
+      padding: 0.4rem;
     }
   }
 </style>
