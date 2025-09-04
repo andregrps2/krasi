@@ -164,66 +164,71 @@
   {#if !previewOnly}
     <div class="payment-form">
       <div class="payment-controls">
-        <div class="control-group">
-          <label for="payment-select">Pagamento:</label>
-          <select
-            id="payment-select"
-            bind:value={paymentType}
-            class="enhanced-select"
-            on:change={() => {
-              dispatch("paymentChange", {
-                paymentType,
-                numberOfInstallments,
-                dueDay,
-                firstInstallmentMonth,
-                firstInstallmentYear,
-                hasDownPayment,
-                downPaymentValue: Number(downPaymentValue) || 0,
-              });
-            }}
-          >
-            <option value="cash">💰 À Vista</option>
-            <option value="pix">📱 PIX</option>
-            <option value="card">💳 Cartão</option>
-            <option value="installments">📋 Parcelado</option>
-          </select>
+        <!-- Primeira linha: Pagamento e Parcelas lado a lado -->
+        <div class="payment-row">
+          <div class="control-group">
+            <label for="payment-select">Pagamento:</label>
+            <select
+              id="payment-select"
+              bind:value={paymentType}
+              class="enhanced-select"
+              on:change={() => {
+                dispatch("paymentChange", {
+                  paymentType,
+                  numberOfInstallments,
+                  dueDay,
+                  firstInstallmentMonth,
+                  firstInstallmentYear,
+                  hasDownPayment,
+                  downPaymentValue: Number(downPaymentValue) || 0,
+                });
+              }}
+            >
+              <option value="cash">💰 À Vista</option>
+              <option value="pix">📱 PIX</option>
+              <option value="card">💳 Cartão</option>
+              <option value="installments">📋 Parcelado</option>
+            </select>
+          </div>
+
+          {#if paymentType === "installments"}
+            <div class="control-group">
+              <label for="installments-select">Parcelas:</label>
+              <select
+                id="installments-select"
+                bind:value={numberOfInstallments}
+                class="enhanced-select small"
+                on:change={() => {
+                  dispatch("paymentChange", {
+                    paymentType,
+                    numberOfInstallments,
+                    dueDay,
+                    firstInstallmentMonth,
+                    firstInstallmentYear,
+                    hasDownPayment,
+                    downPaymentValue: Number(downPaymentValue) || 0,
+                  });
+                }}
+              >
+                <option value={2}>2x</option>
+                <option value={3}>3x</option>
+                <option value={4}>4x</option>
+                <option value={5}>5x</option>
+                <option value={6}>6x</option>
+                <option value={7}>7x</option>
+                <option value={8}>8x</option>
+                <option value={9}>9x</option>
+                <option value={10}>10x</option>
+                <option value={11}>11x</option>
+                <option value={12}>12x</option>
+              </select>
+            </div>
+          {/if}
         </div>
 
         {#if paymentType === "installments"}
           <div class="installment-controls">
             <div class="control-row">
-              <div class="control-group">
-                <label for="installments-select">Parcelas:</label>
-                <select
-                  id="installments-select"
-                  bind:value={numberOfInstallments}
-                  class="enhanced-select small"
-                  on:change={() => {
-                    dispatch("paymentChange", {
-                      paymentType,
-                      numberOfInstallments,
-                      dueDay,
-                      firstInstallmentMonth,
-                      firstInstallmentYear,
-                      hasDownPayment,
-                      downPaymentValue: Number(downPaymentValue) || 0,
-                    });
-                  }}
-                >
-                  <option value={2}>2x</option>
-                  <option value={3}>3x</option>
-                  <option value={4}>4x</option>
-                  <option value={5}>5x</option>
-                  <option value={6}>6x</option>
-                  <option value={7}>7x</option>
-                  <option value={8}>8x</option>
-                  <option value={9}>9x</option>
-                  <option value={10}>10x</option>
-                  <option value={11}>11x</option>
-                  <option value={12}>12x</option>
-                </select>
-              </div>
-
               <div class="control-group">
                 <label for="due-day-select">Venc.:</label>
                 <select
@@ -336,9 +341,9 @@
               </div>
 
               {#if hasDownPayment}
-                <div class="control-group">
-                  <label for="down-payment-input"
-                    >💰 Valor da Entrada (R$):</label
+                <div class="entry-input-row">
+                  <label for="down-payment-input" class="entry-label"
+                    >Valor (R$):</label
                   >
                   <input
                     id="down-payment-input"
@@ -349,7 +354,7 @@
                     value={downPaymentValue === 0 || downPaymentValue === ""
                       ? ""
                       : downPaymentValue}
-                    class="enhanced-input price-input"
+                    class="enhanced-input price-input-compact"
                     placeholder="0,00"
                     on:input={(e) => {
                       const target = e.currentTarget as HTMLInputElement;
@@ -457,6 +462,13 @@
     gap: 0.6rem;
   }
 
+  .payment-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: end;
+    flex-wrap: wrap;
+  }
+
   .control-row {
     display: flex;
     gap: 0.6rem;
@@ -475,11 +487,56 @@
   .down-payment-section {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-    padding: 0.6rem;
+    gap: 0.5rem;
+    padding: 0.5rem;
     background: rgba(255, 215, 0, 0.05);
     border: 1px solid rgba(255, 215, 0, 0.2);
     border-radius: 6px;
+  }
+
+  .entry-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .entry-label {
+    color: var(--text-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: fit-content;
+  }
+
+  .price-input-compact {
+    font-size: 0.9rem !important;
+    font-weight: 600;
+    text-align: right;
+    padding: 0.4rem 0.6rem !important;
+    min-height: 36px !important;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%) !important;
+    border: 2px solid #666 !important;
+    color: #4ade80 !important;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .price-input-compact:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3) !important;
+    background: linear-gradient(135deg, #333 0%, #2a2a2a 100%) !important;
+  }
+
+  /* Remover setinhas do input number compacto */
+  .price-input-compact::-webkit-outer-spin-button,
+  .price-input-compact::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .price-input-compact[type="number"] {
+    -moz-appearance: textfield;
   }
 
   .control-group {
@@ -808,6 +865,11 @@
       padding: 0.5rem;
     }
 
+    .payment-row {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
     .control-row {
       flex-direction: column;
       gap: 0.5rem;
@@ -818,7 +880,23 @@
     }
 
     .down-payment-section {
-      padding: 0.5rem;
+      padding: 0.4rem;
+    }
+
+    .entry-input-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.3rem;
+    }
+
+    .entry-label {
+      font-size: 0.7rem;
+    }
+
+    .price-input-compact {
+      font-size: 0.85rem !important;
+      padding: 0.35rem 0.5rem !important;
+      min-height: 32px !important;
     }
 
     .installments-table-container {
