@@ -193,21 +193,6 @@ export interface Cart {
   finalTotal: number;
 }
 
-// API Response types
-export interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
 // Form types
 export interface ProductFormData {
   name: string;
@@ -227,22 +212,6 @@ export interface CustomerFormData {
   birthDate?: string;
 }
 
-export interface SaleFormData {
-  customerId?: string;
-  paymentType: PaymentType;
-  discount?: number;
-  notes?: string;
-  items: {
-    stockItemId: string;
-    quantity: number;
-    price: number;
-  }[];
-  installments?: {
-    amount: number;
-    dueDate: string;
-  }[];
-}
-
 // Filter and search types
 export interface ProductFilters {
   search?: string;
@@ -251,40 +220,56 @@ export interface ProductFilters {
   active?: boolean;
 }
 
-export interface SaleFilters {
-  storeId?: string;
-  customerId?: string;
-  paymentType?: PaymentType;
-  status?: SaleStatus;
-  startDate?: string;
-  endDate?: string;
+// Legacy types for compatibility with existing components
+export interface PropertyDefinition {
+  id: string;
+  name: string;
+  type: 'text' | 'select';
+  options?: string[];
 }
 
-export interface InstallmentFilters {
-  storeId?: string;
-  customerId?: string;
-  status?: InstallmentStatus;
-  overdue?: boolean;
-  startDate?: string;
-  endDate?: string;
+export interface StockItemOld {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  brand: string;
+  category: string;
+  properties: Record<string, string>;
 }
 
-// Dashboard types
-export interface StoreDashboard {
-  salesToday: {
-    total: number;
-    count: number;
+export interface CustomerOld {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface PaymentTypeOld {
+  id: string;
+  name: string;
+  requiresCustomer?: boolean;
+}
+
+export interface ProductOld {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export interface StoreWithDetails extends Store {
+  company: Company;
+  stockItems: (StockItem & { product: Product })[];
+  customers: Customer[];
+  sales: (Sale & {
+    customer?: Customer;
+    saleItems: (SaleItem & { product: Product })[];
+    installments: Installment[];
+  })[];
+  _count: {
+    stockItems: number;
+    customers: number;
+    sales: number;
+    users: number;
   };
-  salesMonth: {
-    total: number;
-    count: number;
-  };
-  customersCount: number;
-  lowStockItems: StockItemWithRelations[];
-  pendingInstallments: InstallmentWithRelations[];
-  topProducts: Array<{
-    product?: Product;
-    quantity: number;
-    total: number;
-  }>;
 }

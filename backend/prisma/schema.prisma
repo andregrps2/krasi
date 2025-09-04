@@ -1,0 +1,224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Company {
+    id        String   @id @default(cuid())
+    name      String
+    cnpj      String   @unique
+    email     String?
+    phone     String?
+    address   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    stores Store[]
+
+    @@map("companies")
+}
+
+model Store {
+    id        String   @id @default(cuid())
+    name      String
+    address   String?
+    phone     String?
+    email     String?
+    isActive  Boolean  @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    companyId String
+    company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+    stockItems StockItem[]
+    customers  Customer[]
+    sales      Sale[]
+    users      User[]
+
+    @@map("stores")
+}
+
+model User {
+    id        String   @id @default(cuid())
+    name      String
+    email     String   @unique
+    password  String
+    role      UserRole @default(CASHIER)
+    isActive  Boolean  @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    storeId String
+    store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+    sales Sale[]
+
+    @@map("users")
+}
+
+enum UserRole {
+    ADMIN
+    MANAGER
+    CASHIER
+}
+
+model Product {
+    id          String  @id @default(cuid())
+    name        String
+    description String?
+    brand       String?
+    category    String?
+    barcode     String? @unique
+    unit        String  @default("un")
+    isActive    Boolean @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    stockItems StockItem[]
+    saleItems  SaleItem[]
+
+    @@map("products")
+}
+
+model StockItem {
+    id            String  @id @default(cuid())
+    quantity      Int     @default(0)
+    minQuantity   Int     @default(0)
+    maxQuantity   Int?
+    purchasePrice Decimal @db.Decimal(10, 2)
+    salePrice     Decimal @db.Decimal(10, 2)
+    isActive      Boolean @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    productId String
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    storeId String
+    store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+    saleItems SaleItem[]
+
+    @@unique([productId, storeId])
+    @@map("stock_items")
+}
+
+model Customer {
+    id        String    @id @default(cuid())
+    name      String
+    cpf       String?
+    phone     String?
+    email     String?
+    address   String?
+    birthDate DateTime?
+    isActive  Boolean   @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    storeId String
+    store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+    sales        Sale[]
+    installments Installment[]
+
+    @@map("customers")
+}
+
+model Sale {
+    id          String      @id @default(cuid())
+    total       Decimal     @db.Decimal(10, 2)
+    discount    Decimal?    @db.Decimal(10, 2)
+    paymentType PaymentType
+    status      SaleStatus  @default(COMPLETED)
+    notes       String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    customerId String?
+    customer   Customer? @relation(fields: [customerId], references: [id])
+
+    storeId String
+    store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    saleItems    SaleItem[]
+    installments Installment[]
+
+    @@map("sales")
+}
+
+enum PaymentType {
+    CASH
+    CARD
+    PIX
+    INSTALLMENTS
+    FIADO
+}
+
+enum SaleStatus {
+    PENDING
+    COMPLETED
+    CANCELLED
+    RETURNED
+}
+
+model SaleItem {
+    id       String  @id @default(cuid())
+    quantity Int
+    price    Decimal @db.Decimal(10, 2)
+    total    Decimal @db.Decimal(10, 2)
+
+    saleId String
+    sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+    productId String
+    product   Product @relation(fields: [productId], references: [id])
+
+    stockItemId String
+    stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+
+    @@map("sale_items")
+}
+
+model Installment {
+    id          String            @id @default(cuid())
+    number      Int
+    amount      Decimal           @db.Decimal(10, 2)
+    dueDate     DateTime
+    paidDate    DateTime?
+    status      InstallmentStatus @default(PENDING)
+    paymentType PaymentType?
+    notes       String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    saleId String
+    sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+    customerId String
+    customer   Customer @relation(fields: [customerId], references: [id])
+
+    @@map("installments")
+}
+
+enum InstallmentStatus {
+    PENDING
+    PAID
+    OVERDUE
+    CANCELLED
+}

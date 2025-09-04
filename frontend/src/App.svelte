@@ -1,17 +1,13 @@
-<script l  import type { Store } from './types';ng="ts">
+<script lang="ts">
   import Sidebar from "./lib/Sidebar.svelte";
   import StockPage from "./lib/StockPage.svelte";
   import SalesPage from "./lib/SalesPage.svelte";
   import ReportsPage from "./lib/ReportsPage.svelte";
   import CustomersPage from "./lib/CustomersPage.svelte";
   import InstallmentsPage from "./lib/InstallmentsPage.svelte";
-  import StoreSelector from "./lib/components/StoreSelector.svelte";
-  import StoreDashboard from "./lib/components/StoreDashboard.svelte";
-  import type { Store } from "../types-new";
 
-  // Estado da aplicação
-  let selectedStore: Store | null = null;
-  let currentPage = "dashboard";
+  // Estado da navegação
+  let currentPage = "estoque";
   let sidebarCollapsed = false;
   let isMobile = false;
 
@@ -44,58 +40,38 @@
   function toggleSidebar() {
     sidebarCollapsed = !sidebarCollapsed;
   }
-
-  function handleStoreSelected(event: CustomEvent<{ store: Store }>) {
-    selectedStore = event.detail.store;
-    currentPage = "dashboard";
-  }
-
-  function handleBackToStoreSelection() {
-    selectedStore = null;
-    currentPage = "dashboard";
-  }
 </script>
 
 <div class="app-container">
-  {#if !selectedStore}
-    <!-- Seleção de Loja -->
-    <StoreSelector on:storeSelected={handleStoreSelected} />
-  {:else}
-    <!-- Interface Principal -->
-    <!-- Overlay para mobile -->
-    {#if !sidebarCollapsed && isMobile}
-      <div class="sidebar-overlay" on:click={toggleSidebar}></div>
-    {/if}
-
-    <Sidebar
-      {currentPage}
-      {sidebarCollapsed}
-      storeName={selectedStore.name}
-      on:navigate={handleNavigation}
-      on:toggle={handleToggle}
-      on:backToStores={handleBackToStoreSelection}
-    />
-
-    <main
-      class="main-content"
-      class:sidebar-collapsed={sidebarCollapsed}
-      class:sales-page={currentPage === "vendas"}
-    >
-      {#if currentPage === "dashboard"}
-        <StoreDashboard store={selectedStore} />
-      {:else if currentPage === "vendas"}
-        <SalesPage />
-      {:else if currentPage === "estoque"}
-        <StockPage />
-      {:else if currentPage === "clientes"}
-        <CustomersPage />
-      {:else if currentPage === "fiado"}
-        <InstallmentsPage />
-      {:else if currentPage === "relatorios"}
-        <ReportsPage />
-      {/if}
-    </main>
+  <!-- Overlay para mobile -->
+  {#if !sidebarCollapsed && isMobile}
+    <div class="sidebar-overlay" on:click={toggleSidebar}></div>
   {/if}
+
+  <Sidebar
+    {currentPage}
+    {sidebarCollapsed}
+    on:navigate={handleNavigation}
+    on:toggle={handleToggle}
+  />
+
+  <main
+    class="main-content"
+    class:sidebar-collapsed={sidebarCollapsed}
+    class:sales-page={currentPage === "vendas"}
+  >
+    {#if currentPage === "vendas"}
+      <SalesPage />
+    {:else if currentPage === "estoque"}
+      <StockPage />
+    {:else if currentPage === "clientes"}
+      <CustomersPage />
+    {:else if currentPage === "fiado"}
+      <InstallmentsPage />
+    {:else if currentPage === "relatorios"}
+      <ReportsPage />
+    {/if}
+  </main>
 </div>
 
 <style>

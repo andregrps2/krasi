@@ -17,7 +17,246 @@ Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also pow
 - It brings its own routing solution which might not be preferable for some users.
 - It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+# Ricardo Estoque - Sistema Multi-Loja
+
+Sistema completo de gestão de estoque para múltiplas lojas com compartilhamento de produtos.
+
+## 🏗️ Arquitetura
+
+```
+ricardo-estoque/
+├── frontend/          # Aplicação Svelte + TypeScript
+├── backend/           # API Node.js + Express + Prisma
+├── shared/            # Tipos TypeScript compartilhados
+└── package.json       # Scripts unificados
+```
+
+## 🚀 Tecnologias
+
+### Frontend
+
+- **Svelte + TypeScript** - Framework reativo
+- **Vite** - Build tool
+- **Axios** - Cliente HTTP
+- **CSS Grid** - Layout responsivo
+
+### Backend
+
+- **Node.js + Express** - API REST
+- **Prisma ORM** - Banco de dados
+- **MySQL** - Database
+- **TypeScript** - Tipagem estática
+- **Zod** - Validação de dados
+
+### Banco de Dados
+
+- **MySQL** - Sistema multi-loja
+- **Produtos compartilhados** entre lojas
+- **Estoque independente** por loja
+- **Clientes por loja**
+- **Vendas e parcelas**
+
+## 📋 Pré-requisitos
+
+- Node.js 18+
+- MySQL 8.0+
+- npm 9+
+
+## 🛠️ Configuração
+
+### 1. Clone e instale dependências
+
+```bash
+npm run install:all
+```
+
+### 2. Configure o banco de dados
+
+Crie um banco MySQL:
+
+```sql
+CREATE DATABASE ricardo_estoque;
+```
+
+Configure o arquivo `.env` no backend:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Edite o `.env` com suas configurações:
+
+```env
+DATABASE_URL="mysql://usuario:senha@localhost:3306/ricardo_estoque"
+PORT=3001
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+```
+
+### 3. Configure o banco e execute migrations
+
+```bash
+# Gerar Prisma Client
+npm run db:generate
+
+# Executar migrations
+npm run db:migrate
+
+# Popular dados iniciais
+npm run db:seed
+```
+
+### 4. Inicie o desenvolvimento
+
+```bash
+# Inicia frontend + backend simultaneamente
+npm run dev
+
+# Ou separadamente:
+npm run dev:frontend  # http://localhost:5173
+npm run dev:backend   # http://localhost:3001
+```
+
+## 🎯 Funcionalidades
+
+### ✅ Implementado
+
+#### Backend
+
+- [x] API REST completa
+- [x] Schema do banco multi-loja
+- [x] Prisma ORM configurado
+- [x] Seed de dados iniciais
+- [x] Endpoints para produtos, estoque, vendas, clientes
+- [x] Validação com Zod
+- [x] CORS configurado
+
+#### Frontend
+
+- [x] Sistema de pagamentos com entrada
+- [x] Cálculo de parcelas exato
+- [x] Interface responsiva
+- [x] Componentes reutilizáveis
+- [x] Cliente API configurado
+- [x] Types TypeScript
+
+### 🚧 Em Desenvolvimento
+
+- [ ] Integração frontend ↔ backend
+- [ ] Autenticação e autorização
+- [ ] Relatórios e dashboards
+- [ ] Deploy em produção
+
+## 📊 Schema do Banco
+
+### Entidades Principais
+
+```
+Company (Empresa)
+├── Store (Lojas)
+    ├── User (Usuários)
+    ├── Customer (Clientes)
+    ├── Sale (Vendas)
+    └── StockItem (Estoque)
+
+Product (Produtos Compartilhados)
+├── StockItem (Estoque por Loja)
+└── SaleItem (Itens de Venda)
+
+Sale (Vendas)
+├── SaleItem (Itens)
+└── Installment (Parcelas)
+```
+
+### Características
+
+- **Produtos compartilhados** entre todas as lojas
+- **Estoque independente** para cada loja
+- **Clientes vinculados** à loja específica
+- **Vendas e parcelas** rastreadas por loja
+- **Usuários com permissões** por loja
+
+## 🔧 Scripts Disponíveis
+
+### Desenvolvimento
+
+```bash
+npm run dev                # Frontend + Backend
+npm run dev:frontend       # Apenas frontend
+npm run dev:backend        # Apenas backend
+```
+
+### Build
+
+```bash
+npm run build              # Build completo
+npm run build:frontend     # Build frontend
+npm run build:backend      # Build backend
+```
+
+### Banco de Dados
+
+```bash
+npm run db:generate        # Gerar Prisma Client
+npm run db:migrate         # Executar migrations
+npm run db:push           # Push schema (dev)
+npm run db:studio         # Abrir Prisma Studio
+npm run db:seed           # Popular dados iniciais
+```
+
+### Utilitários
+
+```bash
+npm run clean             # Limpar node_modules
+npm run type-check        # Verificar tipos TypeScript
+```
+
+## 🌐 URLs
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3001/api
+- **Health Check**: http://localhost:3001/health
+- **Prisma Studio**: http://localhost:5555
+
+## 📁 Estrutura Detalhada
+
+```
+├── frontend/
+│   ├── src/
+│   │   ├── lib/
+│   │   │   ├── api/          # Clientes API
+│   │   │   └── components/   # Componentes Svelte
+│   │   ├── types-new.ts      # Types atualizados
+│   │   └── main.ts
+│   └── package.json
+│
+├── backend/
+│   ├── src/
+│   │   ├── routes/          # Endpoints da API
+│   │   ├── index.ts         # Servidor Express
+│   │   └── seed.ts          # Dados iniciais
+│   ├── prisma/
+│   │   └── schema.prisma    # Schema do banco
+│   └── package.json
+│
+└── shared/
+    ├── src/
+    │   └── types.ts         # Types compartilhados
+    └── package.json
+```
+
+## 🎯 Próximos Passos
+
+1. **Integração API** - Conectar frontend aos endpoints
+2. **Autenticação** - Sistema de login/usuários
+3. **Dashboard** - Métricas e relatórios
+4. **Mobile** - App mobile para vendedores
+5. **Deploy** - Produção com Docker
+
+---
+
+**Status**: ✅ Monorepo configurado | 🚧 Integração em desenvolvimento
 
 Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
 
@@ -42,6 +281,6 @@ If you have state that's important to retain within a component, consider creati
 ```ts
 // store.ts
 // An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+import { writable } from "svelte/store";
+export default writable(0);
 ```

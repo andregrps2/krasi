@@ -268,23 +268,3 @@ export interface InstallmentFilters {
   startDate?: string;
   endDate?: string;
 }
-
-// Dashboard types
-export interface StoreDashboard {
-  salesToday: {
-    total: number;
-    count: number;
-  };
-  salesMonth: {
-    total: number;
-    count: number;
-  };
-  customersCount: number;
-  lowStockItems: StockItemWithRelations[];
-  pendingInstallments: InstallmentWithRelations[];
-  topProducts: Array<{
-    product?: Product;
-    quantity: number;
-    total: number;
-  }>;
-}
