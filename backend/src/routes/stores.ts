@@ -7,9 +7,9 @@ const router = Router();
 // Validation schemas
 const storeCreateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  email: z.string().email().optional(),
+  address: z.string().optional().transform(val => val === '' ? undefined : val),
+  phone: z.string().optional().transform(val => val === '' ? undefined : val),
+  email: z.string().email().optional().or(z.literal('')).transform(val => val === '' ? undefined : val),
   companyId: z.string().min(1, 'ID da empresa é obrigatório')
 });
 

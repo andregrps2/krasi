@@ -8,9 +8,9 @@ const router = Router();
 const companyCreateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   cnpj: z.string().min(1, 'CNPJ é obrigatório'),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional()
+  email: z.string().email().optional().or(z.literal('')).transform(val => val === '' ? undefined : val),
+  phone: z.string().optional().transform(val => val === '' ? undefined : val),
+  address: z.string().optional().transform(val => val === '' ? undefined : val)
 });
 
 // GET /api/companies - Listar empresas
