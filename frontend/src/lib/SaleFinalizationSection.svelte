@@ -2,14 +2,14 @@
   import { createEventDispatcher } from "svelte";
   import CustomerSelector from "./CustomerSelector.svelte";
   import PaymentTypeSelector from "./PaymentTypeSelector.svelte";
-  import type { Customer, PaymentType } from "../types";
+  import type { Customer, PaymentType } from "../types-new";
+  import { PaymentType as PaymentTypeEnum } from "../types-new";
 
   const dispatch = createEventDispatcher();
 
-  export let cart: { item: any; quantity: number }[] = [];
   export let total: number = 0;
   export let selectedCustomer: Customer | null = null;
-  export let paymentType: PaymentType = "cash";
+  export let paymentType: PaymentType = PaymentTypeEnum.CASH;
   export let numberOfInstallments: number = 2;
   export let dueDay: number = 10;
   export let firstInstallmentMonth: number = new Date().getMonth() + 1;
@@ -18,7 +18,10 @@
   export let downPaymentValue: number | string = "";
 
   // Garantir que quando mudar para "installments", numberOfInstallments seja pelo menos 2
-  $: if (paymentType === "installments" && numberOfInstallments < 2) {
+  $: if (
+    paymentType === PaymentTypeEnum.INSTALLMENTS &&
+    numberOfInstallments < 2
+  ) {
     numberOfInstallments = 2;
   }
 
@@ -41,7 +44,7 @@
     let installments: any[] = [];
     const entryValue = Number(downPaymentValue) || 0;
 
-    if (paymentType === "installments") {
+    if (paymentType === PaymentTypeEnum.INSTALLMENTS) {
       // Usar a mesma lógica do PaymentTypeSelector para garantir consistência
 
       // Se tem entrada, primeira parcela é a entrada
@@ -221,7 +224,7 @@
 
       <!-- Coluna Direita: Prévia das Parcelas -->
       <div class="preview-column">
-        {#if paymentType === "installments" && numberOfInstallments > 1}
+        {#if paymentType === PaymentTypeEnum.INSTALLMENTS && numberOfInstallments > 1}
           <div class="installments-preview-container">
             <h3>📋 Prévia das Parcelas</h3>
             {#key previewKey}
@@ -239,7 +242,7 @@
               />
             {/key}
           </div>
-        {:else if paymentType === "cash"}
+        {:else if paymentType === PaymentTypeEnum.CASH}
           <div class="installments-preview-container">
             <h3>📋 Prévia do Pagamento</h3>
             <div class="cash-preview">
@@ -250,7 +253,7 @@
               </p>
             </div>
           </div>
-        {:else if paymentType === "pix"}
+        {:else if paymentType === PaymentTypeEnum.PIX}
           <div class="installments-preview-container">
             <h3>📋 Prévia do Pagamento</h3>
             <div class="cash-preview">
@@ -261,7 +264,7 @@
               </p>
             </div>
           </div>
-        {:else if paymentType === "card"}
+        {:else if paymentType === PaymentTypeEnum.CARD}
           <div class="installments-preview-container">
             <h3>📋 Prévia do Pagamento</h3>
             <div class="cash-preview">

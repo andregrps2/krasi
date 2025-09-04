@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import { customers } from "../stores";
   import Modal from "./Modal.svelte";
-  import type { Customer } from "../types";
+  import type { Customer } from "../types-new";
 
   export let selectedCustomer: Customer | null = null;
   export let show: boolean = false;
@@ -18,8 +18,9 @@
     const term = customerSearchTerm.toLowerCase();
     return (
       customer.name.toLowerCase().includes(term) ||
-      customer.congregation.toLowerCase().includes(term) ||
-      customer.whatsappNumber.includes(term)
+      (customer.congregation &&
+        customer.congregation.toLowerCase().includes(term)) ||
+      (customer.whatsappNumber && customer.whatsappNumber.includes(term))
     );
   });
 
@@ -98,14 +99,18 @@
               <span class="customer-id">#{customer.id}</span>
             </div>
             <div class="customer-details">
-              <div class="detail-item">
-                <span class="detail-label">Congregação:</span>
-                <span class="detail-value">{customer.congregation}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">WhatsApp:</span>
-                <span class="detail-value">{customer.whatsappNumber}</span>
-              </div>
+              {#if customer.congregation}
+                <div class="detail-item">
+                  <span class="detail-label">Congregação:</span>
+                  <span class="detail-value">{customer.congregation}</span>
+                </div>
+              {/if}
+              {#if customer.whatsappNumber}
+                <div class="detail-item">
+                  <span class="detail-label">WhatsApp:</span>
+                  <span class="detail-value">{customer.whatsappNumber}</span>
+                </div>
+              {/if}
             </div>
           </button>
         {/each}

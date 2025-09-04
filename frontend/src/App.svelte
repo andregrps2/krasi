@@ -45,6 +45,7 @@
 <div class="app-container">
   <!-- Overlay para mobile -->
   {#if !sidebarCollapsed && isMobile}
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
     <div class="sidebar-overlay" on:click={toggleSidebar}></div>
   {/if}
 

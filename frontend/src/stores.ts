@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { PropertyDefinition, StockItem, Sale, Customer, Installment } from './types';
+import type { PropertyDefinition, StockItemOld as StockItem, Sale, Customer, Installment } from './types-new';
 
 /**
  * Cria uma Svelte store (writable) que sincroniza seu estado com o localStorage.
@@ -61,10 +61,13 @@ export const propertyDefinitions = createPersistentStore<PropertyDefinition[]>('
 
 const initialStock: StockItem[] = [
   {
-    id: 1,
+    id: "1",
+    name: 'Camisa Breda Preta GG',
+    price: 99.99,
     quantity: 19,
+    brand: 'Breda',
+    category: 'Camisa',
     properties: {
-      brand: 'Breda',
       type: 'Camisa',
       fabric: 'Poliéster',
       size: 'GG',
@@ -73,8 +76,12 @@ const initialStock: StockItem[] = [
     }
   },
   {
-    id: 2,
+    id: "2",
+    name: 'Camisa Breda Azul M',
+    price: 79.99,
     quantity: 12,
+    brand: 'Breda',
+    category: 'Camisa',
     properties: {
       brand: 'Breda',
       type: 'Camisa',
@@ -85,10 +92,13 @@ const initialStock: StockItem[] = [
     }
   },
   {
-    id: 3,
+    id: "3",
+    name: 'Terno Ricardo Preto G',
+    price: 299.99,
     quantity: 8,
+    brand: 'Ricardo',
+    category: 'Terno',
     properties: {
-      brand: 'Ricardo',
       type: 'Terno',
       fabric: 'Lã',
       size: 'G',
@@ -97,10 +107,13 @@ const initialStock: StockItem[] = [
     }
   },
   {
-    id: 4,
+    id: "4",
+    name: 'Palitó Breda Cinza P',
+    price: 199.99,
     quantity: 15,
+    brand: 'Breda',
+    category: 'Palitó',
     properties: {
-      brand: 'Breda',
       type: 'Palitó',
       fabric: 'Poliéster',
       size: 'P',
@@ -109,10 +122,13 @@ const initialStock: StockItem[] = [
     }
   },
   {
-    id: 5,
+    id: "5",
+    name: 'Camiseta Style Branca M',
+    price: 49.99,
     quantity: 25,
+    brand: 'Style',
+    category: 'Camiseta',
     properties: {
-      brand: 'Style',
       type: 'Camiseta',
       fabric: 'Algodão',
       size: 'M',
@@ -121,8 +137,12 @@ const initialStock: StockItem[] = [
     }
   },
   {
-    id: 6,
+    id: "6",
+    name: 'Sapato Comfort Marrom 42',
+    price: 159.99,
     quantity: 6,
+    brand: 'Comfort',
+    category: 'Sapato',
     properties: {
       brand: 'Comfort',
       type: 'Sapato',

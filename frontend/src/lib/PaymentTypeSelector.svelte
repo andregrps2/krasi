@@ -1,14 +1,13 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { PaymentType, Customer } from "../types";
+  import type { PaymentType, Customer } from "../types-new";
+  import { PaymentType as PaymentTypeEnum } from "../types-new";
 
   const dispatch = createEventDispatcher();
 
   // Props
-  export let selectedCustomer: Customer | null = null;
-  export let paymentType: PaymentType = "cash";
+  export let paymentType: PaymentType = PaymentTypeEnum.CASH;
   export let numberOfInstallments = 2;
-  export let installmentFrequency = 30;
   export let dueDay = 10;
   export let firstInstallmentMonth = new Date().getMonth() + 1;
   export let firstInstallmentYear = new Date().getFullYear();
@@ -29,9 +28,11 @@
     }).format(value);
   }
 
-  // Função para calcular as parcelas
+  // Calcular parcelas
+  $: installmentsList = calculateInstallments();
+
   function calculateInstallments() {
-    if (paymentType !== "installments" || total === 0) return [];
+    if (paymentType !== PaymentTypeEnum.INSTALLMENTS || total === 0) return [];
 
     // Garantir que downPaymentValue é um número
     const entryValue = Number(downPaymentValue) || 0;
@@ -184,14 +185,14 @@
                 });
               }}
             >
-              <option value="cash">💰 À Vista</option>
-              <option value="pix">📱 PIX</option>
-              <option value="card">💳 Cartão</option>
-              <option value="installments">📋 Parcelado</option>
+              <option value={PaymentTypeEnum.CASH}>💰 À Vista</option>
+              <option value={PaymentTypeEnum.PIX}>📱 PIX</option>
+              <option value={PaymentTypeEnum.CARD}>💳 Cartão</option>
+              <option value={PaymentTypeEnum.INSTALLMENTS}>📋 Parcelado</option>
             </select>
           </div>
 
-          {#if paymentType === "installments"}
+          {#if paymentType === PaymentTypeEnum.INSTALLMENTS}
             <div class="control-group">
               <label for="installments-select">Parcelas:</label>
               <select
@@ -226,7 +227,7 @@
           {/if}
         </div>
 
-        {#if paymentType === "installments"}
+        {#if paymentType === PaymentTypeEnum.INSTALLMENTS}
           <div class="installment-controls">
             <div class="control-row">
               <div class="control-group">
@@ -381,7 +382,7 @@
   {/if}
 
   <!-- Prévia das Parcelas -->
-  {#if (showPreview || previewOnly) && paymentType === "installments" && installmentsList.length > 0}
+  {#if (showPreview || previewOnly) && paymentType === PaymentTypeEnum.INSTALLMENTS && installmentsList.length > 0}
     <div class="installments-preview">
       <!-- Tabela compacta e elegante -->
       <div class="installments-table-container">
@@ -583,36 +584,6 @@
     min-width: 120px;
   }
 
-  /* Campo de preço melhorado */
-  .price-input {
-    font-size: 1rem !important;
-    font-weight: 600;
-    text-align: right;
-    padding: 0.5rem 0.7rem !important;
-    min-height: 40px !important;
-    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%) !important;
-    border: 2px solid #666 !important;
-    color: #4ade80 !important;
-    min-width: 140px !important;
-  }
-
-  .price-input:focus {
-    border-color: var(--primary-color) !important;
-    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3) !important;
-    background: linear-gradient(135deg, #333 0%, #2a2a2a 100%) !important;
-  }
-
-  /* Remover setinhas do input number */
-  .price-input::-webkit-outer-spin-button,
-  .price-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .price-input[type="number"] {
-    -moz-appearance: textfield;
-  }
-
   /* Checkbox Customizado */
   .checkbox-group {
     display: flex;
@@ -802,19 +773,6 @@
       rgba(74, 222, 128, 0.05) 100%
     ) !important;
     border: 1px solid rgba(74, 222, 128, 0.3);
-  }
-
-  .paid-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #4ade80;
-    color: #000;
-    font-size: 0.6rem;
-    font-weight: 700;
-    padding: 0.1rem 0.3rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
 
   .paid-text {

@@ -49,6 +49,12 @@ export interface Store {
   companyId: string;
   createdAt: Date;
   updatedAt: Date;
+  _count?: {
+    stockItems: number;
+    customers: number;
+    sales: number;
+    users: number;
+  };
 }
 
 export interface Product {
@@ -90,6 +96,9 @@ export interface Customer {
   storeId: string;
   createdAt: Date;
   updatedAt: Date;
+  // Campos para compatibilidade com tipos antigos
+  congregation?: string;
+  whatsappNumber?: string;
 }
 
 export interface User {
@@ -272,4 +281,26 @@ export interface StoreWithDetails extends Store {
     sales: number;
     users: number;
   };
+}
+
+// Dashboard types
+export interface SalesSummary {
+  total: number;
+  count: number;
+}
+
+export interface TopProduct {
+  productId: string;
+  product?: Product;
+  quantity: number;
+  total: number;
+}
+
+export interface StoreDashboard {
+  salesToday: SalesSummary;
+  salesMonth: SalesSummary;
+  customersCount: number;
+  lowStockItems: StockItem[];
+  pendingInstallments: Installment[];
+  topProducts: TopProduct[];
 }

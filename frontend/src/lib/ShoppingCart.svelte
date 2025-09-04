@@ -9,7 +9,6 @@
   export let dueDay: number = 10;
   export let firstInstallmentMonth: number = new Date().getMonth() + 1;
   export let firstInstallmentYear: number = new Date().getFullYear();
-  export let selectedCustomer: Customer | null = null;
   export let showFinalizationButton: boolean = true;
 
   const dispatch = createEventDispatcher();
