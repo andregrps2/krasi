@@ -21,7 +21,7 @@ const installmentSchema = z.object({
 
 const saleCreateSchema = z.object({
   storeId: z.string().min(1, 'ID da loja é obrigatório'),
-  userId: z.string().min(1, 'ID do usuário é obrigatório'),
+  userId: z.string().optional(),
   customerId: z.string().optional(),
   total: z.number().min(0, 'Total deve ser positivo'),
   discount: z.number().min(0).optional(),
@@ -116,17 +116,23 @@ router.post('/', async (req: Request, res: Response) => {
     // Start transaction
     const result = await prisma.$transaction(async (tx: any) => {
       // Create sale
+      const saleData: any = {
+        storeId: data.storeId,
+        customerId: data.customerId,
+        total: data.total,
+        discount: data.discount,
+        paymentType: data.paymentType,
+        notes: data.notes,
+        status: 'COMPLETED'
+      };
+
+      // Only include userId if it exists
+      if (data.userId) {
+        saleData.userId = data.userId;
+      }
+
       const sale = await tx.sale.create({
-        data: {
-          storeId: data.storeId,
-          userId: data.userId,
-          customerId: data.customerId,
-          total: data.total,
-          discount: data.discount,
-          paymentType: data.paymentType,
-          notes: data.notes,
-          status: 'COMPLETED'
-        }
+        data: saleData
       });
 
       // Create sale items and update stock

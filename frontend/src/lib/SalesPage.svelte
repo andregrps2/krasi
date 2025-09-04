@@ -448,7 +448,7 @@
       // Dados da venda no formato esperado pela API
       const apiSaleData = {
         storeId: $currentStoreId,
-        userId: "cmf5e1mqa00013npvcupmd8ck", // TODO: pegar do usuário logado
+        // userId: "cmf5e1mqa00013npvcupmd8ck", // TODO: pegar do usuário logado
         customerId: saleData.selectedCustomer?.id,
         total: saleData.total,
         paymentType: saleData.paymentType,

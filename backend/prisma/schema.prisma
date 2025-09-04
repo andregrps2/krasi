@@ -127,12 +127,12 @@ model Sale {
     updatedAt    DateTime      @updatedAt
     customerId   String?
     storeId      String
-    userId       String
+    userId       String?
     installments Installment[]
     saleItems    SaleItem[]
     customer     Customer?     @relation(fields: [customerId], references: [id])
     store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
-    user         User          @relation(fields: [userId], references: [id])
+    user         User?         @relation(fields: [userId], references: [id])
 
     @@index([customerId], map: "sales_customerId_fkey")
     @@index([storeId], map: "sales_storeId_fkey")
