@@ -18,6 +18,9 @@
   export let hasDownPayment = false;
   export let downPaymentValue = 0;
 
+  // Variável reativa para a lista de parcelas
+  let installmentsList: any[] = [];
+
   // Função para formatar moeda
   function formatCurrency(value: number): string {
     return new Intl.NumberFormat("pt-BR", {
@@ -30,19 +33,22 @@
   function calculateInstallments() {
     if (paymentType !== "installments" || total === 0) return [];
 
-    const remainingAmount = hasDownPayment ? total - downPaymentValue : total;
+    // Garantir que downPaymentValue é um número
+    const entryValue = Number(downPaymentValue) || 0;
+    const remainingAmount = hasDownPayment ? total - entryValue : total;
     const installmentValue = remainingAmount / numberOfInstallments;
     const installments = [];
 
     // Se tem entrada, primeira parcela é a entrada
-    if (hasDownPayment && downPaymentValue > 0) {
-      installments.push({
+    if (hasDownPayment && entryValue > 0) {
+      const entryInstallment = {
         number: 1,
-        value: downPaymentValue,
+        value: entryValue,
         dueDate: "Entrada",
         isDownPayment: true,
         isPaid: true,
-      });
+      };
+      installments.push(entryInstallment);
     }
 
     for (let i = 0; i < numberOfInstallments; i++) {
@@ -60,13 +66,14 @@
         date.setMonth((firstInstallmentMonth - 1 + i) % 12);
       }
 
-      installments.push({
+      const normalInstallment = {
         number: hasDownPayment ? i + 2 : i + 1,
         value: installmentValue,
         dueDate: date.toLocaleDateString("pt-BR"),
         isDownPayment: false,
         isPaid: false,
-      });
+      };
+      installments.push(normalInstallment);
     }
 
     return installments;
@@ -74,11 +81,6 @@
 
   // Reactive statement para calcular parcelas automaticamente
   $: installmentsList = calculateInstallments();
-
-  // Reactive statement para garantir atualização quando qualquer parâmetro muda
-  $: if (paymentType === "installments" && total > 0) {
-    installmentsList = calculateInstallments();
-  }
 
   // Funções para emitir eventos
   function openCustomerModal() {
@@ -102,7 +104,6 @@
             bind:value={paymentType}
             class="enhanced-select"
             on:change={() => {
-              installmentsList = calculateInstallments();
               dispatch("paymentChange", {
                 paymentType,
                 numberOfInstallments,
@@ -110,7 +111,7 @@
                 firstInstallmentMonth,
                 firstInstallmentYear,
                 hasDownPayment,
-                downPaymentValue,
+                downPaymentValue: Number(downPaymentValue) || 0,
               });
             }}
           >
@@ -131,7 +132,6 @@
                   bind:value={numberOfInstallments}
                   class="enhanced-select small"
                   on:change={() => {
-                    installmentsList = calculateInstallments();
                     dispatch("paymentChange", {
                       paymentType,
                       numberOfInstallments,
@@ -139,7 +139,7 @@
                       firstInstallmentMonth,
                       firstInstallmentYear,
                       hasDownPayment,
-                      downPaymentValue,
+                      downPaymentValue: Number(downPaymentValue) || 0,
                     });
                   }}
                 >
@@ -161,7 +161,6 @@
                   bind:value={dueDay}
                   class="enhanced-select small"
                   on:change={() => {
-                    installmentsList = calculateInstallments();
                     dispatch("paymentChange", {
                       paymentType,
                       numberOfInstallments,
@@ -169,7 +168,7 @@
                       firstInstallmentMonth,
                       firstInstallmentYear,
                       hasDownPayment,
-                      downPaymentValue,
+                      downPaymentValue: Number(downPaymentValue) || 0,
                     });
                   }}
                 >
@@ -186,7 +185,6 @@
                   bind:value={firstInstallmentMonth}
                   class="enhanced-select"
                   on:change={() => {
-                    installmentsList = calculateInstallments();
                     dispatch("paymentChange", {
                       paymentType,
                       numberOfInstallments,
@@ -194,7 +192,7 @@
                       firstInstallmentMonth,
                       firstInstallmentYear,
                       hasDownPayment,
-                      downPaymentValue,
+                      downPaymentValue: Number(downPaymentValue) || 0,
                     });
                   }}
                 >
@@ -220,7 +218,6 @@
                   bind:value={firstInstallmentYear}
                   class="enhanced-select small"
                   on:change={() => {
-                    installmentsList = calculateInstallments();
                     dispatch("paymentChange", {
                       paymentType,
                       numberOfInstallments,
@@ -228,7 +225,7 @@
                       firstInstallmentMonth,
                       firstInstallmentYear,
                       hasDownPayment,
-                      downPaymentValue,
+                      downPaymentValue: Number(downPaymentValue) || 0,
                     });
                   }}
                 >
@@ -252,7 +249,6 @@
                       if (!hasDownPayment) {
                         downPaymentValue = 0;
                       }
-                      installmentsList = calculateInstallments();
                       dispatch("paymentChange", {
                         paymentType,
                         numberOfInstallments,
@@ -260,7 +256,7 @@
                         firstInstallmentMonth,
                         firstInstallmentYear,
                         hasDownPayment,
-                        downPaymentValue,
+                        downPaymentValue: Number(downPaymentValue) || 0,
                       });
                     }}
                   />
@@ -282,7 +278,6 @@
                     class="enhanced-input"
                     placeholder="R$ 0,00"
                     on:input={() => {
-                      installmentsList = calculateInstallments();
                       dispatch("paymentChange", {
                         paymentType,
                         numberOfInstallments,
@@ -290,7 +285,7 @@
                         firstInstallmentMonth,
                         firstInstallmentYear,
                         hasDownPayment,
-                        downPaymentValue,
+                        downPaymentValue: Number(downPaymentValue) || 0,
                       });
                     }}
                   />
@@ -331,7 +326,11 @@
               >
                 <div class="cell installment-number">
                   {#if installment.isDownPayment}
-                    💰
+                    {#if installment.isPaid}
+                      <span class="paid-text">PAGO</span>
+                    {:else}
+                      💰
+                    {/if}
                   {:else}
                     {installment.number}ª
                   {/if}
@@ -339,9 +338,6 @@
                 <div class="cell installment-date">{installment.dueDate}</div>
                 <div class="cell installment-value">
                   {formatCurrency(installment.value)}
-                  {#if installment.isPaid}
-                    <span class="paid-badge">✓ PAGO</span>
-                  {/if}
                 </div>
               </div>
             {/each}
@@ -655,6 +651,17 @@
     padding: 0.1rem 0.3rem;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .paid-text {
+    background: #4ade80;
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: none;
   }
 
   /* Footer da tabela */

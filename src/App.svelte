@@ -55,7 +55,11 @@
     on:toggle={handleToggle}
   />
 
-  <main class="main-content" class:sidebar-collapsed={sidebarCollapsed}>
+  <main
+    class="main-content"
+    class:sidebar-collapsed={sidebarCollapsed}
+    class:sales-page={currentPage === "vendas"}
+  >
     {#if currentPage === "vendas"}
       <SalesPage />
     {:else if currentPage === "estoque"}
@@ -73,18 +77,24 @@
 <style>
   .app-container {
     display: flex;
-    height: 100vh;
+    min-height: 100vh; /* Mudado de height para min-height */
     background-color: #1a1a1a;
-    overflow: hidden;
+    /* Removido overflow: hidden para permitir scroll */
   }
 
   .main-content {
     margin-left: 250px;
     flex: 1;
-    overflow: hidden;
+    /* Removido overflow: hidden - cada página controla seu próprio scroll */
     transition: margin-left 0.3s ease;
     display: flex;
     flex-direction: column;
+  }
+
+  /* Classe específica para o Ponto de Venda (sem scroll) */
+  .main-content.sales-page {
+    height: 100vh;
+    overflow: hidden;
   }
 
   .main-content.sidebar-collapsed {

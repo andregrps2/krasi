@@ -14,9 +14,11 @@
   export let dueDay: number = 10;
   export let firstInstallmentMonth: number = new Date().getMonth() + 1;
   export let firstInstallmentYear: number = new Date().getFullYear();
+  export let hasDownPayment: boolean = false;
+  export let downPaymentValue: number = 0;
 
   // Força a reatividade da prévia das parcelas
-  $: previewKey = `${paymentType}-${numberOfInstallments}-${dueDay}-${firstInstallmentMonth}-${firstInstallmentYear}-${total}`;
+  $: previewKey = `${paymentType}-${numberOfInstallments}-${dueDay}-${firstInstallmentMonth}-${firstInstallmentYear}-${total}-${hasDownPayment}-${downPaymentValue}`;
 
   function formatCurrency(value: number): string {
     return new Intl.NumberFormat("pt-BR", {
@@ -75,6 +77,8 @@
       dueDay: newDueDay,
       firstInstallmentMonth: newMonth,
       firstInstallmentYear: newYear,
+      hasDownPayment: newHasDownPayment,
+      downPaymentValue: newDownPaymentValue,
     } = event.detail;
 
     paymentType = newPaymentType;
@@ -82,6 +86,8 @@
     dueDay = newDueDay || dueDay;
     firstInstallmentMonth = newMonth || firstInstallmentMonth;
     firstInstallmentYear = newYear || firstInstallmentYear;
+    hasDownPayment = newHasDownPayment || false;
+    downPaymentValue = newDownPaymentValue || 0;
   }
 </script>
 
@@ -114,6 +120,8 @@
             bind:dueDay
             bind:firstInstallmentMonth
             bind:firstInstallmentYear
+            bind:hasDownPayment
+            bind:downPaymentValue
             {total}
             on:paymentChange={handlePaymentChange}
             showPreview={false}
@@ -133,6 +141,8 @@
                 bind:dueDay
                 bind:firstInstallmentMonth
                 bind:firstInstallmentYear
+                bind:hasDownPayment
+                bind:downPaymentValue
                 {total}
                 on:paymentChange={handlePaymentChange}
                 previewOnly={true}
