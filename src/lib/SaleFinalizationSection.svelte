@@ -10,12 +10,17 @@
   export let total: number = 0;
   export let selectedCustomer: Customer | null = null;
   export let paymentType: PaymentType = "cash";
-  export let numberOfInstallments: number = 1;
+  export let numberOfInstallments: number = 2;
   export let dueDay: number = 10;
   export let firstInstallmentMonth: number = new Date().getMonth() + 1;
   export let firstInstallmentYear: number = new Date().getFullYear();
   export let hasDownPayment: boolean = false;
   export let downPaymentValue: number | string = "";
+
+  // Garantir que quando mudar para "installments", numberOfInstallments seja pelo menos 2
+  $: if (paymentType === "installments" && numberOfInstallments < 2) {
+    numberOfInstallments = 2;
+  }
 
   // Força a reatividade da prévia das parcelas
   $: previewKey = `${paymentType}-${numberOfInstallments}-${dueDay}-${firstInstallmentMonth}-${firstInstallmentYear}-${total}-${hasDownPayment}-${downPaymentValue}`;
@@ -34,23 +39,105 @@
     }
 
     let installments: any[] = [];
+    const entryValue = Number(downPaymentValue) || 0;
 
     if (paymentType === "installments") {
-      const installmentValue = total / numberOfInstallments;
-      const currentDate = new Date();
-      currentDate.setMonth(firstInstallmentMonth - 1);
-      currentDate.setFullYear(firstInstallmentYear);
-      currentDate.setDate(dueDay);
+      // Usar a mesma lógica do PaymentTypeSelector para garantir consistência
 
-      for (let i = 0; i < numberOfInstallments; i++) {
-        const dueDate = new Date(currentDate);
-        dueDate.setMonth(currentDate.getMonth() + i);
-
+      // Se tem entrada, primeira parcela é a entrada
+      if (hasDownPayment && entryValue > 0) {
         installments.push({
-          number: i + 1,
-          value: installmentValue,
-          dueDate: dueDate.toLocaleDateString("pt-BR"),
+          number: 1,
+          value: entryValue,
+          dueDate: "Entrada",
+          isDownPayment: true,
+          isPaid: true,
         });
+
+        // Calcular parcelas normais
+        const remainingAmount = total - entryValue;
+        const normalInstallments = numberOfInstallments - 1;
+
+        if (normalInstallments > 0) {
+          const installmentValue = remainingAmount / normalInstallments;
+
+          for (let i = 0; i < normalInstallments; i++) {
+            const date = new Date();
+            date.setMonth(firstInstallmentMonth - 1 + i);
+            date.setFullYear(firstInstallmentYear);
+            date.setDate(dueDay);
+
+            // Ajustar o ano se o mês ultrapassar dezembro
+            if (date.getMonth() >= 12) {
+              date.setFullYear(
+                firstInstallmentYear +
+                  Math.floor((firstInstallmentMonth - 1 + i) / 12)
+              );
+              date.setMonth((firstInstallmentMonth - 1 + i) % 12);
+            }
+
+            let finalValue;
+
+            // Se é a última parcela, calcular o valor restante exato
+            if (i === normalInstallments - 1) {
+              let sumPreviousParcels = 0;
+              for (let j = 0; j < i; j++) {
+                sumPreviousParcels += Math.round(installmentValue * 100) / 100;
+              }
+              finalValue = remainingAmount - sumPreviousParcels;
+            } else {
+              finalValue = Math.round(installmentValue * 100) / 100;
+            }
+
+            installments.push({
+              number: i + 2,
+              value: finalValue,
+              dueDate: date.toLocaleDateString("pt-BR"),
+              isDownPayment: false,
+              isPaid: false,
+            });
+          }
+        }
+      } else {
+        // Sem entrada - calcular todas as parcelas normalmente
+        const installmentValue = total / numberOfInstallments;
+
+        for (let i = 0; i < numberOfInstallments; i++) {
+          const date = new Date();
+          date.setMonth(firstInstallmentMonth - 1 + i);
+          date.setFullYear(firstInstallmentYear);
+          date.setDate(dueDay);
+
+          // Ajustar o ano se o mês ultrapassar dezembro
+          if (date.getMonth() >= 12) {
+            date.setFullYear(
+              firstInstallmentYear +
+                Math.floor((firstInstallmentMonth - 1 + i) / 12)
+            );
+            date.setMonth((firstInstallmentMonth - 1 + i) % 12);
+          }
+
+          let finalValue;
+
+          // Se é a última parcela, calcular o valor restante exato
+          if (i === numberOfInstallments - 1) {
+            let sumPreviousParcels = 0;
+            for (let j = 0; j < i; j++) {
+              sumPreviousParcels += Math.round(installmentValue * 100) / 100;
+            }
+            finalValue = total - sumPreviousParcels;
+          } else {
+            finalValue = Math.round(installmentValue * 100) / 100;
+          }
+
+          installments.push({
+            number: i + 1,
+            value: finalValue,
+            dueDate: date.toLocaleDateString("pt-BR"),
+            isDownPayment: false,
+            isPaid: false,
+          });
+        }
       }
     }
 
@@ -59,6 +146,8 @@
       paymentType,
       installments,
       total,
+      hasDownPayment,
+      downPaymentValue: entryValue,
     });
   }
 

@@ -27,7 +27,7 @@
   let total = 0;
   let selectedCustomer: Customer | null = null;
   let paymentType: PaymentType = "cash";
-  let numberOfInstallments = 1;
+  let numberOfInstallments = 2;
   let installmentFrequency = 30; // dias entre parcelas
   let dueDay = 10; // dia do vencimento (1-31)
   let firstInstallmentMonth = new Date().getMonth() + 1; // mês da primeira parcela (1-12)
@@ -37,6 +37,11 @@
   let showFinalizationSection = false;
   let showSuccessModal = false;
   let completedSale: Sale | null = null;
+
+  // Garantir que quando mudar para "installments", numberOfInstallments seja pelo menos 2
+  $: if (paymentType === "installments" && numberOfInstallments < 2) {
+    numberOfInstallments = 2;
+  }
 
   // Computar total do carrinho
   $: total = cart.reduce(
@@ -303,13 +308,21 @@
     let saleInstallments: Installment[] = [];
     if (saleData.paymentType === "installments" && saleData.installments) {
       saleData.installments.forEach((inst: any, i: number) => {
+        // Se é entrada, marcar como paga; senão, como pendente
+        const status = inst.isDownPayment ? "paid" : "pending";
+        const paidDate = inst.isDownPayment ? new Date() : undefined;
+
         const installment: Installment = {
           id: $installments.length + i + 1,
           saleId: saleId,
-          installmentNumber: i + 1,
-          dueDate: new Date(inst.dueDate.split("/").reverse().join("-")),
+          installmentNumber: inst.number,
+          dueDate:
+            inst.dueDate === "Entrada"
+              ? new Date()
+              : new Date(inst.dueDate.split("/").reverse().join("-")),
           amount: inst.value,
-          status: "pending",
+          status: status,
+          paidDate: paidDate,
         };
         saleInstallments.push(installment);
       });
@@ -347,7 +360,7 @@
     cart = [];
     selectedCustomer = null;
     paymentType = "cash";
-    numberOfInstallments = 1;
+    numberOfInstallments = 2;
     dueDay = 10;
     firstInstallmentMonth = new Date().getMonth() + 1;
     firstInstallmentYear = new Date().getFullYear();
@@ -372,7 +385,7 @@
     cart = [];
     selectedCustomer = null;
     paymentType = "cash";
-    numberOfInstallments = 1;
+    numberOfInstallments = 2;
     dueDay = 10;
     firstInstallmentMonth = new Date().getMonth() + 1;
     firstInstallmentYear = new Date().getFullYear();
