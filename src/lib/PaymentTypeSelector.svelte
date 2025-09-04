@@ -15,6 +15,8 @@
   export let total = 0;
   export let showPreview = true;
   export let previewOnly = false;
+  export let hasDownPayment = false;
+  export let downPaymentValue = 0;
 
   // Função para formatar moeda
   function formatCurrency(value: number): string {
@@ -28,8 +30,20 @@
   function calculateInstallments() {
     if (paymentType !== "installments" || total === 0) return [];
 
-    const installmentValue = total / numberOfInstallments;
+    const remainingAmount = hasDownPayment ? total - downPaymentValue : total;
+    const installmentValue = remainingAmount / numberOfInstallments;
     const installments = [];
+
+    // Se tem entrada, primeira parcela é a entrada
+    if (hasDownPayment && downPaymentValue > 0) {
+      installments.push({
+        number: 1,
+        value: downPaymentValue,
+        dueDate: "Entrada",
+        isDownPayment: true,
+        isPaid: true,
+      });
+    }
 
     for (let i = 0; i < numberOfInstallments; i++) {
       const date = new Date();
@@ -47,9 +61,11 @@
       }
 
       installments.push({
-        number: i + 1,
+        number: hasDownPayment ? i + 2 : i + 1,
         value: installmentValue,
         dueDate: date.toLocaleDateString("pt-BR"),
+        isDownPayment: false,
+        isPaid: false,
       });
     }
 
@@ -77,139 +93,213 @@
 <div class="payment-compact">
   <!-- Controles de Pagamento em linha -->
   {#if !previewOnly}
-    <div class="payment-controls">
-      <div class="control-group">
-        <label for="payment-select">Pagamento:</label>
-        <select
-          id="payment-select"
-          bind:value={paymentType}
-          class="compact-select"
-          on:change={() => {
-            installmentsList = calculateInstallments();
-            dispatch("paymentChange", {
-              paymentType,
-              numberOfInstallments,
-              dueDay,
-              firstInstallmentMonth,
-              firstInstallmentYear,
-            });
-          }}
-        >
-          <option value="cash">À Vista</option>
-          <option value="pix">PIX</option>
-          <option value="card">Cartão</option>
-          <option value="installments">Parcelado</option>
-        </select>
+    <div class="payment-form">
+      <div class="payment-controls">
+        <div class="control-group">
+          <label for="payment-select">Pagamento:</label>
+          <select
+            id="payment-select"
+            bind:value={paymentType}
+            class="enhanced-select"
+            on:change={() => {
+              installmentsList = calculateInstallments();
+              dispatch("paymentChange", {
+                paymentType,
+                numberOfInstallments,
+                dueDay,
+                firstInstallmentMonth,
+                firstInstallmentYear,
+                hasDownPayment,
+                downPaymentValue,
+              });
+            }}
+          >
+            <option value="cash">💰 À Vista</option>
+            <option value="pix">📱 PIX</option>
+            <option value="card">💳 Cartão</option>
+            <option value="installments">📋 Parcelado</option>
+          </select>
+        </div>
+
+        {#if paymentType === "installments"}
+          <div class="installment-controls">
+            <div class="control-row">
+              <div class="control-group">
+                <label for="installments-select">Parcelas:</label>
+                <select
+                  id="installments-select"
+                  bind:value={numberOfInstallments}
+                  class="enhanced-select small"
+                  on:change={() => {
+                    installmentsList = calculateInstallments();
+                    dispatch("paymentChange", {
+                      paymentType,
+                      numberOfInstallments,
+                      dueDay,
+                      firstInstallmentMonth,
+                      firstInstallmentYear,
+                      hasDownPayment,
+                      downPaymentValue,
+                    });
+                  }}
+                >
+                  <option value={1}>1x</option>
+                  <option value={2}>2x</option>
+                  <option value={3}>3x</option>
+                  <option value={4}>4x</option>
+                  <option value={5}>5x</option>
+                  <option value={6}>6x</option>
+                  <option value={10}>10x</option>
+                  <option value={12}>12x</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="due-day-select">Venc.:</label>
+                <select
+                  id="due-day-select"
+                  bind:value={dueDay}
+                  class="enhanced-select small"
+                  on:change={() => {
+                    installmentsList = calculateInstallments();
+                    dispatch("paymentChange", {
+                      paymentType,
+                      numberOfInstallments,
+                      dueDay,
+                      firstInstallmentMonth,
+                      firstInstallmentYear,
+                      hasDownPayment,
+                      downPaymentValue,
+                    });
+                  }}
+                >
+                  {#each Array(31) as _, i}
+                    <option value={i + 1}>{i + 1}</option>
+                  {/each}
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="first-month-select">Mês:</label>
+                <select
+                  id="first-month-select"
+                  bind:value={firstInstallmentMonth}
+                  class="enhanced-select"
+                  on:change={() => {
+                    installmentsList = calculateInstallments();
+                    dispatch("paymentChange", {
+                      paymentType,
+                      numberOfInstallments,
+                      dueDay,
+                      firstInstallmentMonth,
+                      firstInstallmentYear,
+                      hasDownPayment,
+                      downPaymentValue,
+                    });
+                  }}
+                >
+                  <option value={1}>Jan</option>
+                  <option value={2}>Fev</option>
+                  <option value={3}>Mar</option>
+                  <option value={4}>Abr</option>
+                  <option value={5}>Mai</option>
+                  <option value={6}>Jun</option>
+                  <option value={7}>Jul</option>
+                  <option value={8}>Ago</option>
+                  <option value={9}>Set</option>
+                  <option value={10}>Out</option>
+                  <option value={11}>Nov</option>
+                  <option value={12}>Dez</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="first-year-select">Ano:</label>
+                <select
+                  id="first-year-select"
+                  bind:value={firstInstallmentYear}
+                  class="enhanced-select small"
+                  on:change={() => {
+                    installmentsList = calculateInstallments();
+                    dispatch("paymentChange", {
+                      paymentType,
+                      numberOfInstallments,
+                      dueDay,
+                      firstInstallmentMonth,
+                      firstInstallmentYear,
+                      hasDownPayment,
+                      downPaymentValue,
+                    });
+                  }}
+                >
+                  <option value={2024}>2024</option>
+                  <option value={2025}>2025</option>
+                  <option value={2026}>2026</option>
+                  <option value={2027}>2027</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Controles de Entrada -->
+            <div class="down-payment-section">
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    bind:checked={hasDownPayment}
+                    class="enhanced-checkbox"
+                    on:change={() => {
+                      if (!hasDownPayment) {
+                        downPaymentValue = 0;
+                      }
+                      installmentsList = calculateInstallments();
+                      dispatch("paymentChange", {
+                        paymentType,
+                        numberOfInstallments,
+                        dueDay,
+                        firstInstallmentMonth,
+                        firstInstallmentYear,
+                        hasDownPayment,
+                        downPaymentValue,
+                      });
+                    }}
+                  />
+                  <span class="checkmark"></span>
+                  💰 Possui Valor de Entrada
+                </label>
+              </div>
+
+              {#if hasDownPayment}
+                <div class="control-group">
+                  <label for="down-payment-input">Valor da Entrada:</label>
+                  <input
+                    id="down-payment-input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max={total}
+                    bind:value={downPaymentValue}
+                    class="enhanced-input"
+                    placeholder="R$ 0,00"
+                    on:input={() => {
+                      installmentsList = calculateInstallments();
+                      dispatch("paymentChange", {
+                        paymentType,
+                        numberOfInstallments,
+                        dueDay,
+                        firstInstallmentMonth,
+                        firstInstallmentYear,
+                        hasDownPayment,
+                        downPaymentValue,
+                      });
+                    }}
+                  />
+                </div>
+              {/if}
+            </div>
+          </div>
+        {/if}
       </div>
-
-      {#if paymentType === "installments"}
-        <div class="control-group">
-          <label for="installments-select">Parcelas:</label>
-          <select
-            id="installments-select"
-            bind:value={numberOfInstallments}
-            class="compact-select"
-            on:change={() => {
-              installmentsList = calculateInstallments();
-              dispatch("paymentChange", {
-                paymentType,
-                numberOfInstallments,
-                dueDay,
-                firstInstallmentMonth,
-                firstInstallmentYear,
-              });
-            }}
-          >
-            <option value={1}>1x</option>
-            <option value={2}>2x</option>
-            <option value={3}>3x</option>
-            <option value={4}>4x</option>
-            <option value={5}>5x</option>
-            <option value={6}>6x</option>
-            <option value={10}>10x</option>
-            <option value={12}>12x</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="due-day-select">Venc.:</label>
-          <select
-            id="due-day-select"
-            bind:value={dueDay}
-            class="compact-select small"
-            on:change={() => {
-              installmentsList = calculateInstallments();
-              dispatch("paymentChange", {
-                paymentType,
-                numberOfInstallments,
-                dueDay,
-                firstInstallmentMonth,
-                firstInstallmentYear,
-              });
-            }}
-          >
-            {#each Array(31) as _, i}
-              <option value={i + 1}>{i + 1}</option>
-            {/each}
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="first-month-select">Mês:</label>
-          <select
-            id="first-month-select"
-            bind:value={firstInstallmentMonth}
-            class="compact-select"
-            on:change={() => {
-              installmentsList = calculateInstallments();
-              dispatch("paymentChange", {
-                paymentType,
-                numberOfInstallments,
-                dueDay,
-                firstInstallmentMonth,
-                firstInstallmentYear,
-              });
-            }}
-          >
-            <option value={1}>Jan</option>
-            <option value={2}>Fev</option>
-            <option value={3}>Mar</option>
-            <option value={4}>Abr</option>
-            <option value={5}>Mai</option>
-            <option value={6}>Jun</option>
-            <option value={7}>Jul</option>
-            <option value={8}>Ago</option>
-            <option value={9}>Set</option>
-            <option value={10}>Out</option>
-            <option value={11}>Nov</option>
-            <option value={12}>Dez</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="first-year-select">Ano:</label>
-          <select
-            id="first-year-select"
-            bind:value={firstInstallmentYear}
-            class="compact-select small"
-            on:change={() => {
-              installmentsList = calculateInstallments();
-              dispatch("paymentChange", {
-                paymentType,
-                numberOfInstallments,
-                dueDay,
-                firstInstallmentMonth,
-                firstInstallmentYear,
-              });
-            }}
-          >
-            <option value={2024}>2024</option>
-            <option value={2025}>2025</option>
-            <option value={2026}>2026</option>
-            <option value={2027}>2027</option>
-          </select>
-        </div>
-      {/if}
     </div>
   {/if}
 
@@ -233,11 +323,25 @@
           <!-- Rows -->
           <div class="grid-body">
             {#each installmentsList as installment, index}
-              <div class="grid-row" class:even={index % 2 === 0}>
-                <div class="cell installment-number">{installment.number}ª</div>
+              <div
+                class="grid-row"
+                class:even={index % 2 === 0}
+                class:down-payment={installment.isDownPayment}
+                class:paid={installment.isPaid}
+              >
+                <div class="cell installment-number">
+                  {#if installment.isDownPayment}
+                    💰
+                  {:else}
+                    {installment.number}ª
+                  {/if}
+                </div>
                 <div class="cell installment-date">{installment.dueDate}</div>
                 <div class="cell installment-value">
                   {formatCurrency(installment.value)}
+                  {#if installment.isPaid}
+                    <span class="paid-badge">✓ PAGO</span>
+                  {/if}
                 </div>
               </div>
             {/each}
@@ -259,50 +363,145 @@
   .payment-compact {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.2rem 0.4rem;
+    gap: 0.2rem;
+    padding: 0;
     flex-wrap: wrap;
+  }
+
+  /* Formulário de Pagamento Melhorado */
+  .payment-form {
+    width: 100%;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+    border-radius: 8px;
+    padding: 0.6rem;
+    border: 1px solid #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   .payment-controls {
     display: flex;
-    align-items: center;
-    gap: 0.3rem;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .control-row {
+    display: flex;
+    gap: 0.6rem;
     flex-wrap: wrap;
+    align-items: end;
+  }
+
+  .installment-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid #444;
+  }
+
+  .down-payment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.6rem;
+    background: rgba(255, 215, 0, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 6px;
   }
 
   .control-group {
     display: flex;
-    align-items: center;
-    gap: 0.15rem;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
   }
 
   .control-group label {
     color: var(--text-accent);
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
+    margin-bottom: 0.1rem;
   }
 
-  .compact-select {
-    padding: 0.15rem 0.25rem;
-    border: 1px solid #555;
-    border-radius: 3px;
-    background-color: transparent;
+  /* Selects e Inputs Melhorados */
+  .enhanced-select,
+  .enhanced-input {
+    padding: 0.3rem 0.5rem;
+    border: 2px solid #555;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #333 0%, #2a2a2a 100%);
     color: white;
-    font-size: 0.65rem;
-    height: 24px;
-    min-width: 80px;
+    font-size: 0.8rem;
+    min-height: 32px;
+    transition: all 0.2s ease;
   }
 
-  .compact-select.small {
-    min-width: 60px;
-  }
-
-  .compact-select:focus {
+  .enhanced-select:focus,
+  .enhanced-input:focus {
     outline: none;
-    border-color: var(--primary-color-border);
-    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+    transform: translateY(-1px);
+  }
+
+  .enhanced-select.small {
+    min-width: 70px;
+  }
+
+  .enhanced-input {
+    min-width: 120px;
+  }
+
+  /* Checkbox Customizado */
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-accent);
+    transition: color 0.2s ease;
+  }
+
+  .checkbox-label:hover {
+    color: var(--primary-color);
+  }
+
+  .enhanced-checkbox {
+    display: none;
+  }
+
+  .checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #555;
+    border-radius: 4px;
+    background: #2a2a2a;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .enhanced-checkbox:checked + .checkmark {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+
+  .enhanced-checkbox:checked + .checkmark::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #000;
+    font-weight: bold;
+    font-size: 12px;
   }
 
   /* Prévia das Parcelas */
@@ -423,6 +622,39 @@
     color: #4ade80;
     font-weight: 700;
     font-size: 0.8rem;
+    position: relative;
+  }
+
+  /* Estados especiais das parcelas */
+  .grid-row.down-payment {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 215, 0, 0.15) 0%,
+      rgba(255, 215, 0, 0.05) 100%
+    ) !important;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+  }
+
+  .grid-row.paid {
+    background: linear-gradient(
+      135deg,
+      rgba(74, 222, 128, 0.15) 0%,
+      rgba(74, 222, 128, 0.05) 100%
+    ) !important;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+  }
+
+  .paid-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #4ade80;
+    color: #000;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.3rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
 
   /* Footer da tabela */
@@ -458,14 +690,21 @@
 
   /* Responsivo */
   @media (max-width: 768px) {
-    .payment-controls {
+    .payment-form {
+      padding: 0.5rem;
+    }
+
+    .control-row {
       flex-direction: column;
-      align-items: stretch;
       gap: 0.5rem;
     }
 
     .control-group {
-      justify-content: space-between;
+      min-width: 100%;
+    }
+
+    .down-payment-section {
+      padding: 0.5rem;
     }
 
     .installments-table-container {
