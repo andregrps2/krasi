@@ -1,5 +1,6 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import type { PropertyDefinition, StockItemOld as StockItem, Sale, Customer, Installment } from './types-new';
+import { stockService, customersService, salesService } from './lib/services';
 
 /**
  * Cria uma Svelte store (writable) que sincroniza seu estado com o localStorage.
@@ -18,6 +19,9 @@ function createPersistentStore<T>(key: string, startValue: T) {
 
   return store;
 }
+
+// --- Store da loja atual selecionada ---
+export const currentStoreId = writable<string | null>(null);
 
 // --- Propriedades Customizáveis ---
 
@@ -57,119 +61,71 @@ const initialProperties: PropertyDefinition[] = [
 
 export const propertyDefinitions = createPersistentStore<PropertyDefinition[]>('property-definitions', initialProperties);
 
-// --- Estoque ---
+// --- Estoque Dinâmico ---
 
-const initialStock: StockItem[] = [
-  {
-    id: "1",
-    name: 'Camisa Breda Preta GG',
-    price: 99.99,
-    quantity: 19,
-    brand: 'Breda',
-    category: 'Camisa',
-    properties: {
-      type: 'Camisa',
-      fabric: 'Poliéster',
-      size: 'GG',
-      color: 'Preto',
-      price: '99.99'
-    }
-  },
-  {
-    id: "2",
-    name: 'Camisa Breda Azul M',
-    price: 79.99,
-    quantity: 12,
-    brand: 'Breda',
-    category: 'Camisa',
-    properties: {
-      brand: 'Breda',
-      type: 'Camisa',
-      fabric: 'Algodão',
-      size: 'M',
-      color: 'Azul',
-      price: '89.99'
-    }
-  },
-  {
-    id: "3",
-    name: 'Terno Ricardo Preto G',
-    price: 299.99,
-    quantity: 8,
-    brand: 'Ricardo',
-    category: 'Terno',
-    properties: {
-      type: 'Terno',
-      fabric: 'Lã',
-      size: 'G',
-      color: 'Preto',
-      price: '299.99'
-    }
-  },
-  {
-    id: "4",
-    name: 'Palitó Breda Cinza P',
-    price: 199.99,
-    quantity: 15,
-    brand: 'Breda',
-    category: 'Palitó',
-    properties: {
-      type: 'Palitó',
-      fabric: 'Poliéster',
-      size: 'P',
-      color: 'Cinza',
-      price: '199.99'
-    }
-  },
-  {
-    id: "5",
-    name: 'Camiseta Style Branca M',
-    price: 49.99,
-    quantity: 25,
-    brand: 'Style',
-    category: 'Camiseta',
-    properties: {
-      type: 'Camiseta',
-      fabric: 'Algodão',
-      size: 'M',
-      color: 'Branco',
-      price: '49.99'
-    }
-  },
-  {
-    id: "6",
-    name: 'Sapato Comfort Marrom 42',
-    price: 159.99,
-    quantity: 6,
-    brand: 'Comfort',
-    category: 'Sapato',
-    properties: {
-      brand: 'Comfort',
-      type: 'Sapato',
-      fabric: 'Couro',
-      size: '42',
-      color: 'Marrom',
-      price: '159.99'
-    }
+export const stock = writable<StockItem[]>([]);
+
+// Função para carregar estoque da loja atual
+export async function loadStockForStore(storeId: string) {
+  try {
+    const storeStock = await stockService.getStockByStore(storeId);
+    stock.set(storeStock);
+  } catch (error) {
+    console.error('Erro ao carregar estoque:', error);
+    stock.set([]);
   }
-];
+}
 
-export const stock = createPersistentStore<StockItem[]>('stock-items', initialStock);
+// --- Clientes Dinâmicos ---
 
-// --- Clientes ---
+export const customers = writable<Customer[]>([]);
 
-const initialCustomers: Customer[] = [];
+// Função para carregar clientes da loja atual
+export async function loadCustomersForStore(storeId: string) {
+  try {
+    const storeCustomers = await customersService.getCustomersByStore(storeId);
+    customers.set(storeCustomers);
+  } catch (error) {
+    console.error('Erro ao carregar clientes:', error);
+    customers.set([]);
+  }
+}
 
-export const customers = createPersistentStore<Customer[]>('customers', initialCustomers);
+// --- Histórico de Vendas Dinâmico ---
 
-// --- Histórico de Vendas ---
+export const salesHistory = writable<Sale[]>([]);
 
-const initialSales: Sale[] = [];
+// Função para carregar vendas da loja atual
+export async function loadSalesForStore(storeId: string) {
+  try {
+    const storeSales = await salesService.getSalesByStore(storeId);
+    salesHistory.set(storeSales);
+  } catch (error) {
+    console.error('Erro ao carregar vendas:', error);
+    salesHistory.set([]);
+  }
+}
 
-export const salesHistory = createPersistentStore<Sale[]>('sales-history', initialSales);
-
-// --- Parcelas ---
+// --- Parcelas (ainda em localStorage) ---
 
 const initialInstallments: Installment[] = [];
 
 export const installments = createPersistentStore<Installment[]>('installments', initialInstallments);
+
+// --- Store reativo que carrega dados quando a loja muda ---
+
+currentStoreId.subscribe(async (storeId) => {
+  if (storeId) {
+    console.log('Carregando dados para loja:', storeId);
+    await Promise.all([
+      loadStockForStore(storeId),
+      loadCustomersForStore(storeId),
+      loadSalesForStore(storeId)
+    ]);
+  } else {
+    // Limpar dados quando não há loja selecionada
+    stock.set([]);
+    customers.set([]);
+    salesHistory.set([]);
+  }
+});

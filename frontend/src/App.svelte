@@ -5,11 +5,16 @@
   import ReportsPage from "./lib/ReportsPage.svelte";
   import CustomersPage from "./lib/CustomersPage.svelte";
   import InstallmentsPage from "./lib/InstallmentsPage.svelte";
+  import StoreSelector from "./lib/components/StoreSelector.svelte";
+  import StoreDashboard from "./lib/components/StoreDashboard.svelte";
+  import { currentStoreId } from "./stores";
+  import type { Store } from "./types-new";
 
   // Estado da navegação
-  let currentPage = "estoque";
+  let currentPage = "dashboard";
   let sidebarCollapsed = false;
   let isMobile = false;
+  let selectedStore: Store | null = null;
 
   // Detectar se é mobile
   function checkMobile() {
@@ -40,39 +45,60 @@
   function toggleSidebar() {
     sidebarCollapsed = !sidebarCollapsed;
   }
+
+  function handleStoreSelect(store: Store) {
+    selectedStore = store;
+    currentStoreId.set(store.id);
+    console.log("Loja selecionada:", store.name);
+  }
+
+  function handleStoreChange() {
+    selectedStore = null;
+    currentStoreId.set(null);
+    currentPage = "dashboard";
+  }
 </script>
 
 <div class="app-container">
-  <!-- Overlay para mobile -->
-  {#if !sidebarCollapsed && isMobile}
-    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-    <div class="sidebar-overlay" on:click={toggleSidebar}></div>
-  {/if}
-
-  <Sidebar
-    {currentPage}
-    {sidebarCollapsed}
-    on:navigate={handleNavigation}
-    on:toggle={handleToggle}
-  />
-
-  <main
-    class="main-content"
-    class:sidebar-collapsed={sidebarCollapsed}
-    class:sales-page={currentPage === "vendas"}
-  >
-    {#if currentPage === "vendas"}
-      <SalesPage />
-    {:else if currentPage === "estoque"}
-      <StockPage />
-    {:else if currentPage === "clientes"}
-      <CustomersPage />
-    {:else if currentPage === "fiado"}
-      <InstallmentsPage />
-    {:else if currentPage === "relatorios"}
-      <ReportsPage />
+  {#if !selectedStore}
+    <!-- Seleção de Loja -->
+    <StoreSelector onStoreSelect={handleStoreSelect} />
+  {:else}
+    <!-- Overlay para mobile -->
+    {#if !sidebarCollapsed && isMobile}
+      <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+      <div class="sidebar-overlay" on:click={toggleSidebar}></div>
     {/if}
-  </main>
+
+    <Sidebar
+      {currentPage}
+      {sidebarCollapsed}
+      storeName={selectedStore.name}
+      on:navigate={handleNavigation}
+      on:toggle={handleToggle}
+      on:backToStores={handleStoreChange}
+    />
+
+    <main
+      class="main-content"
+      class:sidebar-collapsed={sidebarCollapsed}
+      class:sales-page={currentPage === "vendas"}
+    >
+      {#if currentPage === "dashboard"}
+        <StoreDashboard store={selectedStore} />
+      {:else if currentPage === "vendas"}
+        <SalesPage />
+      {:else if currentPage === "estoque"}
+        <StockPage />
+      {:else if currentPage === "clientes"}
+        <CustomersPage />
+      {:else if currentPage === "fiado"}
+        <InstallmentsPage />
+      {:else if currentPage === "relatorios"}
+        <ReportsPage />
+      {/if}
+    </main>
+  {/if}
 </div>
 
 <style>
