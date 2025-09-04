@@ -54,12 +54,16 @@ export interface SaleItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  brand?: string;
+  type?: string;
+  size?: string;
+  color?: string;
 }
 
 /**
  * Tipo de pagamento
  */
-export type PaymentType = 'cash' | 'installments';
+export type PaymentType = 'cash' | 'installments' | 'pix' | 'card';
 
 /**
  * Status da parcela
@@ -86,9 +90,11 @@ export interface Sale {
   id: number;
   date: Date;
   customerId?: number;
+  customer?: Customer;
   customerName?: string;
   items: SaleItem[];
-  totalAmount: number;
+  total: number;
+  totalAmount: number; // Para compatibilidade
   paymentType: PaymentType;
-  installments?: Installment[];
+  installments?: { value: number; dueDate: string }[];
 }

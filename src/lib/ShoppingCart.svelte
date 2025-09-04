@@ -10,6 +10,7 @@
   export let firstInstallmentMonth: number = new Date().getMonth() + 1;
   export let firstInstallmentYear: number = new Date().getFullYear();
   export let selectedCustomer: Customer | null = null;
+  export let showFinalizationButton: boolean = true;
 
   const dispatch = createEventDispatcher();
 
@@ -148,13 +149,15 @@
         <button class="clear-btn" on:click={clearCart}>
           Limpar Carrinho
         </button>
-        <button
-          class="finalize-btn"
-          on:click={finalizeSale}
-          disabled={paymentType === "installments" && !selectedCustomer}
-        >
-          Finalizar Venda
-        </button>
+        {#if showFinalizationButton}
+          <button
+            class="finalize-btn"
+            on:click={() => dispatch("finalizeSale")}
+            disabled={cart.length === 0}
+          >
+            Finalizar Venda
+          </button>
+        {/if}
       </div>
     </div>
   {/if}

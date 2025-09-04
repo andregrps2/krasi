@@ -6,11 +6,10 @@
     salesHistory,
     installments,
   } from "../stores";
-  import Modal from "./Modal.svelte";
-  import PaymentTypeSelector from "./PaymentTypeSelector.svelte";
   import ProductsList from "./ProductsList.svelte";
   import ShoppingCart from "./ShoppingCart.svelte";
-  import CustomerSelector from "./CustomerSelector.svelte";
+  import SaleFinalizationSection from "./SaleFinalizationSection.svelte";
+  import SaleSuccessModal from "./SaleSuccessModal.svelte";
   import type {
     StockItem,
     Sale,
@@ -21,8 +20,6 @@
   } from "../types";
 
   const dispatch = createEventDispatcher();
-
-  let customerSelector: CustomerSelector;
 
   // Estado da venda
   let searchTerm = "";
@@ -35,6 +32,11 @@
   let dueDay = 10; // dia do vencimento (1-31)
   let firstInstallmentMonth = new Date().getMonth() + 1; // mês da primeira parcela (1-12)
   let firstInstallmentYear = new Date().getFullYear(); // ano da primeira parcela
+
+  // Estados dos modais e interface
+  let showFinalizationSection = false;
+  let showSuccessModal = false;
+  let completedSale: Sale | null = null;
 
   // Computar total do carrinho
   $: total = cart.reduce(
@@ -273,12 +275,11 @@
 
   function finalizeSale() {
     if (cart.length === 0) return;
+    showFinalizationSection = true;
+  }
 
-    // Para vendas a prazo, cliente é obrigatório
-    if (paymentType === "installments" && !selectedCustomer) {
-      alert("Para vendas a prazo, é necessário selecionar um cliente!");
-      return;
-    }
+  function handleConfirmSale(event: CustomEvent) {
+    const saleData = event.detail;
 
     // Criar registro da venda
     const saleItems: SaleItem[] = cart.map((cartItem) => ({
@@ -287,6 +288,10 @@
       quantity: cartItem.quantity,
       unitPrice: getPrice(cartItem.item),
       totalPrice: cartItem.quantity * getPrice(cartItem.item),
+      brand: cartItem.item.properties.brand || "",
+      type: cartItem.item.properties.type || "",
+      size: cartItem.item.properties.size || "",
+      color: cartItem.item.properties.color || "",
     }));
 
     const saleId =
@@ -296,43 +301,18 @@
 
     // Criar parcelas se for venda a prazo
     let saleInstallments: Installment[] = [];
-    if (paymentType === "installments") {
-      const installmentAmount = total / numberOfInstallments;
-
-      for (let i = 0; i < numberOfInstallments; i++) {
-        // Calcular a data de vencimento baseada no dia, mês e ano da primeira parcela
-        let month = firstInstallmentMonth + i;
-        let year = firstInstallmentYear;
-
-        // Ajustar o ano se o mês ultrapassar dezembro
-        while (month > 12) {
-          month -= 12;
-          year += 1;
-        }
-
-        // Função para obter o último dia do mês
-        const getLastDayOfMonth = (year: number, month: number) => {
-          return new Date(year, month, 0).getDate();
-        };
-
-        // Verificar se o dia escolhido existe no mês, senão usar o último dia
-        const lastDayOfMonth = getLastDayOfMonth(year, month);
-        const validDay = Math.min(dueDay, lastDayOfMonth);
-
-        // Criar a data com o dia válido
-        const dueDate = new Date(year, month - 1, validDay);
-
+    if (saleData.paymentType === "installments" && saleData.installments) {
+      saleData.installments.forEach((inst: any, i: number) => {
         const installment: Installment = {
           id: $installments.length + i + 1,
           saleId: saleId,
           installmentNumber: i + 1,
-          dueDate: dueDate,
-          amount: installmentAmount,
+          dueDate: new Date(inst.dueDate.split("/").reverse().join("-")),
+          amount: inst.value,
           status: "pending",
         };
-
         saleInstallments.push(installment);
-      }
+      });
 
       // Adicionar parcelas ao store
       $installments = [...$installments, ...saleInstallments];
@@ -342,11 +322,13 @@
       id: saleId,
       date: new Date(),
       items: saleItems,
-      totalAmount: total,
-      customerId: selectedCustomer?.id,
-      customerName: selectedCustomer?.name,
-      paymentType: paymentType,
-      installments: saleInstallments,
+      total: saleData.total,
+      totalAmount: saleData.total, // Para compatibilidade
+      customerId: saleData.selectedCustomer?.id,
+      customer: saleData.selectedCustomer,
+      customerName: saleData.selectedCustomer?.name,
+      paymentType: saleData.paymentType,
+      installments: saleData.installments || [],
     };
 
     // Adicionar venda ao histórico
@@ -361,7 +343,7 @@
       );
     });
 
-    // Limpar carrinho
+    // Limpar carrinho e estados
     cart = [];
     selectedCustomer = null;
     paymentType = "cash";
@@ -371,12 +353,19 @@
     firstInstallmentYear = new Date().getFullYear();
     searchTerm = "";
 
-    const paymentMessage =
-      paymentType === "cash"
-        ? `Venda #${newSale.id} finalizada com sucesso!\nTotal: R$ ${total.toFixed(2)}`
-        : `Venda #${newSale.id} finalizada a prazo!\nTotal: R$ ${total.toFixed(2)}\nParcelas: ${numberOfInstallments}x de R$ ${(total / numberOfInstallments).toFixed(2)}`;
+    // Fechar seção de finalização e mostrar modal de sucesso
+    showFinalizationSection = false;
+    completedSale = newSale;
+    showSuccessModal = true;
+  }
 
-    alert(paymentMessage);
+  function handleCancelSale() {
+    showFinalizationSection = false;
+  }
+
+  function handleSuccessModalClose() {
+    showSuccessModal = false;
+    completedSale = null;
   }
 
   function clearCart() {
@@ -388,82 +377,88 @@
     firstInstallmentMonth = new Date().getMonth() + 1;
     firstInstallmentYear = new Date().getFullYear();
   }
-
-  function handleCustomerSelected(event: CustomEvent) {
-    selectedCustomer = event.detail;
-  }
-
-  function handleCustomerCleared() {
-    selectedCustomer = null;
-  }
-
-  function openCustomerModal() {
-    customerSelector.openModal();
-  }
 </script>
 
 <div class="sales-container">
   <div class="sales-header">
     <div class="header-content">
       <h1>🛒 Ponto de Venda</h1>
-      <div class="header-controls">
-        <!-- Seletor de Cliente -->
-        <CustomerSelector
-          bind:selectedCustomer
-          bind:this={customerSelector}
-          on:customerSelected={handleCustomerSelected}
-          on:customerCleared={handleCustomerCleared}
-        />
-
-        <!-- Seletor de Tipo de Pagamento -->
-        <PaymentTypeSelector
-          bind:selectedCustomer
-          bind:paymentType
-          bind:numberOfInstallments
-          bind:installmentFrequency
-          bind:dueDay
-          bind:firstInstallmentMonth
-          bind:firstInstallmentYear
-          on:openCustomerModal={openCustomerModal}
-          on:clearCustomer={handleCustomerCleared}
-        />
-      </div>
     </div>
   </div>
 
   <div class="sales-content">
     <!-- Área Principal: Produtos e Vendas -->
-    <div class="main-area">
-      <!-- Produtos Disponíveis -->
-      <ProductsList
-        {availableProducts}
-        bind:searchTerm
-        propertyDefinitions={$propertyDefinitions}
-        on:addToCart={(e) => addToCart(e.detail)}
-      />
+    <div class="main-area" class:finalization-mode={showFinalizationSection}>
+      {#if !showFinalizationSection}
+        <!-- Produtos Disponíveis -->
+        <ProductsList
+          {availableProducts}
+          bind:searchTerm
+          propertyDefinitions={$propertyDefinitions}
+          on:addToCart={(e) => addToCart(e.detail)}
+        />
 
-      <!-- Carrinho de Vendas -->
-      <ShoppingCart
-        {cart}
-        {total}
-        {paymentType}
-        {numberOfInstallments}
-        {dueDay}
-        {firstInstallmentMonth}
-        {firstInstallmentYear}
-        {selectedCustomer}
-        on:updateQuantity={handleCartUpdateQuantity}
-        on:removeItem={handleCartRemoveItem}
-        on:clearCart={handleCartClear}
-        on:finalizeSale={handleCartFinalize}
-      />
+        <!-- Carrinho de Vendas -->
+        <ShoppingCart
+          {cart}
+          {total}
+          {paymentType}
+          {numberOfInstallments}
+          {dueDay}
+          {firstInstallmentMonth}
+          {firstInstallmentYear}
+          {selectedCustomer}
+          on:updateQuantity={handleCartUpdateQuantity}
+          on:removeItem={handleCartRemoveItem}
+          on:clearCart={handleCartClear}
+          on:finalizeSale={handleCartFinalize}
+        />
+      {:else}
+        <!-- Carrinho de Vendas (lado esquerdo) -->
+        <ShoppingCart
+          {cart}
+          {total}
+          {paymentType}
+          {numberOfInstallments}
+          {dueDay}
+          {firstInstallmentMonth}
+          {firstInstallmentYear}
+          {selectedCustomer}
+          showFinalizationButton={false}
+          on:updateQuantity={handleCartUpdateQuantity}
+          on:removeItem={handleCartRemoveItem}
+          on:clearCart={handleCartClear}
+          on:finalizeSale={handleCartFinalize}
+        />
+
+        <!-- Seção de Finalização (lado direito) -->
+        <SaleFinalizationSection
+          {cart}
+          {total}
+          bind:selectedCustomer
+          bind:paymentType
+          bind:numberOfInstallments
+          bind:dueDay
+          bind:firstInstallmentMonth
+          bind:firstInstallmentYear
+          on:confirmSale={handleConfirmSale}
+          on:cancel={handleCancelSale}
+        />
+      {/if}
     </div>
   </div>
 </div>
 
+<!-- Modal de Sucesso -->
+<SaleSuccessModal
+  bind:isOpen={showSuccessModal}
+  sale={completedSale}
+  on:close={handleSuccessModalClose}
+/>
+
 <style>
   .sales-container {
-    padding: 1rem;
+    padding: 0 1rem 1rem 1rem;
     max-width: 1600px;
     margin: 0 auto;
     background-color: #1a1a1a;
@@ -472,24 +467,14 @@
   }
 
   .sales-header {
-    margin-bottom: 0.2rem;
-    padding: 0.1rem 0;
+    margin-bottom: 0.5rem;
+    padding: 0 0 0.5rem 0;
   }
 
   .header-content {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 0.2rem;
-    min-height: 35px;
-  }
-
-  .header-controls {
-    display: flex;
-    gap: 0.2rem;
-    align-items: center;
-    flex-wrap: wrap;
   }
 
   .sales-header h1 {
@@ -513,6 +498,11 @@
     grid-template-columns: 1.8fr 1.2fr;
     gap: 0.5rem;
     height: calc(100vh - 70px);
+  }
+
+  /* Modo de finalização: carrinho mantém tamanho, seção de finalização fica maior */
+  .main-area.finalization-mode {
+    grid-template-columns: 1.2fr 1.8fr;
   }
 
   /* Responsivo */

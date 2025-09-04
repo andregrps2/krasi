@@ -105,10 +105,6 @@
           ✕
         </button>
       </div>
-    {:else}
-      <div class="search-help">
-        💡 Dica: Digite qualquer combinação de marca, tecido, cor ou tamanho
-      </div>
     {/if}
   </div>
 
@@ -233,13 +229,6 @@
   .clear-search:hover {
     background: #666;
     color: white;
-  }
-
-  .search-help {
-    font-size: 0.75rem;
-    color: #888;
-    font-style: italic;
-    margin-top: 0.3rem;
   }
 
   /* Destaque dos termos de busca */
