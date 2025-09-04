@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import type { PropertyDefinition, StockItemOld as StockItem, Sale, Customer, Installment } from './types-new';
-import { stockService, customersService, salesService } from './lib/services';
+import { stockService, customersService, salesService, installmentsService } from './lib/services';
 
 /**
  * Cria uma Svelte store (writable) que sincroniza seu estado com o localStorage.
@@ -106,11 +106,20 @@ export async function loadSalesForStore(storeId: string) {
   }
 }
 
-// --- Parcelas (ainda em localStorage) ---
+// --- Parcelas Dinâmicas ---
 
-const initialInstallments: Installment[] = [];
+export const installments = writable<Installment[]>([]);
 
-export const installments = createPersistentStore<Installment[]>('installments', initialInstallments);
+// Função para carregar parcelas da loja atual
+export async function loadInstallmentsForStore(storeId: string) {
+  try {
+    const storeInstallments = await installmentsService.getInstallmentsByStore(storeId);
+    installments.set(storeInstallments);
+  } catch (error) {
+    console.error('Erro ao carregar parcelas:', error);
+    installments.set([]);
+  }
+}
 
 // --- Store reativo que carrega dados quando a loja muda ---
 
@@ -120,12 +129,14 @@ currentStoreId.subscribe(async (storeId) => {
     await Promise.all([
       loadStockForStore(storeId),
       loadCustomersForStore(storeId),
-      loadSalesForStore(storeId)
+      loadSalesForStore(storeId),
+      loadInstallmentsForStore(storeId)
     ]);
   } else {
     // Limpar dados quando não há loja selecionada
     stock.set([]);
     customers.set([]);
     salesHistory.set([]);
+    installments.set([]);
   }
 });

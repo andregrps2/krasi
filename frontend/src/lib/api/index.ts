@@ -4,6 +4,7 @@ export { stockApi } from './stock';
 export { customersApi } from './customers';
 export { storesApi } from './stores';
 export { salesApi } from './sales';
+export { installmentsApi } from './installments';
 
 // Re-export types for convenience
 export type {

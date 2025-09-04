@@ -1,11 +1,18 @@
 <script lang="ts">
-  import { installments, customers, salesHistory } from "../stores";
-  import type { Installment, InstallmentStatus, Customer } from "../types";
+  import {
+    installments,
+    customers,
+    salesHistory,
+    currentStoreId,
+  } from "../stores";
+  import { installmentsService } from "../lib/services";
+  import type { Installment, Customer } from "../types-new";
+  import { InstallmentStatus } from "../types-new";
   import Modal from "./Modal.svelte";
 
   // State
   let filterStatus: InstallmentStatus | "all" = "all";
-  let selectedCustomerId: number | null = null;
+  let selectedCustomerId: string | null = null;
   let selectedCustomer: Customer | null = null;
   let searchTerm = "";
   let customerSearchTerm = "";
@@ -18,8 +25,10 @@
     const term = customerSearchTerm.toLowerCase();
     return (
       customer.name.toLowerCase().includes(term) ||
-      customer.congregation.toLowerCase().includes(term) ||
-      customer.whatsappNumber.includes(term)
+      customer.congregation?.toLowerCase().includes(term) ||
+      false ||
+      customer.whatsappNumber?.includes(term) ||
+      false
     );
   });
 
@@ -47,7 +56,8 @@
       const term = searchTerm.toLowerCase();
       return (
         customer.name.toLowerCase().includes(term) ||
-        customer.congregation.toLowerCase().includes(term)
+        customer.congregation?.toLowerCase().includes(term) ||
+        false
       );
     }
 
@@ -60,12 +70,12 @@
     today.setHours(0, 0, 0, 0);
 
     $installments = $installments.map((installment) => {
-      if (installment.status === "pending") {
+      if (installment.status === InstallmentStatus.PENDING) {
         const dueDate = new Date(installment.dueDate);
         dueDate.setHours(0, 0, 0, 0);
 
         if (dueDate < today) {
-          return { ...installment, status: "overdue" as InstallmentStatus };
+          return { ...installment, status: InstallmentStatus.OVERDUE };
         }
       }
       return installment;
@@ -75,43 +85,50 @@
   // Estatísticas
   $: stats = {
     total: $installments.length,
-    pending: $installments.filter((i) => i.status === "pending").length,
-    overdue: $installments.filter((i) => i.status === "overdue").length,
-    paid: $installments.filter((i) => i.status === "paid").length,
+    pending: $installments.filter((i) => i.status === InstallmentStatus.PENDING)
+      .length,
+    overdue: $installments.filter((i) => i.status === InstallmentStatus.OVERDUE)
+      .length,
+    paid: $installments.filter((i) => i.status === InstallmentStatus.PAID)
+      .length,
     totalAmount: $installments.reduce((sum, i) => sum + i.amount, 0),
     pendingAmount: $installments
-      .filter((i) => i.status === "pending")
+      .filter((i) => i.status === InstallmentStatus.PENDING)
       .reduce((sum, i) => sum + i.amount, 0),
     overdueAmount: $installments
-      .filter((i) => i.status === "overdue")
+      .filter((i) => i.status === InstallmentStatus.OVERDUE)
       .reduce((sum, i) => sum + i.amount, 0),
   };
 
-  function markAsPaid(installmentId: number) {
+  async function markAsPaid(installmentId: string) {
     if (confirm("Marcar esta parcela como paga?")) {
-      $installments = $installments.map((installment) =>
-        installment.id === installmentId
-          ? {
-              ...installment,
-              status: "paid" as InstallmentStatus,
-              paidDate: new Date(),
-            }
-          : installment
-      );
+      try {
+        await installmentsService.payInstallment(installmentId, {
+          paymentDate: new Date(),
+          paymentMethod: "cash",
+        });
+
+        // Recarregar dados da loja atual
+        const storeId = $currentStoreId;
+        if (storeId) {
+          const updatedInstallments =
+            await installmentsService.getInstallmentsByStore(storeId);
+          installments.set(updatedInstallments);
+        }
+      } catch (error) {
+        alert("Erro ao marcar parcela como paga: " + error);
+      }
     }
   }
 
-  function markAsPending(installmentId: number) {
+  async function markAsPending(installmentId: string) {
     if (confirm("Marcar esta parcela como pendente?")) {
-      $installments = $installments.map((installment) =>
-        installment.id === installmentId
-          ? {
-              ...installment,
-              status: "pending" as InstallmentStatus,
-              paidDate: undefined,
-            }
-          : installment
-      );
+      try {
+        // Funcionalidade em desenvolvimento
+        alert("Funcionalidade em desenvolvimento");
+      } catch (error) {
+        alert("Erro ao alterar status da parcela: " + error);
+      }
     }
   }
 
@@ -126,18 +143,21 @@
     });
   }
 
-  function getCustomerName(saleId: number): string {
+  function getCustomerName(saleId: string): string {
     const sale = $salesHistory.find((s) => s.id === saleId);
-    return sale?.customerName || "Cliente não encontrado";
+    if (!sale) return "Cliente não encontrado";
+
+    const customer = $customers.find((c) => c.id === sale.customerId);
+    return customer?.name || "Cliente não encontrado";
   }
 
   function getStatusColor(status: InstallmentStatus): string {
     switch (status) {
-      case "paid":
+      case InstallmentStatus.PAID:
         return "#4ade80";
-      case "pending":
+      case InstallmentStatus.PENDING:
         return "var(--primary-color)";
-      case "overdue":
+      case InstallmentStatus.OVERDUE:
         return "#ef4444";
       default:
         return "#888";
@@ -146,11 +166,11 @@
 
   function getStatusText(status: InstallmentStatus): string {
     switch (status) {
-      case "paid":
+      case InstallmentStatus.PAID:
         return "Paga";
-      case "pending":
+      case InstallmentStatus.PENDING:
         return "Pendente";
-      case "overdue":
+      case InstallmentStatus.OVERDUE:
         return "Vencida";
       default:
         return "Desconhecido";
@@ -159,11 +179,11 @@
 
   function getStatusIcon(status: InstallmentStatus): string {
     switch (status) {
-      case "paid":
+      case InstallmentStatus.PAID:
         return "✅";
-      case "pending":
+      case InstallmentStatus.PENDING:
         return "⏳";
-      case "overdue":
+      case InstallmentStatus.OVERDUE:
         return "⚠️";
       default:
         return "❓";
@@ -301,9 +321,9 @@
           class="filter-select"
         >
           <option value="all">Todos</option>
-          <option value="pending">Pendentes</option>
-          <option value="overdue">Vencidas</option>
-          <option value="paid">Pagas</option>
+          <option value={InstallmentStatus.PENDING}>Pendentes</option>
+          <option value={InstallmentStatus.OVERDUE}>Vencidas</option>
+          <option value={InstallmentStatus.PAID}>Pagas</option>
         </select>
       </div>
 
@@ -373,11 +393,11 @@
                   </div>
                 </td>
                 <td>#{installment.saleId}</td>
-                <td>{installment.installmentNumber}</td>
+                <td>{installment.number}</td>
                 <td>
                   <div class="date-info">
                     {formatDate(installment.dueDate)}
-                    {#if installment.status === "overdue"}
+                    {#if installment.status === InstallmentStatus.OVERDUE}
                       <span class="overdue-label">VENCIDA</span>
                     {/if}
                   </div>
@@ -396,7 +416,7 @@
                 </td>
                 <td>
                   <div class="actions">
-                    {#if installment.status !== "paid"}
+                    {#if installment.status !== InstallmentStatus.PAID}
                       <button
                         class="action-btn pay-btn"
                         on:click={() => markAsPaid(installment.id)}
