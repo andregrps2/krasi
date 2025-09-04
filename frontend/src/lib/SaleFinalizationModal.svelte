@@ -16,10 +16,17 @@
   export let dueDay = 10;
   export let firstInstallmentMonth = new Date().getMonth() + 1;
   export let firstInstallmentYear = new Date().getFullYear();
+  export let hasDownPayment = false;
+  export let downPaymentValue: number | string = "";
 
   const dispatch = createEventDispatcher();
 
-  let installments: { value: number; dueDate: string }[] = [];
+  let installments: {
+    value: number;
+    dueDate: string;
+    isDownPayment?: boolean;
+    isPaid?: boolean;
+  }[] = [];
   let installmentsEdited = false;
 
   // Calcular parcelas quando os parâmetros mudarem
@@ -31,26 +38,94 @@
     installments = [];
     if (numberOfInstallments <= 1) return;
 
-    const installmentValue = total / numberOfInstallments;
+    const entryValue = Number(downPaymentValue) || 0;
 
-    for (let i = 0; i < numberOfInstallments; i++) {
-      const dueDate = calculateDueDate(i);
-      installments.push({
-        value: Math.round(installmentValue * 100) / 100,
-        dueDate,
-      });
-    }
+    // Se tem entrada, primeira parcela é a entrada
+    if (hasDownPayment && entryValue > 0) {
+      const entryInstallment = {
+        value: entryValue,
+        dueDate: "Entrada",
+        isDownPayment: true,
+        isPaid: true,
+      };
+      installments.push(entryInstallment);
 
-    // Ajustar a última parcela para compensar arredondamentos
-    const totalInstallments = installments.reduce(
-      (sum, inst) => sum + inst.value,
-      0
-    );
-    const difference = total - totalInstallments;
-    if (Math.abs(difference) > 0.01) {
-      installments[installments.length - 1].value += difference;
-      installments[installments.length - 1].value =
-        Math.round(installments[installments.length - 1].value * 100) / 100;
+      // Calcular parcelas normais
+      const remainingAmount = total - entryValue;
+      const normalInstallments = numberOfInstallments - 1;
+
+      if (normalInstallments > 0) {
+        const installmentValue = remainingAmount / normalInstallments;
+
+        for (let i = 0; i < normalInstallments; i++) {
+          const targetMonth = firstInstallmentMonth + i;
+          const targetYear =
+            firstInstallmentYear + Math.floor((targetMonth - 1) / 12);
+          const targetMonthAdjusted = ((targetMonth - 1) % 12) + 1;
+
+          const date = new Date();
+          date.setFullYear(targetYear);
+          date.setMonth(targetMonthAdjusted - 1);
+          date.setDate(dueDay);
+
+          let finalValue;
+
+          // Se é a última parcela, calcular o valor restante exato
+          if (i === normalInstallments - 1) {
+            let sumPreviousParcels = 0;
+            for (let j = 0; j < i; j++) {
+              sumPreviousParcels += Math.round(installmentValue * 100) / 100;
+            }
+            finalValue = remainingAmount - sumPreviousParcels;
+          } else {
+            finalValue = Math.round(installmentValue * 100) / 100;
+          }
+
+          const normalInstallment = {
+            value: finalValue,
+            dueDate: date.toLocaleDateString("pt-BR"),
+            isDownPayment: false,
+            isPaid: false,
+          };
+          installments.push(normalInstallment);
+        }
+      }
+    } else {
+      // Sem entrada - calcular todas as parcelas normalmente
+      const installmentValue = total / numberOfInstallments;
+
+      for (let i = 0; i < numberOfInstallments; i++) {
+        const targetMonth = firstInstallmentMonth + i;
+        const targetYear =
+          firstInstallmentYear + Math.floor((targetMonth - 1) / 12);
+        const targetMonthAdjusted = ((targetMonth - 1) % 12) + 1;
+
+        const date = new Date();
+        date.setFullYear(targetYear);
+        date.setMonth(targetMonthAdjusted - 1);
+        date.setDate(dueDay);
+
+        let finalValue;
+
+        // Se é a última parcela, calcular o valor restante exato
+        if (i === numberOfInstallments - 1) {
+          let sumPreviousParcels = 0;
+          for (let j = 0; j < i; j++) {
+            sumPreviousParcels += Math.round(installmentValue * 100) / 100;
+          }
+          finalValue = total - sumPreviousParcels;
+        } else {
+          finalValue = Math.round(installmentValue * 100) / 100;
+        }
+
+        const normalInstallment = {
+          value: finalValue,
+          dueDate: date.toLocaleDateString("pt-BR"),
+          isDownPayment: false,
+          isPaid: false,
+        };
+        installments.push(normalInstallment);
+      }
     }
 
     installmentsEdited = false;
@@ -112,6 +187,8 @@
       dueDay,
       firstInstallmentMonth,
       firstInstallmentYear,
+      hasDownPayment,
+      downPaymentValue: Number(downPaymentValue) || 0,
       installments:
         paymentType === PaymentTypeEnum.INSTALLMENTS ? installments : [],
     };
@@ -134,6 +211,8 @@
     dueDay = event.detail.dueDay;
     firstInstallmentMonth = event.detail.firstInstallmentMonth;
     firstInstallmentYear = event.detail.firstInstallmentYear;
+    hasDownPayment = event.detail.hasDownPayment;
+    downPaymentValue = event.detail.downPaymentValue;
 
     dispatch("paymentChange", event.detail);
   }
@@ -183,6 +262,9 @@
         bind:dueDay
         bind:firstInstallmentMonth
         bind:firstInstallmentYear
+        bind:hasDownPayment
+        bind:downPaymentValue
+        {total}
         on:paymentChange={handlePaymentChange}
       />
     </div>

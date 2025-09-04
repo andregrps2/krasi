@@ -9,6 +9,7 @@ import customerRoutes from './routes/customers';
 import saleRoutes from './routes/sales';
 import stockRoutes from './routes/stock';
 import installmentRoutes from './routes/installments';
+import companyRoutes from './routes/companies';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -27,6 +28,7 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/companies', companyRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stores', storeRoutes);
 app.use('/api/customers', customerRoutes);

@@ -11,7 +11,7 @@ const installmentCreateSchema = z.object({
   number: z.number().min(1, 'Número da parcela deve ser positivo'),
   amount: z.number().min(0, 'Valor deve ser positivo'),
   dueDate: z.string().or(z.date()),
-  status: z.enum(['PENDING', 'PAID', 'OVERDUE', 'CANCELLED']).default('PENDING'),
+  status: z.enum(['PENDING', 'PAID', 'OVERDUE', 'CANCELLED']),
   paidDate: z.string().or(z.date()).optional(),
   notes: z.string().optional()
 });
@@ -118,6 +118,8 @@ router.post('/', async (req, res) => {
     });
 
     console.log('✅ [INSTALLMENTS] Parcela criada com sucesso:', installment.id);
+    console.log('📊 [INSTALLMENTS] Status da parcela criada:', installment.status);
+    console.log('💰 [INSTALLMENTS] Data de pagamento:', installment.paidDate);
     res.status(201).json(installment);
   } catch (error) {
     console.error('❌ [INSTALLMENTS] Erro ao criar parcela:', error);

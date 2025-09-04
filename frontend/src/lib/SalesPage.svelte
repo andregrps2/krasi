@@ -416,6 +416,9 @@
       const installments =
         saleData.installments?.map((inst: any, index: number) => {
           console.log(`💳 [SALES] Parcela ${index + 1}:`, inst);
+          console.log(
+            `🔍 [SALES] isDownPayment: ${inst.isDownPayment}, isPaid: ${inst.isPaid}`
+          );
 
           const dueDate =
             inst.dueDate === "Entrada"
@@ -428,11 +431,16 @@
             `📅 [SALES] Data de vencimento convertida: ${inst.dueDate} -> ${dueDate}`
           );
 
-          return {
+          const converted = {
             number: inst.number,
             amount: inst.value,
             dueDate: dueDate,
+            isDownPayment: inst.isDownPayment || false, // PRESERVAR informação de entrada
+            isPaid: inst.isPaid || false, // PRESERVAR informação de pagamento
           };
+
+          console.log(`🔄 [SALES] Parcela ${index + 1} convertida:`, converted);
+          return converted;
         }) || [];
 
       console.log("✅ [SALES] Parcelas convertidas:", installments);
@@ -471,32 +479,32 @@
         console.log(
           "💰 [INSTALLMENTS] Iniciando salvamento de parcelas no banco..."
         );
-        console.log(
-          "💰 [INSTALLMENTS] Dados das parcelas:",
-          saleData.installments
-        );
+        console.log("💰 [INSTALLMENTS] Dados das parcelas:", installments);
         console.log(
           "💰 [INSTALLMENTS] Cliente selecionado:",
           saleData.selectedCustomer
         );
 
-        for (const [index, inst] of saleData.installments.entries()) {
+        for (const [index, inst] of installments.entries()) {
           try {
             console.log(
-              `💳 [INSTALLMENTS] Processando parcela ${index + 1}/${saleData.installments.length}:`,
+              `💳 [INSTALLMENTS] Processando parcela ${index + 1}/${installments.length}:`,
               inst
+            );
+            console.log(
+              `🔍 [INSTALLMENTS] isDownPayment: ${inst.isDownPayment}`
             );
 
             const status = inst.isDownPayment ? "PAID" : "PENDING";
             const paidDate = inst.isDownPayment ? new Date() : undefined;
 
+            console.log(`📋 [INSTALLMENTS] Status calculado: ${status}`);
+            console.log(`📅 [INSTALLMENTS] Data de pagamento: ${paidDate}`);
+
             const installmentData = {
               number: inst.number,
-              dueDate:
-                inst.dueDate === "Entrada"
-                  ? new Date()
-                  : new Date(inst.dueDate.split("/").reverse().join("-")),
-              amount: inst.value,
+              dueDate: new Date(inst.dueDate),
+              amount: inst.amount,
               status: status,
               paidDate: paidDate,
               saleId: savedSale.id.toString(),

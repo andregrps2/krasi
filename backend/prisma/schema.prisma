@@ -1,208 +1,208 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+    provider = "mysql"
+    url      = env("DATABASE_URL")
 }
 
 model Company {
-  id        String   @id @default(cuid())
-  name      String
-  cnpj      String   @unique
-  email     String?
-  phone     String?
-  address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  stores    Store[]
+    id        String   @id @default(cuid())
+    name      String
+    cnpj      String   @unique
+    email     String?
+    phone     String?
+    address   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    stores    Store[]
 
-  @@map("companies")
+    @@map("companies")
 }
 
 model Store {
-  id         String      @id @default(cuid())
-  name       String
-  address    String?
-  phone      String?
-  email      String?
-  isActive   Boolean     @default(true)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  companyId  String
-  customers  Customer[]
-  sales      Sale[]
-  stockItems StockItem[]
-  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  users      User[]
+    id         String      @id @default(cuid())
+    name       String
+    address    String?
+    phone      String?
+    email      String?
+    isActive   Boolean     @default(true)
+    createdAt  DateTime    @default(now())
+    updatedAt  DateTime    @updatedAt
+    companyId  String
+    customers  Customer[]
+    sales      Sale[]
+    stockItems StockItem[]
+    company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+    users      User[]
 
-  @@index([companyId], map: "stores_companyId_fkey")
-  @@map("stores")
+    @@index([companyId], map: "stores_companyId_fkey")
+    @@map("stores")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      UserRole @default(CASHIER)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  storeId   String
-  sales     Sale[]
-  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+    id        String   @id @default(cuid())
+    name      String
+    email     String   @unique
+    password  String
+    role      UserRole @default(CASHIER)
+    isActive  Boolean  @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    storeId   String
+    sales     Sale[]
+    store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
-  @@index([storeId], map: "users_storeId_fkey")
-  @@map("users")
+    @@index([storeId], map: "users_storeId_fkey")
+    @@map("users")
 }
 
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  description String?
-  brand       String?
-  category    String?
-  barcode     String?     @unique
-  unit        String      @default("un")
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  saleItems   SaleItem[]
-  stockItems  StockItem[]
+    id          String      @id @default(cuid())
+    name        String
+    description String?
+    brand       String?
+    category    String?
+    barcode     String?     @unique
+    unit        String      @default("un")
+    isActive    Boolean     @default(true)
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    saleItems   SaleItem[]
+    stockItems  StockItem[]
 
-  @@map("products")
+    @@map("products")
 }
 
 model StockItem {
-  id            String     @id @default(cuid())
-  quantity      Int        @default(0)
-  minQuantity   Int        @default(0)
-  maxQuantity   Int?
-  purchasePrice Decimal    @db.Decimal(10, 2)
-  salePrice     Decimal    @db.Decimal(10, 2)
-  isActive      Boolean    @default(true)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  productId     String
-  storeId       String
-  saleItems     SaleItem[]
-  product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  store         Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+    id            String     @id @default(cuid())
+    quantity      Int        @default(0)
+    minQuantity   Int        @default(0)
+    maxQuantity   Int?
+    purchasePrice Decimal    @db.Decimal(10, 2)
+    salePrice     Decimal    @db.Decimal(10, 2)
+    isActive      Boolean    @default(true)
+    createdAt     DateTime   @default(now())
+    updatedAt     DateTime   @updatedAt
+    productId     String
+    storeId       String
+    saleItems     SaleItem[]
+    product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+    store         Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
-  @@unique([productId, storeId])
-  @@index([storeId], map: "stock_items_storeId_fkey")
-  @@map("stock_items")
+    @@unique([productId, storeId])
+    @@index([storeId], map: "stock_items_storeId_fkey")
+    @@map("stock_items")
 }
 
 model Customer {
-  id           String        @id @default(cuid())
-  name         String
-  cpf          String?
-  phone        String?
-  email        String?
-  address      String?
-  birthDate    DateTime?
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  storeId      String
-  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  installments Installment[]
-  sales        Sale[]
+    id           String        @id @default(cuid())
+    name         String
+    cpf          String?
+    phone        String?
+    email        String?
+    address      String?
+    birthDate    DateTime?
+    isActive     Boolean       @default(true)
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    storeId      String
+    store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+    installments Installment[]
+    sales        Sale[]
 
-  @@index([storeId], map: "customers_storeId_fkey")
-  @@map("customers")
+    @@index([storeId], map: "customers_storeId_fkey")
+    @@map("customers")
 }
 
 model Sale {
-  id           String        @id @default(cuid())
-  total        Decimal       @db.Decimal(10, 2)
-  discount     Decimal?      @db.Decimal(10, 2)
-  paymentType  PaymentType
-  status       SaleStatus    @default(COMPLETED)
-  notes        String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  customerId   String?
-  storeId      String
-  userId       String
-  installments Installment[]
-  saleItems    SaleItem[]
-  customer     Customer?     @relation(fields: [customerId], references: [id])
-  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  user         User          @relation(fields: [userId], references: [id])
+    id           String        @id @default(cuid())
+    total        Decimal       @db.Decimal(10, 2)
+    discount     Decimal?      @db.Decimal(10, 2)
+    paymentType  PaymentType
+    status       SaleStatus    @default(COMPLETED)
+    notes        String?
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    customerId   String?
+    storeId      String
+    userId       String
+    installments Installment[]
+    saleItems    SaleItem[]
+    customer     Customer?     @relation(fields: [customerId], references: [id])
+    store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+    user         User          @relation(fields: [userId], references: [id])
 
-  @@index([customerId], map: "sales_customerId_fkey")
-  @@index([storeId], map: "sales_storeId_fkey")
-  @@index([userId], map: "sales_userId_fkey")
-  @@map("sales")
+    @@index([customerId], map: "sales_customerId_fkey")
+    @@index([storeId], map: "sales_storeId_fkey")
+    @@index([userId], map: "sales_userId_fkey")
+    @@map("sales")
 }
 
 model SaleItem {
-  id          String    @id @default(cuid())
-  quantity    Int
-  price       Decimal   @db.Decimal(10, 2)
-  total       Decimal   @db.Decimal(10, 2)
-  saleId      String
-  productId   String
-  stockItemId String
-  product     Product   @relation(fields: [productId], references: [id])
-  sale        Sale      @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+    id          String    @id @default(cuid())
+    quantity    Int
+    price       Decimal   @db.Decimal(10, 2)
+    total       Decimal   @db.Decimal(10, 2)
+    saleId      String
+    productId   String
+    stockItemId String
+    product     Product   @relation(fields: [productId], references: [id])
+    sale        Sale      @relation(fields: [saleId], references: [id], onDelete: Cascade)
+    stockItem   StockItem @relation(fields: [stockItemId], references: [id])
 
-  @@index([productId], map: "sale_items_productId_fkey")
-  @@index([saleId], map: "sale_items_saleId_fkey")
-  @@index([stockItemId], map: "sale_items_stockItemId_fkey")
-  @@map("sale_items")
+    @@index([productId], map: "sale_items_productId_fkey")
+    @@index([saleId], map: "sale_items_saleId_fkey")
+    @@index([stockItemId], map: "sale_items_stockItemId_fkey")
+    @@map("sale_items")
 }
 
 model Installment {
-  id          String            @id @default(cuid())
-  number      Int
-  amount      Decimal           @db.Decimal(10, 2)
-  dueDate     DateTime
-  paidDate    DateTime?
-  status      InstallmentStatus @default(PENDING)
-  paymentType PaymentType?
-  notes       String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  saleId      String
-  customerId  String
-  customer    Customer          @relation(fields: [customerId], references: [id])
-  sale        Sale              @relation(fields: [saleId], references: [id], onDelete: Cascade)
+    id          String            @id @default(cuid())
+    number      Int
+    amount      Decimal           @db.Decimal(10, 2)
+    dueDate     DateTime
+    paidDate    DateTime?
+    status      InstallmentStatus
+    paymentType PaymentType?
+    notes       String?
+    createdAt   DateTime          @default(now())
+    updatedAt   DateTime          @updatedAt
+    saleId      String
+    customerId  String
+    customer    Customer          @relation(fields: [customerId], references: [id])
+    sale        Sale              @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
-  @@index([customerId], map: "installments_customerId_fkey")
-  @@index([saleId], map: "installments_saleId_fkey")
-  @@map("installments")
+    @@index([customerId], map: "installments_customerId_fkey")
+    @@index([saleId], map: "installments_saleId_fkey")
+    @@map("installments")
 }
 
 enum UserRole {
-  ADMIN
-  MANAGER
-  CASHIER
+    ADMIN
+    MANAGER
+    CASHIER
 }
 
 enum PaymentType {
-  CASH
-  CARD
-  PIX
-  INSTALLMENTS
-  FIADO
+    CASH
+    CARD
+    PIX
+    INSTALLMENTS
+    FIADO
 }
 
 enum SaleStatus {
-  PENDING
-  COMPLETED
-  CANCELLED
-  RETURNED
+    PENDING
+    COMPLETED
+    CANCELLED
+    RETURNED
 }
 
 enum InstallmentStatus {
-  PENDING
-  PAID
-  OVERDUE
-  CANCELLED
+    PENDING
+    PAID
+    OVERDUE
+    CANCELLED
 }
