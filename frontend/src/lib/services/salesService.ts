@@ -33,12 +33,9 @@ class SalesService {
     return this.getSalesByStore(storeId);
   }
 
-  async createSale(storeId: string, saleData: Partial<Sale>): Promise<Sale> {
+  async createSale(storeId: string, saleData: any): Promise<Sale> {
     try {
-      const newSale = await salesApi.create({
-        ...saleData,
-        storeId
-      } as any);
+      const newSale = await salesApi.create(saleData);
       
       // Atualizar cache
       await this.refreshSales(storeId);

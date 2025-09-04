@@ -5,19 +5,22 @@
     propertyDefinitions,
     salesHistory,
     installments,
+    currentStoreId,
   } from "../stores";
+  import { salesService } from "./services/salesService";
+  import { installmentsService } from "./services/installmentsService";
+  import { PaymentType } from "../types-new";
   import ProductsList from "./ProductsList.svelte";
   import ShoppingCart from "./ShoppingCart.svelte";
   import SaleFinalizationSection from "./SaleFinalizationSection.svelte";
   import SaleSuccessModal from "./SaleSuccessModal.svelte";
   import type {
-    StockItem,
+    StockItemWithRelations as StockItem,
     Sale,
     SaleItem,
     Customer,
-    PaymentType,
     Installment,
-  } from "../types";
+  } from "../types-new";
 
   const dispatch = createEventDispatcher();
 
@@ -26,7 +29,7 @@
   let cart: { item: StockItem; quantity: number }[] = [];
   let total = 0;
   let selectedCustomer: Customer | null = null;
-  let paymentType: PaymentType = "cash";
+  let paymentType: PaymentType = PaymentType.CASH;
   let numberOfInstallments = 2;
   let installmentFrequency = 30; // dias entre parcelas
   let dueDay = 10; // dia do vencimento (1-31)
@@ -39,7 +42,7 @@
   let completedSale: Sale | null = null;
 
   // Garantir que quando mudar para "installments", numberOfInstallments seja pelo menos 2
-  $: if (paymentType === "installments" && numberOfInstallments < 2) {
+  $: if (paymentType === PaymentType.INSTALLMENTS && numberOfInstallments < 2) {
     numberOfInstallments = 2;
   }
 
@@ -63,8 +66,20 @@
     const scoredItems = $stock
       .filter((item) => item.quantity > 0)
       .map((item) => {
-        const score = calculateFuzzyScore(item, searchTerms);
-        return { item, score };
+        // Verificar se o item tem a estrutura correta
+        if ("product" in item && "store" in item) {
+          const score = calculateFuzzyScore(item as any, searchTerms);
+          return { item, score };
+        } else {
+          // Para itens antigos, criar um score básico baseado no nome
+          const itemName = (item as any).name || "";
+          const score = searchTerms.some((term) =>
+            itemName.toLowerCase().includes(term)
+          )
+            ? 5
+            : 0;
+          return { item, score };
+        }
       })
       .filter(({ score }) => score > 0)
       .sort((a, b) => b.score - a.score)
@@ -76,7 +91,13 @@
   // Função para calcular pontuação fuzzy
   function calculateFuzzyScore(item: StockItem, searchTerms: string[]): number {
     let score = 0;
-    const itemText = Object.values(item.properties)
+    const itemText = [
+      item.product.name,
+      item.product.brand,
+      item.product.category,
+      item.product.description,
+    ]
+      .filter(Boolean)
       .map((val) => normalizeText(String(val)))
       .join(" ");
 
@@ -89,7 +110,14 @@
       }
 
       // Pontuação para correspondência parcial em cada propriedade
-      Object.values(item.properties).forEach((propValue) => {
+      const searchFields = [
+        item.product.name,
+        item.product.brand,
+        item.product.category,
+        item.product.description,
+      ].filter(Boolean);
+
+      searchFields.forEach((propValue) => {
         const value = normalizeText(String(propValue));
 
         // Correspondência exata na propriedade
@@ -126,13 +154,20 @@
       const normalizedTerm = normalizeText(term);
       return (
         itemText.includes(normalizedTerm) ||
-        Object.values(item.properties).some((val) => {
-          const value = normalizeText(String(val));
-          return (
-            value.includes(normalizedTerm) ||
-            isAbbreviation(normalizedTerm, value)
-          );
-        })
+        [
+          item.product.name,
+          item.product.brand,
+          item.product.category,
+          item.product.description,
+        ]
+          .filter(Boolean)
+          .some((val) => {
+            const value = normalizeText(String(val));
+            return (
+              value.includes(normalizedTerm) ||
+              isAbbreviation(normalizedTerm, value)
+            );
+          })
       );
     });
 
@@ -203,18 +238,31 @@
   }
 
   // Função para obter preço do produto
-  function getPrice(item: StockItem): number {
-    // Primeiro tenta usar o preço definido no produto
-    if (item.properties.price) {
+  function getPrice(item: any): number {
+    // Se for o novo formato (StockItemWithRelations)
+    if ("salePrice" in item && item.salePrice && item.salePrice > 0) {
+      return item.salePrice;
+    }
+
+    // Se for o formato antigo com properties.price
+    if (item.properties?.price) {
       const price = parseFloat(item.properties.price);
       if (!isNaN(price)) {
         return price;
       }
     }
 
-    // Fallback para preços baseados no tipo (para compatibilidade com produtos antigos)
-    const type = item.properties.type?.toLowerCase();
-    switch (type) {
+    // Se for o formato antigo com campo price direto
+    if (item.price && typeof item.price === "number") {
+      return item.price;
+    }
+
+    // Fallback para preços baseados na categoria/tipo
+    const category =
+      item.product?.category?.toLowerCase() ||
+      item.properties?.type?.toLowerCase() ||
+      item.category?.toLowerCase();
+    switch (category) {
       case "terno":
         return 299.99;
       case "palitó":
@@ -243,11 +291,11 @@
     }
   }
 
-  function removeFromCart(itemId: number) {
+  function removeFromCart(itemId: string) {
     cart = cart.filter((cartItem) => cartItem.item.id !== itemId);
   }
 
-  function updateCartQuantity(itemId: number, newQuantity: number) {
+  function updateCartQuantity(itemId: string, newQuantity: number) {
     if (newQuantity <= 0) {
       removeFromCart(itemId);
       return;
@@ -283,93 +331,130 @@
     showFinalizationSection = true;
   }
 
-  function handleConfirmSale(event: CustomEvent) {
+  async function handleConfirmSale(event: CustomEvent) {
     const saleData = event.detail;
 
-    // Criar registro da venda
-    const saleItems: SaleItem[] = cart.map((cartItem) => ({
-      stockItemId: cartItem.item.id,
-      stockItem: cartItem.item,
-      quantity: cartItem.quantity,
-      unitPrice: getPrice(cartItem.item),
-      totalPrice: cartItem.quantity * getPrice(cartItem.item),
-      brand: cartItem.item.properties.brand || "",
-      type: cartItem.item.properties.type || "",
-      size: cartItem.item.properties.size || "",
-      color: cartItem.item.properties.color || "",
-    }));
-
-    const saleId =
-      $salesHistory.length > 0
-        ? Math.max(...$salesHistory.map((s) => s.id)) + 1
-        : 1;
-
-    // Criar parcelas se for venda a prazo
-    let saleInstallments: Installment[] = [];
-    if (saleData.paymentType === "installments" && saleData.installments) {
-      saleData.installments.forEach((inst: any, i: number) => {
-        // Se é entrada, marcar como paga; senão, como pendente
-        const status = inst.isDownPayment ? "paid" : "pending";
-        const paidDate = inst.isDownPayment ? new Date() : undefined;
-
-        const installment: Installment = {
-          id: $installments.length + i + 1,
-          saleId: saleId,
-          installmentNumber: inst.number,
-          dueDate:
-            inst.dueDate === "Entrada"
-              ? new Date()
-              : new Date(inst.dueDate.split("/").reverse().join("-")),
-          amount: inst.value,
-          status: status,
-          paidDate: paidDate,
-        };
-        saleInstallments.push(installment);
-      });
-
-      // Adicionar parcelas ao store
-      $installments = [...$installments, ...saleInstallments];
+    if (!$currentStoreId) {
+      alert("Nenhuma loja selecionada!");
+      return;
     }
 
-    const newSale: Sale = {
-      id: saleId,
-      date: new Date(),
-      items: saleItems,
-      total: saleData.total,
-      totalAmount: saleData.total, // Para compatibilidade
-      customerId: saleData.selectedCustomer?.id,
-      customer: saleData.selectedCustomer,
-      customerName: saleData.selectedCustomer?.name,
-      paymentType: saleData.paymentType,
-      installments: saleData.installments || [],
-    };
+    try {
+      // Converter dados do carrinho para o formato da API
+      const saleItems = cart.map((cartItem) => ({
+        productId: cartItem.item.productId || cartItem.item.id, // fallback para compatibilidade
+        stockItemId: cartItem.item.id,
+        quantity: cartItem.quantity,
+        price: getPrice(cartItem.item),
+        total: cartItem.quantity * getPrice(cartItem.item),
+      }));
 
-    // Adicionar venda ao histórico
-    $salesHistory = [...$salesHistory, newSale];
+      // Converter parcelas para o formato da API (se existirem)
+      const installments =
+        saleData.installments?.map((inst: any) => ({
+          number: inst.number,
+          amount: inst.value,
+          dueDate:
+            inst.dueDate === "Entrada"
+              ? new Date().toISOString()
+              : new Date(
+                  inst.dueDate.split("/").reverse().join("-")
+                ).toISOString(),
+        })) || [];
 
-    // Atualizar estoque
-    cart.forEach((cartItem) => {
-      $stock = $stock.map((stockItem) =>
-        stockItem.id === cartItem.item.id
-          ? { ...stockItem, quantity: stockItem.quantity - cartItem.quantity }
-          : stockItem
+      // Dados da venda no formato esperado pela API
+      const apiSaleData = {
+        storeId: $currentStoreId,
+        userId: "cmf5e1mqa00013npvcupmd8ck", // TODO: pegar do usuário logado
+        customerId: saleData.selectedCustomer?.id,
+        total: saleData.total,
+        paymentType: saleData.paymentType,
+        items: saleItems,
+        installments: installments,
+      };
+
+      // Salvar venda no banco via API
+      const savedSale = await salesService.createSale(
+        $currentStoreId,
+        apiSaleData
       );
-    });
 
-    // Limpar carrinho e estados
-    cart = [];
-    selectedCustomer = null;
-    paymentType = "cash";
-    numberOfInstallments = 2;
-    dueDay = 10;
-    firstInstallmentMonth = new Date().getMonth() + 1;
-    firstInstallmentYear = new Date().getFullYear();
-    searchTerm = "";
+      // NOVA FUNCIONALIDADE: Salvar parcelas no banco se for venda parcelada
+      if (
+        (saleData.paymentType === "installments" ||
+          saleData.paymentType === PaymentType.INSTALLMENTS) &&
+        saleData.installments &&
+        saleData.selectedCustomer
+      ) {
+        console.log("💰 Salvando parcelas no banco...");
 
-    // Fechar seção de finalização e mostrar modal de sucesso
-    showFinalizationSection = false;
-    completedSale = newSale;
-    showSuccessModal = true;
+        for (const inst of saleData.installments) {
+          try {
+            const status = inst.isDownPayment ? "PAID" : "PENDING";
+            const paidDate = inst.isDownPayment ? new Date() : undefined;
+
+            const installmentData = {
+              number: inst.number,
+              dueDate:
+                inst.dueDate === "Entrada"
+                  ? new Date()
+                  : new Date(inst.dueDate.split("/").reverse().join("-")),
+              amount: inst.value,
+              status: status,
+              paidDate: paidDate,
+              saleId: savedSale.id.toString(),
+              customerId: saleData.selectedCustomer.id.toString(),
+            };
+
+            await installmentsService.createInstallment(
+              $currentStoreId,
+              installmentData
+            );
+            console.log("✅ Parcela salva:", installmentData);
+          } catch (error) {
+            console.error("❌ Erro ao salvar parcela:", error);
+          }
+        }
+
+        // Recarregar parcelas do banco
+        try {
+          await installmentsService.refreshInstallments($currentStoreId);
+          console.log("🔄 Parcelas recarregadas do banco");
+        } catch (error) {
+          console.error("❌ Erro ao recarregar parcelas:", error);
+        }
+      }
+
+      // Recarregar vendas
+      await salesService.refreshSales($currentStoreId);
+
+      // Atualizar estoque (manter funcionalidade local por enquanto)
+      cart.forEach((cartItem) => {
+        $stock = $stock.map((stockItem) =>
+          stockItem.id === cartItem.item.id
+            ? { ...stockItem, quantity: stockItem.quantity - cartItem.quantity }
+            : stockItem
+        );
+      });
+
+      // Limpar carrinho e estados
+      cart = [];
+      selectedCustomer = null;
+      paymentType = PaymentType.CASH;
+      numberOfInstallments = 2;
+      dueDay = 10;
+      firstInstallmentMonth = new Date().getMonth() + 1;
+      firstInstallmentYear = new Date().getFullYear();
+      searchTerm = "";
+
+      // Fechar seção de finalização e mostrar modal de sucesso
+      showFinalizationSection = false;
+      completedSale = savedSale;
+      showSuccessModal = true;
+    } catch (error) {
+      console.error("Erro ao finalizar venda:", error);
+      alert("Erro ao salvar venda. Tente novamente.");
+    }
   }
 
   function handleCancelSale() {
@@ -384,7 +469,7 @@
   function clearCart() {
     cart = [];
     selectedCustomer = null;
-    paymentType = "cash";
+    paymentType = PaymentType.CASH;
     numberOfInstallments = 2;
     dueDay = 10;
     firstInstallmentMonth = new Date().getMonth() + 1;
@@ -405,7 +490,7 @@
       {#if !showFinalizationSection}
         <!-- Produtos Disponíveis -->
         <ProductsList
-          {availableProducts}
+          availableProducts={availableProducts as any}
           bind:searchTerm
           propertyDefinitions={$propertyDefinitions}
           on:addToCart={(e) => addToCart(e.detail)}
@@ -413,14 +498,13 @@
 
         <!-- Carrinho de Vendas -->
         <ShoppingCart
-          {cart}
+          cart={cart as any}
           {total}
-          {paymentType}
+          paymentType={paymentType as any}
           {numberOfInstallments}
           {dueDay}
           {firstInstallmentMonth}
           {firstInstallmentYear}
-          {selectedCustomer}
           showFinalizationButton={true}
           on:updateQuantity={handleCartUpdateQuantity}
           on:removeItem={handleCartRemoveItem}
@@ -430,14 +514,13 @@
       {:else}
         <!-- Carrinho de Vendas (lado esquerdo) -->
         <ShoppingCart
-          {cart}
+          cart={cart as any}
           {total}
-          {paymentType}
+          paymentType={paymentType as any}
           {numberOfInstallments}
           {dueDay}
           {firstInstallmentMonth}
           {firstInstallmentYear}
-          {selectedCustomer}
           showFinalizationButton={false}
           on:updateQuantity={handleCartUpdateQuantity}
           on:removeItem={handleCartRemoveItem}
@@ -447,7 +530,6 @@
 
         <!-- Seção de Finalização (lado direito) -->
         <SaleFinalizationSection
-          {cart}
           {total}
           bind:selectedCustomer
           bind:paymentType
@@ -466,7 +548,7 @@
 <!-- Modal de Sucesso -->
 <SaleSuccessModal
   bind:isOpen={showSuccessModal}
-  sale={completedSale}
+  sale={completedSale as any}
   on:close={handleSuccessModalClose}
 />
 
