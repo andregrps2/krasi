@@ -15,6 +15,9 @@
   export let firstInstallmentMonth: number = new Date().getMonth() + 1;
   export let firstInstallmentYear: number = new Date().getFullYear();
 
+  // Força a reatividade da prévia das parcelas
+  $: previewKey = `${paymentType}-${numberOfInstallments}-${dueDay}-${firstInstallmentMonth}-${firstInstallmentYear}-${total}`;
+
   function formatCurrency(value: number): string {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -67,14 +70,15 @@
 
   function handlePaymentChange(event: CustomEvent) {
     const {
-      type,
-      installments,
+      paymentType: newPaymentType,
+      numberOfInstallments: newInstallments,
       dueDay: newDueDay,
       firstInstallmentMonth: newMonth,
       firstInstallmentYear: newYear,
     } = event.detail;
-    paymentType = type;
-    numberOfInstallments = installments || 1;
+
+    paymentType = newPaymentType;
+    numberOfInstallments = newInstallments || 1;
     dueDay = newDueDay || dueDay;
     firstInstallmentMonth = newMonth || firstInstallmentMonth;
     firstInstallmentYear = newYear || firstInstallmentYear;
@@ -90,36 +94,20 @@
   </div>
 
   <div class="section-content">
-    <!-- Linha Superior: Cliente + Forma de Pagamento lado a lado -->
-    <div class="top-row">
-      <div class="customer-section">
-        <h3>👤 Selecionar Cliente</h3>
-        <CustomerSelector
-          bind:selectedCustomer
-          on:customerSelected={handleCustomerSelect}
-        />
-      </div>
+    <!-- Layout: Controles à esquerda, Prévia à direita -->
+    <div class="main-layout">
+      <!-- Coluna Esquerda: Cliente + Forma de Pagamento empilhados -->
+      <div class="controls-column">
+        <div class="customer-section">
+          <h3>👤 Selecionar Cliente</h3>
+          <CustomerSelector
+            bind:selectedCustomer
+            on:customerSelected={handleCustomerSelect}
+          />
+        </div>
 
-      <div class="payment-form-section">
-        <h3>💳 Forma de Pagamento</h3>
-        <PaymentTypeSelector
-          bind:paymentType
-          bind:numberOfInstallments
-          bind:dueDay
-          bind:firstInstallmentMonth
-          bind:firstInstallmentYear
-          {total}
-          on:change={handlePaymentChange}
-          showPreview={false}
-        />
-      </div>
-    </div>
-
-    <!-- Linha Inferior: Prévia das Parcelas ocupando toda largura -->
-    {#if paymentType === "installments" && numberOfInstallments > 1}
-      <div class="preview-section">
-        <div class="installments-preview-container">
-          <h3>📋 Prévia das Parcelas</h3>
+        <div class="payment-form-section">
+          <h3>💳 Forma de Pagamento</h3>
           <PaymentTypeSelector
             bind:paymentType
             bind:numberOfInstallments
@@ -127,25 +115,66 @@
             bind:firstInstallmentMonth
             bind:firstInstallmentYear
             {total}
-            on:change={handlePaymentChange}
-            previewOnly={true}
+            on:paymentChange={handlePaymentChange}
+            showPreview={false}
           />
         </div>
       </div>
-    {:else if paymentType === "cash"}
-      <div class="preview-section">
-        <div class="installments-preview-container">
-          <h3>📋 Prévia do Pagamento</h3>
-          <div class="cash-preview">
-            <p>
-              💰 Pagamento à vista: <strong
-                >R$ {total.toFixed(2).replace(".", ",")}</strong
-              >
-            </p>
+
+      <!-- Coluna Direita: Prévia das Parcelas -->
+      <div class="preview-column">
+        {#if paymentType === "installments" && numberOfInstallments > 1}
+          <div class="installments-preview-container">
+            <h3>📋 Prévia das Parcelas</h3>
+            {#key previewKey}
+              <PaymentTypeSelector
+                bind:paymentType
+                bind:numberOfInstallments
+                bind:dueDay
+                bind:firstInstallmentMonth
+                bind:firstInstallmentYear
+                {total}
+                on:paymentChange={handlePaymentChange}
+                previewOnly={true}
+              />
+            {/key}
           </div>
-        </div>
+        {:else if paymentType === "cash"}
+          <div class="installments-preview-container">
+            <h3>📋 Prévia do Pagamento</h3>
+            <div class="cash-preview">
+              <p>
+                💰 Pagamento à vista: <strong
+                  >R$ {total.toFixed(2).replace(".", ",")}</strong
+                >
+              </p>
+            </div>
+          </div>
+        {:else if paymentType === "pix"}
+          <div class="installments-preview-container">
+            <h3>📋 Prévia do Pagamento</h3>
+            <div class="cash-preview">
+              <p>
+                📱 Pagamento via PIX: <strong
+                  >R$ {total.toFixed(2).replace(".", ",")}</strong
+                >
+              </p>
+            </div>
+          </div>
+        {:else if paymentType === "card"}
+          <div class="installments-preview-container">
+            <h3>📋 Prévia do Pagamento</h3>
+            <div class="cash-preview">
+              <p>
+                💳 Pagamento no cartão: <strong
+                  >R$ {total.toFixed(2).replace(".", ",")}</strong
+                >
+              </p>
+            </div>
+          </div>
+        {/if}
       </div>
-    {/if}
+    </div>
 
     <!-- Botões de Ação -->
     <div class="actions">
@@ -206,10 +235,27 @@
     min-height: 0;
   }
 
-  .top-row {
+  .main-layout {
     display: flex;
     gap: 1.5rem;
-    flex-shrink: 0;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .controls-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .preview-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
   }
 
   .customer-section {
@@ -219,7 +265,6 @@
     border: 1px solid #555;
     overflow-y: auto;
     min-height: 0;
-    flex: 1;
   }
 
   .payment-form-section {
@@ -228,14 +273,6 @@
     border-radius: 6px;
     border: 1px solid #555;
     overflow-y: auto;
-    min-height: 0;
-    flex: 1;
-  }
-
-  .preview-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     min-height: 0;
   }
 
@@ -328,6 +365,10 @@
       flex-direction: column;
       gap: 0.5rem;
       align-items: flex-start;
+    }
+
+    .main-layout {
+      flex-direction: column;
     }
 
     .actions {

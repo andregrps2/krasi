@@ -220,75 +220,28 @@
         <h4>📋 Prévia das Parcelas</h4>
       {/if}
 
-      {#if installmentsList.length <= 6}
-        <!-- Uma coluna para até 6 parcelas -->
-        <div class="installments-table single-column">
-          <div class="table-header">
-            <span>Parcela</span>
-            <span>Vencimento</span>
-            <span>Valor</span>
-          </div>
-          {#each installmentsList as installment}
-            <div class="table-row">
-              <span class="installment-number">{installment.number}ª</span>
-              <span class="installment-date">{installment.dueDate}</span>
-              <span class="installment-value"
-                >{formatCurrency(installment.value)}</span
-              >
-            </div>
-          {/each}
-          <div class="table-footer">
-            <span>Total:</span>
-            <span></span>
-            <span class="total-value">{formatCurrency(total)}</span>
-          </div>
+      <!-- Uma coluna para todas as parcelas -->
+      <div class="installments-table single-column">
+        <div class="table-header">
+          <span>Parcela</span>
+          <span>Vencimento</span>
+          <span>Valor</span>
         </div>
-      {:else}
-        <!-- Duas colunas para mais de 6 parcelas -->
-        <div class="installments-table-dual">
-          <!-- Primeira coluna -->
-          <div class="installments-table column">
-            <div class="table-header">
-              <span>Parcela</span>
-              <span>Vencimento</span>
-              <span>Valor</span>
-            </div>
-            {#each installmentsList.slice(0, Math.ceil(installmentsList.length / 2)) as installment}
-              <div class="table-row">
-                <span class="installment-number">{installment.number}ª</span>
-                <span class="installment-date">{installment.dueDate}</span>
-                <span class="installment-value"
-                  >{formatCurrency(installment.value)}</span
-                >
-              </div>
-            {/each}
+        {#each installmentsList as installment}
+          <div class="table-row">
+            <span class="installment-number">{installment.number}ª</span>
+            <span class="installment-date">{installment.dueDate}</span>
+            <span class="installment-value"
+              >{formatCurrency(installment.value)}</span
+            >
           </div>
-
-          <!-- Segunda coluna -->
-          <div class="installments-table column">
-            <div class="table-header">
-              <span>Parcela</span>
-              <span>Vencimento</span>
-              <span>Valor</span>
-            </div>
-            {#each installmentsList.slice(Math.ceil(installmentsList.length / 2)) as installment}
-              <div class="table-row">
-                <span class="installment-number">{installment.number}ª</span>
-                <span class="installment-date">{installment.dueDate}</span>
-                <span class="installment-value"
-                  >{formatCurrency(installment.value)}</span
-                >
-              </div>
-            {/each}
-          </div>
-
-          <!-- Total span across both columns -->
-          <div class="table-footer-dual">
-            <span>Total:</span>
-            <span class="total-value">{formatCurrency(total)}</span>
-          </div>
+        {/each}
+        <div class="table-footer">
+          <span>Total:</span>
+          <span></span>
+          <span class="total-value">{formatCurrency(total)}</span>
         </div>
-      {/if}
+      </div>
     </div>
   {/if}
 </div>
@@ -299,9 +252,6 @@
     align-items: center;
     gap: 0.3rem;
     padding: 0.2rem 0.4rem;
-    background: #333;
-    border: 2px solid #555;
-    border-radius: 4px;
     flex-wrap: wrap;
   }
 
@@ -329,7 +279,7 @@
     padding: 0.15rem 0.25rem;
     border: 1px solid #555;
     border-radius: 3px;
-    background-color: #2a2a2a;
+    background-color: transparent;
     color: white;
     font-size: 0.65rem;
     height: 24px;
@@ -349,9 +299,6 @@
   /* Prévia das Parcelas */
   .installments-preview {
     margin-top: 1rem;
-    background: #1e1e1e;
-    border: 1px solid #444;
-    border-radius: 6px;
     padding: 1rem;
     max-height: none;
     overflow: visible;
@@ -363,7 +310,6 @@
     margin: 0 0 0.8rem 0;
     color: var(--text-accent);
     font-size: 0.9rem;
-    border-bottom: 1px solid #444;
     padding-bottom: 0.5rem;
     flex-shrink: 0;
   }
@@ -380,63 +326,11 @@
     gap: 0.3rem;
   }
 
-  /* Layout de duas colunas */
-  .installments-table-dual {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .installments-table-dual .column {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-
-  .installments-table-dual {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
-    grid-template-areas:
-      "col1 col2"
-      "footer footer";
-  }
-
-  .installments-table-dual .column:first-child {
-    grid-area: col1;
-  }
-
-  .installments-table-dual .column:last-child {
-    grid-area: col2;
-  }
-
-  .table-footer-dual {
-    grid-area: footer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.4rem 0.6rem;
-    background: #444;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--text-accent);
-    border-top: 2px solid var(--primary-color);
-    margin-top: 0.3rem;
-  }
-
-  .table-footer-dual .total-value {
-    color: #4ade80;
-    font-size: 0.9rem;
-  }
-
   .table-header {
     display: grid;
     grid-template-columns: 1fr 1.2fr 1fr;
     gap: 0.5rem;
     padding: 0.4rem 0.6rem;
-    background: #333;
-    border-radius: 4px;
     font-weight: 600;
     font-size: 0.75rem;
     color: var(--text-accent);
@@ -447,14 +341,12 @@
     grid-template-columns: 1fr 1.2fr 1fr;
     gap: 0.5rem;
     padding: 0.4rem 0.6rem;
-    background: #2a2a2a;
-    border-radius: 3px;
     font-size: 0.8rem;
     align-items: center;
   }
 
   .table-row:hover {
-    background: #353535;
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .installment-number {
@@ -478,12 +370,9 @@
     grid-template-columns: 1fr 1.2fr 1fr;
     gap: 0.5rem;
     padding: 0.4rem 0.6rem;
-    background: #444;
-    border-radius: 4px;
     font-weight: 600;
     font-size: 0.8rem;
     color: var(--text-accent);
-    border-top: 2px solid var(--primary-color);
     margin-top: 0.3rem;
   }
 
