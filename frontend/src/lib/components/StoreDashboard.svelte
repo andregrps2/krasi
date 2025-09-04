@@ -15,23 +15,52 @@
   let error = "";
 
   onMount(() => {
-    loadDashboardData();
+    // Carregar dados em background, sem bloquear a interface
+    setTimeout(() => {
+      loadDashboardData();
+    }, 100);
   });
 
   async function loadDashboardData() {
     try {
       loading = true;
+      error = "";
 
-      const [dashboardData, salesData] = await Promise.all([
-        storesApi.getDashboard(store.id),
-        salesApi.getAll({ storeId: store.id }),
+      // Tentar carregar dashboard data com timeout
+      const dashboardPromise = storesApi.getDashboard(store.id);
+      const salesPromise = salesApi.getAll({ storeId: store.id });
+
+      // Timeout de 10 segundos
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout na requisição")), 10000)
+      );
+
+      const result = await Promise.race([
+        Promise.all([dashboardPromise, salesPromise]) as Promise<
+          [StoreDashboard, SaleWithRelations[]]
+        >,
+        timeoutPromise,
       ]);
+
+      const [dashboardData, salesData] = result;
 
       dashboard = dashboardData;
       recentSales = salesData.slice(0, 5); // Últimas 5 vendas
     } catch (err) {
-      error = "Erro ao carregar dados do dashboard";
-      console.error("Erro:", err);
+      console.error("Erro ao carregar dashboard:", err);
+
+      // Fallback com dados mock se a API falhar
+      dashboard = {
+        salesToday: { total: 0, count: 0 },
+        salesMonth: { total: 0, count: 0 },
+        customersCount: 0,
+        lowStockItems: [],
+        topProducts: [],
+        pendingInstallments: [],
+      };
+      recentSales = [];
+
+      error = `Erro ao carregar dados: ${err instanceof Error ? err.message : "Erro desconhecido"}`;
     } finally {
       loading = false;
     }

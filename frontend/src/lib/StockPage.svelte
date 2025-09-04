@@ -1,6 +1,6 @@
 <script lang="ts">
   import { stock, propertyDefinitions } from "../stores";
-  import type { StockItem } from "../types";
+  import type { StockItemOld as StockItem } from "../types-new";
   import StockList from "./StockList.svelte";
   import Modal from "./Modal.svelte";
   import ProductForm from "./ProductForm.svelte";
@@ -121,7 +121,7 @@
   }
 
   function handleSaveProduct(
-    event: CustomEvent<Omit<StockItem, "id"> & { id?: number }>
+    event: CustomEvent<Omit<StockItem, "id"> & { id?: string }>
   ) {
     const savedItemData = event.detail;
     if (savedItemData.id) {
@@ -131,24 +131,27 @@
           : item
       );
     } else {
-      const newId =
-        $stock.length > 0 ? Math.max(...$stock.map((i) => i.id)) + 1 : 1;
+      const newId = Date.now().toString(); // Usar timestamp string
       const newItem: StockItem = {
         id: newId,
-        quantity: savedItemData.quantity,
-        properties: savedItemData.properties,
+        name: savedItemData.name || "",
+        price: savedItemData.price || 0,
+        quantity: savedItemData.quantity || 0,
+        brand: savedItemData.brand || "",
+        category: savedItemData.category || "",
+        properties: savedItemData.properties || {},
       };
       $stock = [...$stock, newItem];
     }
     showProductModal = false;
   }
 
-  function handleDeleteProduct(event: CustomEvent<number>) {
+  function handleDeleteProduct(event: CustomEvent<string>) {
     $stock = $stock.filter((item) => item.id !== event.detail);
   }
 
   function handleUpdateQuantity(
-    event: CustomEvent<{ id: number; quantity: number }>
+    event: CustomEvent<{ id: string; quantity: number }>
   ) {
     const { id, quantity } = event.detail;
     $stock = $stock.map((item) =>

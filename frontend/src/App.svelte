@@ -6,12 +6,12 @@
   import CustomersPage from "./lib/CustomersPage.svelte";
   import InstallmentsPage from "./lib/InstallmentsPage.svelte";
   import StoreSelector from "./lib/components/StoreSelector.svelte";
-  import StoreDashboard from "./lib/components/StoreDashboard.svelte";
+  import StoreDashboardSimple from "./lib/components/StoreDashboardSimple.svelte";
   import { currentStoreId } from "./stores";
   import type { Store } from "./types-new";
 
   // Estado da navegação
-  let currentPage = "dashboard";
+  let currentPage = "estoque";
   let sidebarCollapsed = false;
   let isMobile = false;
   let selectedStore: Store | null = null;
@@ -31,6 +31,7 @@
   }
 
   function handleNavigation(event: CustomEvent<{ page: string }>) {
+    console.log("Navegando para:", event.detail.page);
     currentPage = event.detail.page;
     // Fechar sidebar automaticamente em mobile após navegação
     if (isMobile) {
@@ -55,7 +56,7 @@
   function handleStoreChange() {
     selectedStore = null;
     currentStoreId.set(null);
-    currentPage = "dashboard";
+    currentPage = "estoque";
   }
 </script>
 
@@ -84,8 +85,16 @@
       class:sidebar-collapsed={sidebarCollapsed}
       class:sales-page={currentPage === "vendas"}
     >
+      <!-- Debug info -->
+      <div
+        style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 1000;"
+      >
+        Página atual: {currentPage}<br />
+        Loja: {selectedStore?.name || "Nenhuma"}
+      </div>
+
       {#if currentPage === "dashboard"}
-        <StoreDashboard store={selectedStore} />
+        <StoreDashboardSimple store={selectedStore} />
       {:else if currentPage === "vendas"}
         <SalesPage />
       {:else if currentPage === "estoque"}

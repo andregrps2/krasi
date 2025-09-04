@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { propertyDefinitions } from '../stores';
-  import type { StockItem } from '../types';
+  import { createEventDispatcher, onMount } from "svelte";
+  import { propertyDefinitions } from "../stores";
+  import type { StockItemOld as StockItem } from "../types-new";
 
   // If an item is passed, we're in edit mode. Otherwise, we're in add mode.
   export let item: StockItem | null = null;
@@ -13,8 +13,8 @@
   // When the component mounts, populate the form based on the properties defined.
   onMount(() => {
     // Initialize formData with keys for all defined properties
-    $propertyDefinitions.forEach(prop => {
-        formData[prop.id] = '';
+    $propertyDefinitions.forEach((prop) => {
+      formData[prop.id] = "";
     });
 
     // If we are editing an existing item, fill the form with its data.
@@ -32,12 +32,16 @@
   const dispatch = createEventDispatcher();
 
   function handleSubmit() {
-    const savedItem: Omit<StockItem, 'id'> & { id?: number } = {
-        id: item?.id,
-        quantity: quantity,
-        properties: { ...formData },
+    const savedItem: Partial<StockItem> = {
+      id: item?.id,
+      name: formData.name || "",
+      price: parseFloat(formData.price || "0"),
+      quantity: quantity,
+      brand: formData.brand || "",
+      category: formData.category || "",
+      properties: { ...formData },
     };
-    dispatch('save', savedItem);
+    dispatch("save", savedItem);
   }
 </script>
 
@@ -47,15 +51,19 @@
     {#each $propertyDefinitions as prop (prop.id)}
       <div class="form-field">
         <label for={`prop-${prop.id}`}>{prop.name}</label>
-        {#if prop.type === 'text'}
-          <input 
-            type="text" 
-            id={`prop-${prop.id}`} 
-            bind:value={formData[prop.id]} 
-            required 
+        {#if prop.type === "text"}
+          <input
+            type="text"
+            id={`prop-${prop.id}`}
+            bind:value={formData[prop.id]}
+            required
           />
-        {:else if prop.type === 'select'}
-          <select id={`prop-${prop.id}`} bind:value={formData[prop.id]} required>
+        {:else if prop.type === "select"}
+          <select
+            id={`prop-${prop.id}`}
+            bind:value={formData[prop.id]}
+            required
+          >
             <option value="" disabled>Selecione...</option>
             {#each prop.options || [] as option}
               <option value={option}>{option}</option>
@@ -68,7 +76,13 @@
     <!-- The quantity field is always present -->
     <div class="form-field">
       <label for="quantity">Quantidade</label>
-      <input type="number" id="quantity" bind:value={quantity} min="1" required />
+      <input
+        type="number"
+        id="quantity"
+        bind:value={quantity}
+        min="1"
+        required
+      />
     </div>
   </div>
   <button type="submit">Salvar</button>

@@ -1,7 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { propertyDefinitions } from "../stores";
-  import type { StockItem, PropertyDefinition } from "../types";
+  import type {
+    StockItemOld as StockItem,
+    PropertyDefinition,
+  } from "../types-new";
   import FilterModal from "./FilterModal.svelte";
 
   export let stock: StockItem[] = [];
@@ -50,7 +53,7 @@
     dispatch("editItem", item);
   }
 
-  function deleteItem(id: number) {
+  function deleteItem(id: string) {
     dispatch("deleteItem", id);
   }
 
