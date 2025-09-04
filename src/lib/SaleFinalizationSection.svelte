@@ -90,28 +90,62 @@
   </div>
 
   <div class="section-content">
-    <!-- Seleção de Cliente -->
-    <div class="customer-section">
-      <h3>👤 Selecionar Cliente</h3>
-      <CustomerSelector
-        bind:selectedCustomer
-        on:customerSelected={handleCustomerSelect}
-      />
+    <!-- Linha Superior: Cliente + Forma de Pagamento lado a lado -->
+    <div class="top-row">
+      <div class="customer-section">
+        <h3>👤 Selecionar Cliente</h3>
+        <CustomerSelector
+          bind:selectedCustomer
+          on:customerSelected={handleCustomerSelect}
+        />
+      </div>
+
+      <div class="payment-form-section">
+        <h3>💳 Forma de Pagamento</h3>
+        <PaymentTypeSelector
+          bind:paymentType
+          bind:numberOfInstallments
+          bind:dueDay
+          bind:firstInstallmentMonth
+          bind:firstInstallmentYear
+          {total}
+          on:change={handlePaymentChange}
+          showPreview={false}
+        />
+      </div>
     </div>
 
-    <!-- Formas de Pagamento -->
-    <div class="payment-section">
-      <h3>💳 Forma de Pagamento</h3>
-      <PaymentTypeSelector
-        bind:paymentType
-        bind:numberOfInstallments
-        bind:dueDay
-        bind:firstInstallmentMonth
-        bind:firstInstallmentYear
-        {total}
-        on:change={handlePaymentChange}
-      />
-    </div>
+    <!-- Linha Inferior: Prévia das Parcelas ocupando toda largura -->
+    {#if paymentType === "installments" && numberOfInstallments > 1}
+      <div class="preview-section">
+        <div class="installments-preview-container">
+          <h3>📋 Prévia das Parcelas</h3>
+          <PaymentTypeSelector
+            bind:paymentType
+            bind:numberOfInstallments
+            bind:dueDay
+            bind:firstInstallmentMonth
+            bind:firstInstallmentYear
+            {total}
+            on:change={handlePaymentChange}
+            previewOnly={true}
+          />
+        </div>
+      </div>
+    {:else if paymentType === "cash"}
+      <div class="preview-section">
+        <div class="installments-preview-container">
+          <h3>📋 Prévia do Pagamento</h3>
+          <div class="cash-preview">
+            <p>
+              💰 Pagamento à vista: <strong
+                >R$ {total.toFixed(2).replace(".", ",")}</strong
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    {/if}
 
     <!-- Botões de Ação -->
     <div class="actions">
@@ -172,22 +206,68 @@
     min-height: 0;
   }
 
-  .customer-section,
-  .payment-section {
+  .top-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .customer-section {
     background: #2a2a2a;
     padding: 1rem;
     border-radius: 6px;
     border: 1px solid #555;
     overflow-y: auto;
     min-height: 0;
+    flex: 1;
+  }
+
+  .payment-form-section {
+    background: #2a2a2a;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #555;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+  }
+
+  .preview-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .installments-preview-container {
+    background: #2a2a2a;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #555;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .cash-preview {
+    padding: 1rem;
+    background: #1e1e1e;
+    border: 1px solid #4ade80;
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  .cash-preview p {
+    margin: 0;
+    color: #4ade80;
+    font-size: 1.1rem;
   }
 
   .customer-section h3,
-  .payment-section h3 {
+  .payment-form-section h3,
+  .installments-preview-container h3 {
     margin: 0 0 1rem 0;
     font-size: 1rem;
     color: var(--text-accent);
-    border-bottom: 1px solid #555;
     padding-bottom: 0.3rem;
   }
 

@@ -13,6 +13,8 @@
   export let firstInstallmentMonth = new Date().getMonth() + 1;
   export let firstInstallmentYear = new Date().getFullYear();
   export let total = 0;
+  export let showPreview = true;
+  export let previewOnly = false;
 
   // Função para formatar moeda
   function formatCurrency(value: number): string {
@@ -74,145 +76,149 @@
 
 <div class="payment-compact">
   <!-- Controles de Pagamento em linha -->
-  <div class="payment-controls">
-    <div class="control-group">
-      <label for="payment-select">Pagamento:</label>
-      <select
-        id="payment-select"
-        bind:value={paymentType}
-        class="compact-select"
-        on:change={() => {
-          installmentsList = calculateInstallments();
-          dispatch("paymentChange", {
-            paymentType,
-            numberOfInstallments,
-            dueDay,
-            firstInstallmentMonth,
-            firstInstallmentYear,
-          });
-        }}
-      >
-        <option value="cash">À Vista</option>
-        <option value="pix">PIX</option>
-        <option value="card">Cartão</option>
-        <option value="installments">Parcelado</option>
-      </select>
+  {#if !previewOnly}
+    <div class="payment-controls">
+      <div class="control-group">
+        <label for="payment-select">Pagamento:</label>
+        <select
+          id="payment-select"
+          bind:value={paymentType}
+          class="compact-select"
+          on:change={() => {
+            installmentsList = calculateInstallments();
+            dispatch("paymentChange", {
+              paymentType,
+              numberOfInstallments,
+              dueDay,
+              firstInstallmentMonth,
+              firstInstallmentYear,
+            });
+          }}
+        >
+          <option value="cash">À Vista</option>
+          <option value="pix">PIX</option>
+          <option value="card">Cartão</option>
+          <option value="installments">Parcelado</option>
+        </select>
+      </div>
+
+      {#if paymentType === "installments"}
+        <div class="control-group">
+          <label for="installments-select">Parcelas:</label>
+          <select
+            id="installments-select"
+            bind:value={numberOfInstallments}
+            class="compact-select"
+            on:change={() => {
+              installmentsList = calculateInstallments();
+              dispatch("paymentChange", {
+                paymentType,
+                numberOfInstallments,
+                dueDay,
+                firstInstallmentMonth,
+                firstInstallmentYear,
+              });
+            }}
+          >
+            <option value={1}>1x</option>
+            <option value={2}>2x</option>
+            <option value={3}>3x</option>
+            <option value={4}>4x</option>
+            <option value={5}>5x</option>
+            <option value={6}>6x</option>
+            <option value={10}>10x</option>
+            <option value={12}>12x</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="due-day-select">Venc.:</label>
+          <select
+            id="due-day-select"
+            bind:value={dueDay}
+            class="compact-select small"
+            on:change={() => {
+              installmentsList = calculateInstallments();
+              dispatch("paymentChange", {
+                paymentType,
+                numberOfInstallments,
+                dueDay,
+                firstInstallmentMonth,
+                firstInstallmentYear,
+              });
+            }}
+          >
+            {#each Array(31) as _, i}
+              <option value={i + 1}>{i + 1}</option>
+            {/each}
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="first-month-select">Mês:</label>
+          <select
+            id="first-month-select"
+            bind:value={firstInstallmentMonth}
+            class="compact-select"
+            on:change={() => {
+              installmentsList = calculateInstallments();
+              dispatch("paymentChange", {
+                paymentType,
+                numberOfInstallments,
+                dueDay,
+                firstInstallmentMonth,
+                firstInstallmentYear,
+              });
+            }}
+          >
+            <option value={1}>Jan</option>
+            <option value={2}>Fev</option>
+            <option value={3}>Mar</option>
+            <option value={4}>Abr</option>
+            <option value={5}>Mai</option>
+            <option value={6}>Jun</option>
+            <option value={7}>Jul</option>
+            <option value={8}>Ago</option>
+            <option value={9}>Set</option>
+            <option value={10}>Out</option>
+            <option value={11}>Nov</option>
+            <option value={12}>Dez</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="first-year-select">Ano:</label>
+          <select
+            id="first-year-select"
+            bind:value={firstInstallmentYear}
+            class="compact-select small"
+            on:change={() => {
+              installmentsList = calculateInstallments();
+              dispatch("paymentChange", {
+                paymentType,
+                numberOfInstallments,
+                dueDay,
+                firstInstallmentMonth,
+                firstInstallmentYear,
+              });
+            }}
+          >
+            <option value={2024}>2024</option>
+            <option value={2025}>2025</option>
+            <option value={2026}>2026</option>
+            <option value={2027}>2027</option>
+          </select>
+        </div>
+      {/if}
     </div>
-
-    {#if paymentType === "installments"}
-      <div class="control-group">
-        <label for="installments-select">Parcelas:</label>
-        <select
-          id="installments-select"
-          bind:value={numberOfInstallments}
-          class="compact-select"
-          on:change={() => {
-            installmentsList = calculateInstallments();
-            dispatch("paymentChange", {
-              paymentType,
-              numberOfInstallments,
-              dueDay,
-              firstInstallmentMonth,
-              firstInstallmentYear,
-            });
-          }}
-        >
-          <option value={1}>1x</option>
-          <option value={2}>2x</option>
-          <option value={3}>3x</option>
-          <option value={4}>4x</option>
-          <option value={5}>5x</option>
-          <option value={6}>6x</option>
-          <option value={10}>10x</option>
-          <option value={12}>12x</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label for="due-day-select">Venc.:</label>
-        <select
-          id="due-day-select"
-          bind:value={dueDay}
-          class="compact-select small"
-          on:change={() => {
-            installmentsList = calculateInstallments();
-            dispatch("paymentChange", {
-              paymentType,
-              numberOfInstallments,
-              dueDay,
-              firstInstallmentMonth,
-              firstInstallmentYear,
-            });
-          }}
-        >
-          {#each Array(31) as _, i}
-            <option value={i + 1}>{i + 1}</option>
-          {/each}
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label for="first-month-select">Mês:</label>
-        <select
-          id="first-month-select"
-          bind:value={firstInstallmentMonth}
-          class="compact-select"
-          on:change={() => {
-            installmentsList = calculateInstallments();
-            dispatch("paymentChange", {
-              paymentType,
-              numberOfInstallments,
-              dueDay,
-              firstInstallmentMonth,
-              firstInstallmentYear,
-            });
-          }}
-        >
-          <option value={1}>Jan</option>
-          <option value={2}>Fev</option>
-          <option value={3}>Mar</option>
-          <option value={4}>Abr</option>
-          <option value={5}>Mai</option>
-          <option value={6}>Jun</option>
-          <option value={7}>Jul</option>
-          <option value={8}>Ago</option>
-          <option value={9}>Set</option>
-          <option value={10}>Out</option>
-          <option value={11}>Nov</option>
-          <option value={12}>Dez</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label for="first-year-select">Ano:</label>
-        <select
-          id="first-year-select"
-          bind:value={firstInstallmentYear}
-          class="compact-select small"
-          on:change={() => {
-            installmentsList = calculateInstallments();
-            dispatch("paymentChange", {
-              paymentType,
-              numberOfInstallments,
-              dueDay,
-              firstInstallmentMonth,
-              firstInstallmentYear,
-            });
-          }}
-        >
-          <option value={2024}>2024</option>
-          <option value={2025}>2025</option>
-          <option value={2026}>2026</option>
-          <option value={2027}>2027</option>
-        </select>
-      </div>
-    {/if}
-  </div>
+  {/if}
 
   <!-- Prévia das Parcelas -->
-  {#if paymentType === "installments" && installmentsList.length > 0}
+  {#if (showPreview || previewOnly) && paymentType === "installments" && installmentsList.length > 0}
     <div class="installments-preview">
-      <h4>📋 Prévia das Parcelas</h4>
+      {#if !previewOnly}
+        <h4>📋 Prévia das Parcelas</h4>
+      {/if}
 
       {#if installmentsList.length <= 6}
         <!-- Uma coluna para até 6 parcelas -->
@@ -347,8 +353,8 @@
     border: 1px solid #444;
     border-radius: 6px;
     padding: 1rem;
-    max-height: 300px;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
     display: flex;
     flex-direction: column;
   }
