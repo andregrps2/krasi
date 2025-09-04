@@ -165,7 +165,7 @@
   .cart-section {
     background: #2a2a2a;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0.5rem;
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
     display: flex;
     flex-direction: column;
@@ -175,14 +175,14 @@
 
   .cart-section h2 {
     color: var(--text-accent);
-    margin: 0 0 1rem 0;
-    font-size: 1.3rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
   }
 
   .empty-cart {
     text-align: center;
     color: #888;
-    padding: 2rem 1rem;
+    padding: 1rem 0.5rem;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -190,8 +190,8 @@
   }
 
   .empty-cart p {
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
     color: #cccccc;
   }
 
@@ -202,19 +202,19 @@
   .cart-items {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 1rem;
-    max-height: calc(100vh - 400px);
+    margin-bottom: 0.5rem;
+    max-height: calc(100vh - 300px);
   }
 
   .cart-item {
     display: grid;
     grid-template-columns: 1fr auto auto;
-    gap: 0.75rem;
+    gap: 0.5rem;
     align-items: start;
-    padding: 0.75rem;
+    padding: 0.5rem;
     border: 2px solid #555;
     border-radius: 6px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     background: #333;
     transition: border-color 0.2s;
   }
@@ -229,13 +229,13 @@
 
   .item-name {
     font-weight: 600;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.1rem;
     color: var(--text-accent);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 
   .item-details {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: #cccccc;
   }
 
@@ -243,7 +243,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.5rem;
+    gap: 0.3rem;
   }
 
   .item-total {
@@ -255,12 +255,12 @@
   .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.3rem;
   }
 
   .qty-btn {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     border: 2px solid var(--primary-color-border);
     background: #2a2a2a;
     color: var(--text-accent);
@@ -270,7 +270,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
   }
 
   .qty-btn:hover:not(:disabled) {

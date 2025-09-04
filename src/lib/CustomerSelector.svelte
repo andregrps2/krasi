@@ -126,18 +126,18 @@
   .customer-compact {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
+    gap: 0.2rem;
+    padding: 0.2rem 0.4rem;
     background: #333;
     border: 2px solid #555;
-    border-radius: 6px;
-    min-width: 250px;
+    border-radius: 4px;
+    min-width: 180px;
   }
 
   .customer-label {
     font-weight: 600;
     color: var(--text-accent);
-    font-size: 0.9rem;
+    font-size: 0.65rem;
     white-space: nowrap;
   }
 
@@ -151,7 +151,7 @@
   .customer-name {
     color: #4ade80;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.65rem;
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
@@ -162,11 +162,12 @@
     background: #555;
     color: white;
     border: 1px solid #666;
-    border-radius: 4px;
-    padding: 0.4rem 0.8rem;
+    border-radius: 3px;
+    padding: 0.25rem 0.5rem;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.65rem;
     transition: all 0.2s;
+    height: 24px;
   }
 
   .select-btn:hover {
@@ -179,11 +180,12 @@
     color: #1a1a1a;
     border: none;
     border-radius: 3px;
-    padding: 0.3rem 0.6rem;
+    padding: 0.2rem 0.4rem;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.65rem;
     font-weight: 600;
     transition: all 0.2s;
+    height: 24px;
   }
 
   .change-btn:hover {
@@ -195,9 +197,9 @@
     color: white;
     border: none;
     border-radius: 3px;
-    padding: 0.3rem 0.5rem;
+    padding: 0.2rem 0.4rem;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.65rem;
     font-weight: 600;
     transition: all 0.2s;
     width: 24px;

@@ -472,7 +472,8 @@
   }
 
   .sales-header {
-    margin-bottom: 1rem;
+    margin-bottom: 0.2rem;
+    padding: 0.1rem 0;
   }
 
   .header-content {
@@ -480,36 +481,38 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.2rem;
+    min-height: 35px;
   }
 
   .header-controls {
     display: flex;
-    gap: 1rem;
+    gap: 0.2rem;
     align-items: center;
     flex-wrap: wrap;
   }
 
   .sales-header h1 {
     margin: 0;
-    font-size: 1.8rem;
+    font-size: 1.1rem;
     text-shadow: var(--shadow-small);
     white-space: nowrap;
+    line-height: 1;
   }
 
   .sales-content {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    min-height: calc(100vh - 120px);
+    gap: 0.5rem;
+    min-height: calc(100vh - 50px);
   }
 
   /* Área Principal: Produtos e Vendas */
   .main-area {
     display: grid;
     grid-template-columns: 1.8fr 1.2fr;
-    gap: 1rem;
-    height: calc(100vh - 200px);
+    gap: 0.5rem;
+    height: calc(100vh - 70px);
   }
 
   /* Responsivo */

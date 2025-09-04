@@ -113,41 +113,42 @@
   .payment-compact {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.5rem;
+    gap: 0.3rem;
+    padding: 0.2rem 0.4rem;
     background: #333;
     border: 2px solid #555;
-    border-radius: 6px;
+    border-radius: 4px;
     flex-wrap: wrap;
   }
 
   .payment-controls {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.3rem;
     flex-wrap: wrap;
   }
 
   .control-group {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.15rem;
   }
 
   .control-group label {
     color: var(--text-accent);
-    font-size: 0.8rem;
+    font-size: 0.65rem;
     font-weight: 600;
     white-space: nowrap;
   }
 
   .compact-select {
-    padding: 0.3rem 0.5rem;
+    padding: 0.15rem 0.25rem;
     border: 1px solid #555;
-    border-radius: 4px;
+    border-radius: 3px;
     background-color: #2a2a2a;
     color: white;
-    font-size: 0.8rem;
+    font-size: 0.65rem;
+    height: 24px;
     min-width: 80px;
   }
 

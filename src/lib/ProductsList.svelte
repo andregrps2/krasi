@@ -172,7 +172,7 @@
   .products-section {
     background: #2a2a2a;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0.5rem;
     box-shadow: 0 4px 8px rgba(255, 215, 0, 0.1);
     border: 2px solid var(--primary-color-border);
     height: 100%;
@@ -182,20 +182,20 @@
 
   .products-section h2 {
     color: var(--text-accent);
-    margin: 0 0 1rem 0;
-    font-size: 1.3rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
   }
 
   .search-bar {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .search-input {
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.3rem;
     border: 2px solid #555;
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     background-color: #333;
     color: white;
     margin-bottom: 0.5rem;
@@ -254,16 +254,16 @@
   .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 0.75rem;
+    gap: 0.5rem;
     flex: 1;
     overflow-y: auto;
-    max-height: calc(100vh - 300px);
+    max-height: calc(100vh - 250px);
   }
 
   .product-card {
     border: 2px solid #555;
     border-radius: 6px;
-    padding: 0.75rem;
+    padding: 0.5rem;
     background: #333;
     transition:
       transform 0.2s,
@@ -278,20 +278,20 @@
   }
 
   .product-title {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.3rem 0;
     color: var(--text-accent);
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: bold;
   }
 
   .property-value {
-    margin-right: 0.5rem;
+    margin-right: 0.3rem;
     color: var(--text-accent);
   }
 
   .product-details {
-    margin-bottom: 0.75rem;
-    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.7rem;
   }
 
   .detail {
