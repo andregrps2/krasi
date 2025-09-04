@@ -25,8 +25,8 @@
     window.addEventListener("resize", checkMobile);
   }
 
-  function handleNavigation(event: CustomEvent<string>) {
-    currentPage = event.detail;
+  function handleNavigation(event: CustomEvent<{ page: string }>) {
+    currentPage = event.detail.page;
     // Fechar sidebar automaticamente em mobile após navegação
     if (isMobile) {
       sidebarCollapsed = true;

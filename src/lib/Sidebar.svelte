@@ -78,7 +78,10 @@
     </button>
 
     <div class="header-title" class:hidden={sidebarCollapsed}>
-      <h2>Ricardo Ternos</h2>
+      <h2>
+        Ricardo<br />
+        Ternos
+      </h2>
     </div>
   </div>
 
