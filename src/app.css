@@ -1,10 +1,19 @@
 /* Importa o sistema de tema */
 @import './theme.css';
 
+/* Reset global para eliminar scroll */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Estilos específicos da aplicação */
 #app {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Layout principal */

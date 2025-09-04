@@ -125,7 +125,7 @@
     <div class="cart-summary">
       <div class="total">
         <strong>Total: R$ {total.toFixed(2)}</strong>
-        {#if paymentType === "installments" && total > 0}
+        {#if paymentType === "installments" && total > 0 && !showFinalizationButton}
           <div class="installment-info">
             {numberOfInstallments}x de R$ {(
               total / numberOfInstallments
@@ -174,12 +174,14 @@
     flex-direction: column;
     border: 2px solid var(--primary-color-border);
     height: 100%;
+    min-height: 0;
   }
 
   .cart-section h2 {
     color: var(--text-accent);
     margin: 0 0 0.5rem 0;
     font-size: 1rem;
+    flex-shrink: 0;
   }
 
   .empty-cart {
@@ -203,10 +205,10 @@
   }
 
   .cart-items {
-    flex: 1;
     overflow-y: auto;
     margin-bottom: 0.5rem;
-    max-height: calc(100vh - 300px);
+    min-height: 0;
+    max-height: 60vh;
   }
 
   .cart-item {
@@ -313,6 +315,8 @@
   .cart-summary {
     border-top: 2px solid var(--primary-color);
     padding-top: 1rem;
+    flex-shrink: 0;
+    margin-top: auto;
   }
 
   .total {
@@ -344,6 +348,8 @@
   .cart-actions {
     display: flex;
     gap: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 1rem;
   }
 
   .clear-btn,

@@ -242,17 +242,17 @@
 
   .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
     flex: 1;
     overflow-y: auto;
-    max-height: calc(100vh - 250px);
+    min-height: 0;
   }
 
   .product-card {
     border: 2px solid #555;
     border-radius: 6px;
-    padding: 0.5rem;
+    padding: 0.4rem;
     background: #333;
     transition:
       transform 0.2s,

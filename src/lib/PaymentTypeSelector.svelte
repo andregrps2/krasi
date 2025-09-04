@@ -347,6 +347,10 @@
     border: 1px solid #444;
     border-radius: 6px;
     padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .installments-preview h4 {
@@ -355,6 +359,7 @@
     font-size: 0.9rem;
     border-bottom: 1px solid #444;
     padding-bottom: 0.5rem;
+    flex-shrink: 0;
   }
 
   .installments-table {

@@ -134,6 +134,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   .section-header {
@@ -167,6 +168,8 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    overflow: hidden;
+    min-height: 0;
   }
 
   .customer-section,
@@ -175,6 +178,8 @@
     padding: 1rem;
     border-radius: 6px;
     border: 1px solid #555;
+    overflow-y: auto;
+    min-height: 0;
   }
 
   .customer-section h3,
@@ -189,8 +194,10 @@
   .actions {
     display: flex;
     gap: 1rem;
+    padding: 1rem 0 0 0;
+    flex-shrink: 0;
+    background: #1e1e1e;
     margin-top: auto;
-    padding-top: 1rem;
   }
 
   .btn-primary,

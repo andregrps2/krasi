@@ -408,6 +408,7 @@
           {firstInstallmentMonth}
           {firstInstallmentYear}
           {selectedCustomer}
+          showFinalizationButton={true}
           on:updateQuantity={handleCartUpdateQuantity}
           on:removeItem={handleCartRemoveItem}
           on:clearCart={handleCartClear}
@@ -458,17 +459,21 @@
 
 <style>
   .sales-container {
-    padding: 0 1rem 1rem 1rem;
+    padding: 0 1rem 0 1rem;
     max-width: 1600px;
     margin: 0 auto;
     background-color: #1a1a1a;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     color: #ffffff;
+    display: flex;
+    flex-direction: column;
   }
 
   .sales-header {
     margin-bottom: 0.5rem;
-    padding: 0 0 0.5rem 0;
+    padding: 0.5rem 0;
+    flex-shrink: 0;
   }
 
   .header-content {
@@ -486,23 +491,25 @@
   }
 
   .sales-content {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    min-height: calc(100vh - 50px);
+    overflow: hidden;
   }
 
   /* Área Principal: Produtos e Vendas */
   .main-area {
+    flex: 1;
     display: grid;
-    grid-template-columns: 1.8fr 1.2fr;
+    grid-template-columns: 2.5fr 1fr;
     gap: 0.5rem;
-    height: calc(100vh - 70px);
+    overflow: hidden;
+    min-height: 0;
   }
 
   /* Modo de finalização: carrinho mantém tamanho, seção de finalização fica maior */
   .main-area.finalization-mode {
-    grid-template-columns: 1.2fr 1.8fr;
+    grid-template-columns: 1fr 2fr;
   }
 
   /* Responsivo */

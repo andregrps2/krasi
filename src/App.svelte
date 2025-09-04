@@ -73,15 +73,18 @@
 <style>
   .app-container {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
     background-color: #1a1a1a;
+    overflow: hidden;
   }
 
   .main-content {
     margin-left: 250px;
     flex: 1;
-    overflow-x: auto;
+    overflow: hidden;
     transition: margin-left 0.3s ease;
+    display: flex;
+    flex-direction: column;
   }
 
   .main-content.sidebar-collapsed {
