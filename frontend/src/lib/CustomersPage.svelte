@@ -1,12 +1,24 @@
 <script lang="ts">
-  import { customers } from "../stores";
-  import type { Customer } from "../types";
+  import { customers, currentStoreId, loadCustomersForStore } from "../stores";
+  import type { Customer } from "../types-new";
+  import { customersService } from "./services/customersService";
   import Modal from "./Modal.svelte";
   import CustomerForm from "./CustomerForm.svelte";
 
+  // Tipo temporário que inclui campos de endereço para compatibilidade
+  interface CustomerWithAddress extends Customer {
+    cep?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    localidade?: string;
+    uf?: string;
+  }
+
   // State
   let showCustomerModal = false;
-  let editingCustomer: Customer | null = null;
+  let editingCustomer: CustomerWithAddress | null = null;
   let searchTerm = "";
 
   // Filtered customers
@@ -16,8 +28,9 @@
     const term = searchTerm.toLowerCase();
     return (
       customer.name.toLowerCase().includes(term) ||
-      customer.congregation.toLowerCase().includes(term) ||
-      customer.whatsappNumber.includes(term)
+      (customer.congregation &&
+        customer.congregation.toLowerCase().includes(term)) ||
+      (customer.whatsappNumber && customer.whatsappNumber.includes(term))
     );
   });
 
@@ -27,35 +40,30 @@
   }
 
   function openEditCustomerModal(customer: Customer) {
-    editingCustomer = customer;
+    editingCustomer = customer as CustomerWithAddress;
     showCustomerModal = true;
   }
 
-  function handleSaveCustomer(
-    event: CustomEvent<Omit<Customer, "id"> & { id?: number }>
+  async function handleSaveCustomer(
+    event: CustomEvent<Omit<CustomerWithAddress, "id"> & { id?: string }>
   ) {
     const customerData = event.detail;
 
+    if (!$currentStoreId) {
+      alert("Nenhuma loja selecionada!");
+      return;
+    }
+
     try {
       if (customerData.id) {
-        // Update existing customer
-        $customers = $customers.map((customer) =>
-          customer.id === customerData.id
-            ? ({ ...customerData, id: customer.id } as Customer)
-            : customer
-        );
+        // Update existing customer (será implementado depois)
+        console.log("Atualização de cliente ainda não implementada");
       } else {
-        // Add new customer
-        const newId =
-          $customers.length > 0
-            ? Math.max(...$customers.map((c) => c.id)) + 1
-            : 1;
-        const newCustomer: Customer = {
-          id: newId,
+        // Add new customer via API
+        await customersService.createCustomer($currentStoreId, {
           name: customerData.name,
           congregation: customerData.congregation,
           whatsappNumber: customerData.whatsappNumber,
-          createdAt: new Date(),
           cep: customerData.cep,
           logradouro: customerData.logradouro,
           numero: customerData.numero,
@@ -63,21 +71,23 @@
           bairro: customerData.bairro,
           localidade: customerData.localidade,
           uf: customerData.uf,
-        };
-        $customers = [...$customers, newCustomer];
+        });
+
+        // Recarregar lista de clientes
+        await loadCustomersForStore($currentStoreId);
       }
 
       showCustomerModal = false;
     } catch (error) {
       console.error("Erro ao salvar cliente:", error);
+      alert("Erro ao salvar cliente. Tente novamente.");
     }
   }
-
   function handleCancelCustomer() {
     showCustomerModal = false;
   }
 
-  function deleteCustomer(customerId: number) {
+  function deleteCustomer(customerId: string) {
     if (confirm("Tem certeza que deseja excluir este cliente?")) {
       $customers = $customers.filter((customer) => customer.id !== customerId);
     }
@@ -93,11 +103,12 @@
     return `https://wa.me/55${cleanNumber}`;
   }
 
-  function openWhatsApp(number: string) {
+  function openWhatsApp(number: string | undefined) {
+    if (!number) return;
     window.open(formatWhatsApp(number), "_blank");
   }
 
-  function formatAddress(customer: Customer): string {
+  function formatAddress(customer: CustomerWithAddress): string {
     const parts = [];
 
     // Combinar logradouro e número
@@ -124,7 +135,7 @@
     return parts.length > 0 ? parts.join(", ") : "";
   }
 
-  function hasAddress(customer: Customer): boolean {
+  function hasAddress(customer: CustomerWithAddress): boolean {
     return !!(
       customer.cep ||
       customer.logradouro ||

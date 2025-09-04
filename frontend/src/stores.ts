@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import type { PropertyDefinition, StockItemOld as StockItem, Sale, Customer, Installment } from './types-new';
+import type { PropertyDefinition, StockItemOld as StockItem, Sale, Customer, Installment, Store } from './types-new';
 import { stockService, customersService, salesService, installmentsService } from './lib/services';
 
 /**
@@ -22,6 +22,7 @@ function createPersistentStore<T>(key: string, startValue: T) {
 
 // --- Store da loja atual selecionada ---
 export const currentStoreId = writable<string | null>(null);
+export const selectedStore = writable<Store | null>(null);
 
 // --- Propriedades Customizáveis ---
 

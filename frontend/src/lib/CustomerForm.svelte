@@ -1,8 +1,19 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { Customer } from "../types";
+  import type { Customer } from "../types-new";
 
-  export let customer: Customer | null = null;
+  // Tipo temporário que inclui campos de endereço para compatibilidade
+  interface CustomerWithAddress extends Customer {
+    cep?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    localidade?: string;
+    uf?: string;
+  }
+
+  export let customer: CustomerWithAddress | null = null;
 
   const dispatch = createEventDispatcher();
 
