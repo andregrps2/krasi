@@ -7,7 +7,7 @@
   // Props
   export let selectedCustomer: Customer | null = null;
   export let paymentType: PaymentType = "cash";
-  export let numberOfInstallments = 1;
+  export let numberOfInstallments = 2;
   export let installmentFrequency = 30;
   export let dueDay = 10;
   export let firstInstallmentMonth = new Date().getMonth() + 1;
@@ -16,7 +16,7 @@
   export let showPreview = true;
   export let previewOnly = false;
   export let hasDownPayment = false;
-  export let downPaymentValue = 0;
+  export let downPaymentValue: number | string = "";
 
   // Variável reativa para a lista de parcelas
   let installmentsList: any[] = [];
@@ -35,8 +35,6 @@
 
     // Garantir que downPaymentValue é um número
     const entryValue = Number(downPaymentValue) || 0;
-    const remainingAmount = hasDownPayment ? total - entryValue : total;
-    const installmentValue = remainingAmount / numberOfInstallments;
     const installments = [];
 
     // Se tem entrada, primeira parcela é a entrada
@@ -49,31 +47,100 @@
         isPaid: true,
       };
       installments.push(entryInstallment);
-    }
 
-    for (let i = 0; i < numberOfInstallments; i++) {
-      const date = new Date();
-      date.setMonth(firstInstallmentMonth - 1 + i);
-      date.setFullYear(firstInstallmentYear);
-      date.setDate(dueDay);
+      // Calcular parcelas normais
+      // Se tem entrada: numberOfInstallments inclui a entrada, então parcelas normais = numberOfInstallments - 1
+      const remainingAmount = total - entryValue;
+      const normalInstallments = numberOfInstallments - 1;
 
-      // Ajustar o ano se o mês ultrapassar dezembro
-      if (date.getMonth() >= 12) {
-        date.setFullYear(
-          firstInstallmentYear +
-            Math.floor((firstInstallmentMonth - 1 + i) / 12)
-        );
-        date.setMonth((firstInstallmentMonth - 1 + i) % 12);
+      if (normalInstallments > 0) {
+        const installmentValue = remainingAmount / normalInstallments;
+        // Calcular o valor base para cada parcela (arredondado para baixo)
+        const baseInstallmentValue = Math.floor(installmentValue * 100) / 100;
+
+        for (let i = 0; i < normalInstallments; i++) {
+          const date = new Date();
+          date.setMonth(firstInstallmentMonth - 1 + i);
+          date.setFullYear(firstInstallmentYear);
+          date.setDate(dueDay);
+
+          // Ajustar o ano se o mês ultrapassar dezembro
+          if (date.getMonth() >= 12) {
+            date.setFullYear(
+              firstInstallmentYear +
+                Math.floor((firstInstallmentMonth - 1 + i) / 12)
+            );
+            date.setMonth((firstInstallmentMonth - 1 + i) % 12);
+          }
+
+          let finalValue;
+
+          // Se é a última parcela, calcular o valor restante exato
+          if (i === normalInstallments - 1) {
+            // Somar todas as parcelas anteriores para calcular o que resta
+            let sumPreviousParcels = 0;
+            for (let j = 0; j < i; j++) {
+              sumPreviousParcels += Math.round(installmentValue * 100) / 100;
+            }
+            finalValue = remainingAmount - sumPreviousParcels;
+          } else {
+            // Para parcelas não-finais, usar valor arredondado
+            finalValue = Math.round(installmentValue * 100) / 100;
+          }
+
+          const normalInstallment = {
+            number: i + 2,
+            value: finalValue,
+            dueDate: date.toLocaleDateString("pt-BR"),
+            isDownPayment: false,
+            isPaid: false,
+          };
+          installments.push(normalInstallment);
+        }
       }
+    } else {
+      // Sem entrada - calcular todas as parcelas normalmente
+      const installmentValue = total / numberOfInstallments;
 
-      const normalInstallment = {
-        number: hasDownPayment ? i + 2 : i + 1,
-        value: installmentValue,
-        dueDate: date.toLocaleDateString("pt-BR"),
-        isDownPayment: false,
-        isPaid: false,
-      };
-      installments.push(normalInstallment);
+      for (let i = 0; i < numberOfInstallments; i++) {
+        const date = new Date();
+        date.setMonth(firstInstallmentMonth - 1 + i);
+        date.setFullYear(firstInstallmentYear);
+        date.setDate(dueDay);
+
+        // Ajustar o ano se o mês ultrapassar dezembro
+        if (date.getMonth() >= 12) {
+          date.setFullYear(
+            firstInstallmentYear +
+              Math.floor((firstInstallmentMonth - 1 + i) / 12)
+          );
+          date.setMonth((firstInstallmentMonth - 1 + i) % 12);
+        }
+
+        let finalValue;
+
+        // Se é a última parcela, calcular o valor restante exato
+        if (i === numberOfInstallments - 1) {
+          // Somar todas as parcelas anteriores para calcular o que resta
+          let sumPreviousParcels = 0;
+          for (let j = 0; j < i; j++) {
+            sumPreviousParcels += Math.round(installmentValue * 100) / 100;
+          }
+          finalValue = total - sumPreviousParcels;
+        } else {
+          // Para parcelas não-finais, usar valor arredondado
+          finalValue = Math.round(installmentValue * 100) / 100;
+        }
+
+        const normalInstallment = {
+          number: i + 1,
+          value: finalValue,
+          dueDate: date.toLocaleDateString("pt-BR"),
+          isDownPayment: false,
+          isPaid: false,
+        };
+        installments.push(normalInstallment);
+      }
     }
 
     return installments;
@@ -143,13 +210,16 @@
                     });
                   }}
                 >
-                  <option value={1}>1x</option>
                   <option value={2}>2x</option>
                   <option value={3}>3x</option>
                   <option value={4}>4x</option>
                   <option value={5}>5x</option>
                   <option value={6}>6x</option>
+                  <option value={7}>7x</option>
+                  <option value={8}>8x</option>
+                  <option value={9}>9x</option>
                   <option value={10}>10x</option>
+                  <option value={11}>11x</option>
                   <option value={12}>12x</option>
                 </select>
               </div>
@@ -247,7 +317,7 @@
                     class="enhanced-checkbox"
                     on:change={() => {
                       if (!hasDownPayment) {
-                        downPaymentValue = 0;
+                        downPaymentValue = "";
                       }
                       dispatch("paymentChange", {
                         paymentType,
@@ -267,17 +337,24 @@
 
               {#if hasDownPayment}
                 <div class="control-group">
-                  <label for="down-payment-input">Valor da Entrada:</label>
+                  <label for="down-payment-input"
+                    >💰 Valor da Entrada (R$):</label
+                  >
                   <input
                     id="down-payment-input"
                     type="number"
                     step="0.01"
                     min="0"
                     max={total}
-                    bind:value={downPaymentValue}
-                    class="enhanced-input"
-                    placeholder="R$ 0,00"
-                    on:input={() => {
+                    value={downPaymentValue === 0 || downPaymentValue === ""
+                      ? ""
+                      : downPaymentValue}
+                    class="enhanced-input price-input"
+                    placeholder="0,00"
+                    on:input={(e) => {
+                      const target = e.currentTarget as HTMLInputElement;
+                      downPaymentValue =
+                        target.value === "" ? "" : Number(target.value);
                       dispatch("paymentChange", {
                         paymentType,
                         numberOfInstallments,
@@ -447,6 +524,36 @@
 
   .enhanced-input {
     min-width: 120px;
+  }
+
+  /* Campo de preço melhorado */
+  .price-input {
+    font-size: 1rem !important;
+    font-weight: 600;
+    text-align: right;
+    padding: 0.5rem 0.7rem !important;
+    min-height: 40px !important;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%) !important;
+    border: 2px solid #666 !important;
+    color: #4ade80 !important;
+    min-width: 140px !important;
+  }
+
+  .price-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3) !important;
+    background: linear-gradient(135deg, #333 0%, #2a2a2a 100%) !important;
+  }
+
+  /* Remover setinhas do input number */
+  .price-input::-webkit-outer-spin-button,
+  .price-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .price-input[type="number"] {
+    -moz-appearance: textfield;
   }
 
   /* Checkbox Customizado */

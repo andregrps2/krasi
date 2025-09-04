@@ -15,7 +15,7 @@
   export let firstInstallmentMonth: number = new Date().getMonth() + 1;
   export let firstInstallmentYear: number = new Date().getFullYear();
   export let hasDownPayment: boolean = false;
-  export let downPaymentValue: number = 0;
+  export let downPaymentValue: number | string = "";
 
   // Força a reatividade da prévia das parcelas
   $: previewKey = `${paymentType}-${numberOfInstallments}-${dueDay}-${firstInstallmentMonth}-${firstInstallmentYear}-${total}-${hasDownPayment}-${downPaymentValue}`;
@@ -87,7 +87,8 @@
     firstInstallmentMonth = newMonth || firstInstallmentMonth;
     firstInstallmentYear = newYear || firstInstallmentYear;
     hasDownPayment = newHasDownPayment || false;
-    downPaymentValue = newDownPaymentValue || 0;
+    downPaymentValue =
+      newDownPaymentValue === undefined ? "" : newDownPaymentValue;
   }
 </script>
 
