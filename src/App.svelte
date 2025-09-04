@@ -8,16 +8,54 @@
 
   // Estado da navegação
   let currentPage = "estoque";
+  let sidebarCollapsed = false;
+  let isMobile = false;
+
+  // Detectar se é mobile
+  function checkMobile() {
+    isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      sidebarCollapsed = true; // Iniciar colapsado em mobile
+    }
+  }
+
+  // Verificar tamanho da tela ao carregar e redimensionar
+  if (typeof window !== "undefined") {
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+  }
 
   function handleNavigation(event: CustomEvent<string>) {
     currentPage = event.detail;
+    // Fechar sidebar automaticamente em mobile após navegação
+    if (isMobile) {
+      sidebarCollapsed = true;
+    }
+  }
+
+  function handleToggle() {
+    sidebarCollapsed = !sidebarCollapsed;
+  }
+
+  function toggleSidebar() {
+    sidebarCollapsed = !sidebarCollapsed;
   }
 </script>
 
 <div class="app-container">
-  <Sidebar {currentPage} on:navigate={handleNavigation} />
+  <!-- Overlay para mobile -->
+  {#if !sidebarCollapsed && isMobile}
+    <div class="sidebar-overlay" on:click={toggleSidebar}></div>
+  {/if}
 
-  <main class="main-content">
+  <Sidebar
+    {currentPage}
+    {sidebarCollapsed}
+    on:navigate={handleNavigation}
+    on:toggle={handleToggle}
+  />
+
+  <main class="main-content" class:sidebar-collapsed={sidebarCollapsed}>
     {#if currentPage === "vendas"}
       <SalesPage />
     {:else if currentPage === "estoque"}
@@ -43,6 +81,22 @@
     margin-left: 250px;
     flex: 1;
     overflow-x: auto;
+    transition: margin-left 0.3s ease;
+  }
+
+  .main-content.sidebar-collapsed {
+    margin-left: 60px;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    backdrop-filter: blur(2px);
   }
 
   /* Responsivo */

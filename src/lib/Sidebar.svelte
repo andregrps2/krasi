@@ -2,11 +2,16 @@
   import { createEventDispatcher } from "svelte";
 
   export let currentPage: string = "estoque";
+  export let sidebarCollapsed: boolean = false;
 
   const dispatch = createEventDispatcher();
 
   function navigateTo(page: string) {
     dispatch("navigate", page);
+  }
+
+  function toggleSidebar() {
+    dispatch("toggle");
   }
 
   const menuItems = [
@@ -38,9 +43,49 @@
   ];
 </script>
 
-<nav class="sidebar">
+<nav class="sidebar" class:collapsed={sidebarCollapsed}>
   <div class="sidebar-header">
-    <h2>Ricardo Ternos</h2>
+    <button
+      class="menu-toggle"
+      on:click={toggleSidebar}
+      title={sidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
+      aria-label={sidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
+    >
+      <svg
+        class="menu-icon"
+        class:collapsed={sidebarCollapsed}
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <path
+          class="line top"
+          d="M3 12h18"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          class="line middle"
+          d="M3 6h18"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <path
+          class="line bottom"
+          d="M3 18h18"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
+
+    {#if !sidebarCollapsed}
+      <h2>Ricardo Ternos</h2>
+    {/if}
   </div>
 
   <ul class="menu">
@@ -50,9 +95,12 @@
           class="menu-item"
           class:active={currentPage === item.id}
           on:click={() => navigateTo(item.id)}
+          title={sidebarCollapsed ? item.label : ""}
         >
           <span class="icon">{item.icon}</span>
-          <span class="label">{item.label}</span>
+          {#if !sidebarCollapsed}
+            <span class="label">{item.label}</span>
+          {/if}
         </button>
       </li>
     {/each}
@@ -77,35 +125,90 @@
     flex-direction: column;
     border-right: 3px solid var(--border-primary);
     box-shadow: var(--shadow-large);
+    transition: width 0.3s ease;
+    overflow: hidden;
+  }
+
+  .sidebar.collapsed {
+    width: 60px;
   }
 
   .sidebar-header {
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: var(--spacing-lg);
     border-bottom: 2px solid var(--border-primary);
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
     background: linear-gradient(
       135deg,
       var(--color-gold-transparent),
       rgba(0, 0, 0, 0.1)
     );
     backdrop-filter: blur(10px);
+    min-height: 64px;
+  }
+
+  .menu-toggle {
+    background: none;
+    border: none;
+    color: var(--text-accent);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .menu-toggle:hover {
+    background: rgba(212, 175, 55, 0.1);
+    color: var(--text-primary);
+  }
+
+  .menu-toggle:active {
+    background: rgba(212, 175, 55, 0.2);
+    transform: scale(0.95);
+  }
+
+  .menu-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .menu-icon .line {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+
+  .menu-icon.collapsed .line.top {
+    transform: rotate(45deg) translate(0, 6px);
+  }
+
+  .menu-icon.collapsed .line.middle {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  .menu-icon.collapsed .line.bottom {
+    transform: rotate(-45deg) translate(0, -6px);
   }
 
   .sidebar-header h2 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: var(--text-accent);
+    font-size: 1.5rem;
     font-weight: 700;
-    text-shadow: var(--shadow-small);
-    letter-spacing: 0.5px;
+    margin: 0;
     background: linear-gradient(
       45deg,
-      var(--color-gold),
-      var(--color-gold-light)
+      var(--accent-primary),
+      var(--accent-secondary)
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    white-space: nowrap;
   }
 
   .menu {
@@ -133,6 +236,15 @@
     border-left: 3px solid transparent;
     position: relative;
     margin: var(--spacing-xs) 0;
+  }
+
+  .collapsed .menu-item {
+    justify-content: center;
+    padding: var(--spacing-lg);
+  }
+
+  .collapsed .menu-item .label {
+    display: none;
   }
 
   .menu-item::before {
@@ -216,5 +328,56 @@
 
   .menu::-webkit-scrollbar-thumb:hover {
     background: var(--border-primary);
+  }
+
+  /* Media queries para responsividade */
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+      transition:
+        transform 0.3s ease,
+        width 0.3s ease;
+      z-index: 1100;
+    }
+
+    .sidebar:not(.collapsed) {
+      transform: translateX(0);
+      width: 250px;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar.collapsed {
+      transform: translateX(-100%);
+      width: 60px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .sidebar:not(.collapsed) {
+      width: 280px;
+    }
+
+    .menu-item {
+      padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    .collapsed .menu-item {
+      padding: var(--spacing-md);
+    }
+
+    .sidebar-header {
+      padding: var(--spacing-md);
+      min-height: 56px;
+    }
+
+    .menu-toggle {
+      width: 36px;
+      height: 36px;
+      padding: 6px;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1.25rem;
+    }
   }
 </style>

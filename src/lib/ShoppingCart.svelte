@@ -82,7 +82,8 @@
               {cartItem.item.properties.brand}
             </div>
             <div class="item-details">
-              {cartItem.item.properties.fabric} - {cartItem.item.properties.color} - {cartItem.item.properties.size}
+              {cartItem.item.properties.fabric} - {cartItem.item.properties
+                .color} - {cartItem.item.properties.size}
             </div>
           </div>
 
