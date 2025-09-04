@@ -60,19 +60,16 @@
         const baseInstallmentValue = Math.floor(installmentValue * 100) / 100;
 
         for (let i = 0; i < normalInstallments; i++) {
-          const date = new Date();
-          date.setMonth(firstInstallmentMonth - 1 + i);
-          date.setFullYear(firstInstallmentYear);
-          date.setDate(dueDay);
+          // Calcular mês e ano corretamente
+          const targetMonth = firstInstallmentMonth + i;
+          const targetYear =
+            firstInstallmentYear + Math.floor((targetMonth - 1) / 12);
+          const targetMonthAdjusted = ((targetMonth - 1) % 12) + 1;
 
-          // Ajustar o ano se o mês ultrapassar dezembro
-          if (date.getMonth() >= 12) {
-            date.setFullYear(
-              firstInstallmentYear +
-                Math.floor((firstInstallmentMonth - 1 + i) / 12)
-            );
-            date.setMonth((firstInstallmentMonth - 1 + i) % 12);
-          }
+          const date = new Date();
+          date.setFullYear(targetYear);
+          date.setMonth(targetMonthAdjusted - 1); // setMonth usa 0-11
+          date.setDate(dueDay);
 
           let finalValue;
 
@@ -104,19 +101,15 @@
       const installmentValue = total / numberOfInstallments;
 
       for (let i = 0; i < numberOfInstallments; i++) {
-        const date = new Date();
-        date.setMonth(firstInstallmentMonth - 1 + i);
-        date.setFullYear(firstInstallmentYear);
-        date.setDate(dueDay);
+        const targetMonth = firstInstallmentMonth + i;
+        const targetYear =
+          firstInstallmentYear + Math.floor((targetMonth - 1) / 12);
+        const targetMonthAdjusted = ((targetMonth - 1) % 12) + 1;
 
-        // Ajustar o ano se o mês ultrapassar dezembro
-        if (date.getMonth() >= 12) {
-          date.setFullYear(
-            firstInstallmentYear +
-              Math.floor((firstInstallmentMonth - 1 + i) / 12)
-          );
-          date.setMonth((firstInstallmentMonth - 1 + i) % 12);
-        }
+        const date = new Date();
+        date.setFullYear(targetYear);
+        date.setMonth(targetMonthAdjusted - 1);
+        date.setDate(dueDay);
 
         let finalValue;
 
@@ -537,6 +530,7 @@
   }
 
   .price-input-compact[type="number"] {
+    appearance: textfield;
     -moz-appearance: textfield;
   }
 

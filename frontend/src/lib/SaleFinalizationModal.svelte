@@ -3,13 +3,15 @@
   import Modal from "./Modal.svelte";
   import CustomerSelector from "./CustomerSelector.svelte";
   import PaymentTypeSelector from "./PaymentTypeSelector.svelte";
-  import type { Customer, PaymentType, StockItem } from "../types";
+  import type { StockItem } from "../types";
+  import type { Customer, PaymentType } from "../types-new";
+  import { PaymentType as PaymentTypeEnum } from "../types-new";
 
   export let isOpen = false;
   export let cart: { item: StockItem; quantity: number }[] = [];
   export let total: number = 0;
   export let selectedCustomer: Customer | null = null;
-  export let paymentType: PaymentType = "cash";
+  export let paymentType: PaymentType = PaymentTypeEnum.CASH;
   export let numberOfInstallments = 1;
   export let dueDay = 10;
   export let firstInstallmentMonth = new Date().getMonth() + 1;
@@ -21,7 +23,7 @@
   let installmentsEdited = false;
 
   // Calcular parcelas quando os parâmetros mudarem
-  $: if (isOpen && paymentType === "installments") {
+  $: if (isOpen && paymentType === PaymentTypeEnum.INSTALLMENTS) {
     calculateInstallments();
   }
 
@@ -110,7 +112,8 @@
       dueDay,
       firstInstallmentMonth,
       firstInstallmentYear,
-      installments: paymentType === "installments" ? installments : [],
+      installments:
+        paymentType === PaymentTypeEnum.INSTALLMENTS ? installments : [],
     };
 
     dispatch("confirmSale", saleData);
@@ -184,7 +187,7 @@
       />
     </div>
 
-    {#if paymentType === "installments" && installments.length > 0}
+    {#if paymentType === PaymentTypeEnum.INSTALLMENTS && installments.length > 0}
       <div class="installments-section">
         <h3>Parcelas</h3>
         <div class="installments-list">
@@ -222,7 +225,8 @@
       <button
         class="btn-confirm"
         on:click={handleConfirmSale}
-        disabled={paymentType === "installments" && !selectedCustomer}
+        disabled={paymentType === PaymentTypeEnum.INSTALLMENTS &&
+          !selectedCustomer}
       >
         Confirmar Venda
       </button>
