@@ -40,6 +40,7 @@
   let showFinalizationSection = false;
   let showSuccessModal = false;
   let completedSale: Sale | null = null;
+  let isProcessingSale = false; // Flag para evitar execução dupla
 
   // Garantir que quando mudar para "installments", numberOfInstallments seja pelo menos 2
   $: if (paymentType === PaymentType.INSTALLMENTS && numberOfInstallments < 2) {
@@ -355,6 +356,15 @@
   }
 
   async function handleConfirmSale(event: CustomEvent) {
+    // Proteção contra execução dupla
+    if (isProcessingSale) {
+      console.warn(
+        "⚠️ [SALES] Processo já em andamento, ignorando chamada duplicada"
+      );
+      return;
+    }
+
+    isProcessingSale = true;
     console.log("🚀 [SALES] Iniciando processo de finalização da venda");
 
     const saleData = event.detail;
@@ -363,6 +373,7 @@
     if (!$currentStoreId) {
       console.error("❌ [SALES] Erro: Nenhuma loja selecionada");
       alert("Nenhuma loja selecionada!");
+      isProcessingSale = false;
       return;
     }
     console.log("🏪 [SALES] Loja selecionada:", $currentStoreId);
@@ -592,6 +603,10 @@
       alert(
         `Erro ao salvar venda: ${error instanceof Error ? error.message : "Erro desconhecido"}. Verifique o console para mais detalhes.`
       );
+    } finally {
+      // Sempre resetar a flag no final
+      isProcessingSale = false;
+      console.log("🔄 [SALES] Flag de processamento resetada");
     }
   }
 

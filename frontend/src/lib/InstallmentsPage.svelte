@@ -40,21 +40,8 @@
   // Computações reativas
   $: filteredInstallments = $installments.filter(
     (installment: Installment | InstallmentWithRelations) => {
-      console.log(
-        "🔍 [FILTER] Processando parcela:",
-        installment.id,
-        "customerId:",
-        installment.customerId
-      );
-
       // Filtro por status
       if (filterStatus !== "all" && installment.status !== filterStatus) {
-        console.log(
-          "❌ [FILTER] Rejeitada por status:",
-          installment.status,
-          "vs",
-          filterStatus
-        );
         return false;
       }
 
@@ -68,7 +55,6 @@
                 ?.customerId;
 
         if (customerId !== selectedCustomerId) {
-          console.log("❌ [FILTER] Rejeitada por cliente selecionado");
           return false;
         }
       }
@@ -85,7 +71,6 @@
             false;
 
           if (!matches) {
-            console.log("❌ [FILTER] Rejeitada por busca:", term);
             return false;
           }
         } else {
@@ -93,10 +78,6 @@
           const sale = $salesHistory.find((s) => s.id === installment.saleId);
           const customer = $customers.find((c) => c.id === sale?.customerId);
           if (!customer) {
-            console.log(
-              "❌ [FILTER] Cliente não encontrado para parcela:",
-              installment.id
-            );
             return false;
           }
 
@@ -106,16 +87,28 @@
             false;
 
           if (!matches) {
-            console.log("❌ [FILTER] Rejeitada por busca:", term);
             return false;
           }
         }
       }
 
-      console.log("✅ [FILTER] Parcela aceita:", installment.id);
       return true;
     }
   );
+
+  // Debug: log apenas a contagem
+  $: {
+    if ($installments.length > 0) {
+      console.log(
+        "🔢 [INSTALLMENTS PAGE] Total de parcelas no store:",
+        $installments.length
+      );
+      console.log(
+        "🔢 [INSTALLMENTS PAGE] Parcelas após filtros:",
+        filteredInstallments.length
+      );
+    }
+  }
 
   // Atualizar status das parcelas vencidas
   $: {

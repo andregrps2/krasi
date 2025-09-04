@@ -65,6 +65,37 @@ router.post('/', async (req, res) => {
     const data = installmentCreateSchema.parse(req.body);
     console.log('✅ [INSTALLMENTS] Dados validados:', data);
 
+    // Verificar se já existe uma parcela com o mesmo saleId e number
+    const existingInstallment = await prisma.installment.findFirst({
+      where: {
+        saleId: data.saleId,
+        number: data.number
+      }
+    });
+
+    if (existingInstallment) {
+      console.warn('⚠️ [INSTALLMENTS] Parcela duplicada detectada:', {
+        saleId: data.saleId,
+        number: data.number,
+        existingId: existingInstallment.id
+      });
+      
+      // Retornar a parcela existente em vez de criar uma nova
+      const installmentWithRelations = await prisma.installment.findUnique({
+        where: { id: existingInstallment.id },
+        include: {
+          customer: true,
+          sale: {
+            include: {
+              store: true
+            }
+          }
+        }
+      });
+      
+      return res.status(200).json(installmentWithRelations);
+    }
+
     const installment = await prisma.installment.create({
       data: {
         saleId: data.saleId,

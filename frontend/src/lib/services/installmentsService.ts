@@ -2,31 +2,28 @@ import { installmentsApi } from '../api';
 import type { Installment, InstallmentWithRelations } from '../../types-new';
 
 class InstallmentsService {
-  private installmentsCache = new Map<string, InstallmentWithRelations[]>();
+  // Removendo cache para debug
+  // private installmentsCache = new Map<string, InstallmentWithRelations[]>();
   
   async getInstallmentsByStore(storeId: string): Promise<InstallmentWithRelations[]> {
-    // Verificar cache primeiro
-    if (this.installmentsCache.has(storeId)) {
-      return this.installmentsCache.get(storeId)!;
-    }
-
+    console.log('🔍 [INSTALLMENTS SERVICE] Buscando parcelas para loja:', storeId);
+    
     try {
-      // Buscar todas as parcelas da loja específica
+      // Sempre buscar dados frescos do servidor
       const storeInstallments = await installmentsApi.getAll({ storeId });
       
-      // Salvar no cache
-      this.installmentsCache.set(storeId, storeInstallments);
+      console.log('✅ [INSTALLMENTS SERVICE] Parcelas obtidas da API:', storeInstallments.length);
+      console.log('📋 [INSTALLMENTS SERVICE] IDs das parcelas:', storeInstallments.map(i => i.id));
       
       return storeInstallments;
     } catch (error) {
-      console.error('Erro ao carregar parcelas:', error);
+      console.error('❌ [INSTALLMENTS SERVICE] Erro ao carregar parcelas:', error);
       return [];
     }
   }
 
   async refreshInstallments(storeId: string): Promise<InstallmentWithRelations[]> {
-    // Limpar cache e recarregar
-    this.installmentsCache.delete(storeId);
+    // Sem cache, sempre retorna dados frescos
     return this.getInstallmentsByStore(storeId);
   }
 
@@ -49,20 +46,22 @@ class InstallmentsService {
 
   async createInstallment(storeId: string, installmentData: any): Promise<Installment> {
     try {
+      console.log('📤 [INSTALLMENTS SERVICE] Criando parcela:', installmentData);
+      
       const newInstallment = await installmentsApi.create(installmentData);
       
-      // Atualizar cache
-      await this.refreshInstallments(storeId);
+      console.log('✅ [INSTALLMENTS SERVICE] Parcela criada:', newInstallment.id);
       
       return newInstallment;
     } catch (error) {
-      console.error('Erro ao criar parcela:', error);
+      console.error('❌ [INSTALLMENTS SERVICE] Erro ao criar parcela:', error);
       throw error;
     }
   }
 
   clearCache() {
-    this.installmentsCache.clear();
+    // Cache removido - nada para limpar
+    console.log('🧹 [INSTALLMENTS SERVICE] Cache limpo (desabilitado)');
   }
 }
 
