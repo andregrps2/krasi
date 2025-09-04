@@ -216,12 +216,12 @@
   <!-- Prévia das Parcelas -->
   {#if (showPreview || previewOnly) && paymentType === "installments" && installmentsList.length > 0}
     <div class="installments-preview">
-      {#if !previewOnly}
-        <h4>📋 Prévia das Parcelas</h4>
-      {/if}
-
       <!-- Tabela compacta e elegante -->
       <div class="installments-table-container">
+        {#if !previewOnly}
+          <h4 class="table-title">📋 Prévia das Parcelas</h4>
+        {/if}
+
         <div class="installments-grid">
           <!-- Header -->
           <div class="grid-header">
@@ -307,20 +307,29 @@
 
   /* Prévia das Parcelas */
   .installments-preview {
-    margin-top: 1rem;
+    margin-top: 0;
     padding: 0;
     max-height: none;
     overflow: visible;
     display: flex;
     flex-direction: column;
+    gap: 0;
   }
 
   .installments-preview h4 {
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     color: var(--text-accent);
     font-size: 0.8rem;
-    padding-bottom: 0.3rem;
+    padding-bottom: 0;
     flex-shrink: 0;
+  }
+
+  .table-title {
+    margin: 0 0 0.5rem 0 !important;
+    padding: 0 !important;
+    color: var(--text-accent) !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
   }
 
   /* Container da tabela */
