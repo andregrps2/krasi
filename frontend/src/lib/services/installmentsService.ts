@@ -1,10 +1,10 @@
 import { installmentsApi } from '../api';
-import type { Installment } from '../../types-new';
+import type { Installment, InstallmentWithRelations } from '../../types-new';
 
 class InstallmentsService {
-  private installmentsCache = new Map<string, Installment[]>();
+  private installmentsCache = new Map<string, InstallmentWithRelations[]>();
   
-  async getInstallmentsByStore(storeId: string): Promise<Installment[]> {
+  async getInstallmentsByStore(storeId: string): Promise<InstallmentWithRelations[]> {
     // Verificar cache primeiro
     if (this.installmentsCache.has(storeId)) {
       return this.installmentsCache.get(storeId)!;
@@ -24,7 +24,7 @@ class InstallmentsService {
     }
   }
 
-  async refreshInstallments(storeId: string): Promise<Installment[]> {
+  async refreshInstallments(storeId: string): Promise<InstallmentWithRelations[]> {
     // Limpar cache e recarregar
     this.installmentsCache.delete(storeId);
     return this.getInstallmentsByStore(storeId);

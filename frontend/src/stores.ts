@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import type { PropertyDefinition, StockItemOld as StockItem, Sale, Customer, Installment, Store } from './types-new';
+import type { PropertyDefinition, StockItemOld as StockItem, Sale, Customer, Installment, InstallmentWithRelations, Store } from './types-new';
 import { stockService, customersService, salesService, installmentsService } from './lib/services';
 
 /**
@@ -109,7 +109,7 @@ export async function loadSalesForStore(storeId: string) {
 
 // --- Parcelas Dinâmicas ---
 
-export const installments = writable<Installment[]>([]);
+export const installments = writable<InstallmentWithRelations[]>([]);
 
 // Função para carregar parcelas da loja atual
 export async function loadInstallmentsForStore(storeId: string) {

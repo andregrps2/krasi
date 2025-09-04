@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import {
     installments,
     customers,
@@ -6,7 +7,11 @@
     currentStoreId,
   } from "../stores";
   import { installmentsService } from "../lib/services";
-  import type { Installment, Customer } from "../types-new";
+  import type {
+    Installment,
+    Customer,
+    InstallmentWithRelations,
+  } from "../types-new";
   import { InstallmentStatus } from "../types-new";
   import Modal from "./Modal.svelte";
 
@@ -33,36 +38,84 @@
   });
 
   // Computações reativas
-  $: filteredInstallments = $installments.filter((installment) => {
-    // Filtro por status
-    if (filterStatus !== "all" && installment.status !== filterStatus) {
-      return false;
-    }
+  $: filteredInstallments = $installments.filter(
+    (installment: Installment | InstallmentWithRelations) => {
+      console.log(
+        "🔍 [FILTER] Processando parcela:",
+        installment.id,
+        "customerId:",
+        installment.customerId
+      );
 
-    // Filtro por cliente
-    if (selectedCustomerId) {
-      const sale = $salesHistory.find((s) => s.id === installment.saleId);
-      if (!sale || sale.customerId !== selectedCustomerId) {
+      // Filtro por status
+      if (filterStatus !== "all" && installment.status !== filterStatus) {
+        console.log(
+          "❌ [FILTER] Rejeitada por status:",
+          installment.status,
+          "vs",
+          filterStatus
+        );
         return false;
       }
+
+      // Filtro por cliente
+      if (selectedCustomerId) {
+        // Usar dados que vêm da API ou fallback para stores
+        const customerId =
+          "customer" in installment && installment.customer
+            ? installment.customer.id
+            : $salesHistory.find((s) => s.id === installment.saleId)
+                ?.customerId;
+
+        if (customerId !== selectedCustomerId) {
+          console.log("❌ [FILTER] Rejeitada por cliente selecionado");
+          return false;
+        }
+      }
+
+      // Filtro por busca
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+
+        // Usar dados que vêm da API
+        if ("customer" in installment && installment.customer) {
+          const matches =
+            installment.customer.name.toLowerCase().includes(term) ||
+            installment.customer.congregation?.toLowerCase().includes(term) ||
+            false;
+
+          if (!matches) {
+            console.log("❌ [FILTER] Rejeitada por busca:", term);
+            return false;
+          }
+        } else {
+          // Fallback para stores
+          const sale = $salesHistory.find((s) => s.id === installment.saleId);
+          const customer = $customers.find((c) => c.id === sale?.customerId);
+          if (!customer) {
+            console.log(
+              "❌ [FILTER] Cliente não encontrado para parcela:",
+              installment.id
+            );
+            return false;
+          }
+
+          const matches =
+            customer.name.toLowerCase().includes(term) ||
+            customer.congregation?.toLowerCase().includes(term) ||
+            false;
+
+          if (!matches) {
+            console.log("❌ [FILTER] Rejeitada por busca:", term);
+            return false;
+          }
+        }
+      }
+
+      console.log("✅ [FILTER] Parcela aceita:", installment.id);
+      return true;
     }
-
-    // Filtro por busca
-    if (searchTerm.trim()) {
-      const sale = $salesHistory.find((s) => s.id === installment.saleId);
-      const customer = $customers.find((c) => c.id === sale?.customerId);
-      if (!customer) return false;
-
-      const term = searchTerm.toLowerCase();
-      return (
-        customer.name.toLowerCase().includes(term) ||
-        customer.congregation?.toLowerCase().includes(term) ||
-        false
-      );
-    }
-
-    return true;
-  });
+  );
 
   // Atualizar status das parcelas vencidas
   $: {
@@ -143,14 +196,21 @@
     });
   }
 
-  function getCustomerName(saleId: string): string {
-    const sale = $salesHistory.find((s) => s.id === saleId);
+  function getCustomerName(
+    installment: Installment | InstallmentWithRelations
+  ): string {
+    // Usar dados que vêm diretamente da API (com include)
+    if ("customer" in installment && installment.customer) {
+      return installment.customer.name;
+    }
+
+    // Fallback para os stores (caso não venha da API)
+    const sale = $salesHistory.find((s) => s.id === installment.saleId);
     if (!sale) return "Cliente não encontrado";
 
     const customer = $customers.find((c) => c.id === sale.customerId);
     return customer?.name || "Cliente não encontrado";
   }
-
   function getStatusColor(status: InstallmentStatus): string {
     switch (status) {
       case InstallmentStatus.PAID:
@@ -207,6 +267,45 @@
     showCustomerModal = true;
     customerSearchTerm = "";
   }
+
+  // Carregar parcelas quando a página for montada
+  onMount(async () => {
+    console.log("📦 [INSTALLMENTS PAGE] Carregando parcelas...");
+
+    const storeId = $currentStoreId;
+    if (storeId) {
+      console.log("🏪 [INSTALLMENTS PAGE] Loja atual:", storeId);
+
+      try {
+        const loadedInstallments =
+          await installmentsService.getInstallmentsByStore(storeId);
+        console.log(
+          "✅ [INSTALLMENTS PAGE] Parcelas carregadas:",
+          loadedInstallments.length
+        );
+        console.log(
+          "📋 [INSTALLMENTS PAGE] Dados das parcelas:",
+          loadedInstallments
+        );
+        console.log(
+          "👥 [INSTALLMENTS PAGE] Clientes disponíveis:",
+          $customers.length
+        );
+        console.log(
+          "💰 [INSTALLMENTS PAGE] Vendas disponíveis:",
+          $salesHistory.length
+        );
+        installments.set(loadedInstallments);
+      } catch (error) {
+        console.error(
+          "❌ [INSTALLMENTS PAGE] Erro ao carregar parcelas:",
+          error
+        );
+      }
+    } else {
+      console.warn("⚠️ [INSTALLMENTS PAGE] Nenhuma loja selecionada");
+    }
+  });
 </script>
 
 <div class="installments-container">
@@ -389,7 +488,7 @@
               <tr class="installment-row {installment.status}">
                 <td>
                   <div class="customer-info">
-                    {getCustomerName(installment.saleId)}
+                    {getCustomerName(installment)}
                   </div>
                 </td>
                 <td>#{installment.saleId}</td>

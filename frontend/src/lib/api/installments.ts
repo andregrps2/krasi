@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { Installment } from '../../types-new';
+import type { Installment, InstallmentWithRelations } from '../../types-new';
 
 interface InstallmentFormData {
   saleId: string;
@@ -16,7 +16,7 @@ export const installmentsApi = {
     customerId?: string;
     status?: string;
     overdue?: boolean;
-  }): Promise<Installment[]> => {
+  }): Promise<InstallmentWithRelations[]> => {
     const searchParams = new URLSearchParams();
     if (params?.storeId) searchParams.append('storeId', params.storeId);
     if (params?.customerId) searchParams.append('customerId', params.customerId);
@@ -28,7 +28,7 @@ export const installmentsApi = {
   },
 
   // Get installment by ID
-  getById: async (id: string): Promise<Installment> => {
+  getById: async (id: string): Promise<InstallmentWithRelations> => {
     const response = await api.get(`/installments/${id}`);
     return response.data;
   },
