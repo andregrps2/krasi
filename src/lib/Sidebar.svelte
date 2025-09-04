@@ -7,7 +7,7 @@
   const dispatch = createEventDispatcher();
 
   function navigateTo(page: string) {
-    dispatch("navigate", page);
+    dispatch("navigate", { page });
   }
 
   function toggleSidebar() {
@@ -51,41 +51,35 @@
       title={sidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
       aria-label={sidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
     >
-      <svg
-        class="menu-icon"
-        class:collapsed={sidebarCollapsed}
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <path
-          class="line top"
-          d="M3 12h18"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          class="line middle"
-          d="M3 6h18"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          class="line bottom"
-          d="M3 18h18"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-      </svg>
+      {#if sidebarCollapsed}
+        <div class="simple-x">×</div>
+      {:else}
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M6 6h12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M6 12h12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <path
+            d="M6 18h12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      {/if}
     </button>
 
-    {#if !sidebarCollapsed}
+    <div class="header-title" class:hidden={sidebarCollapsed}>
       <h2>Ricardo Ternos</h2>
-    {/if}
+    </div>
   </div>
 
   <ul class="menu">
@@ -148,6 +142,23 @@
     min-height: 64px;
   }
 
+  .sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .sidebar.collapsed .menu-toggle {
+    width: 100%;
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-speed);
+    min-height: 40px;
+  }
+
   .menu-toggle {
     background: none;
     border: none;
@@ -155,12 +166,10 @@
     cursor: pointer;
     padding: 8px;
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
     flex-shrink: 0;
   }
 
@@ -169,41 +178,37 @@
     color: var(--text-primary);
   }
 
-  .menu-toggle:active {
-    background: rgba(212, 175, 55, 0.2);
-    transform: scale(0.95);
+  .simple-x {
+    font-size: 32px;
+    font-weight: bold;
+    line-height: 1;
+    color: var(--text-accent);
+    padding-left: 20px;
   }
 
-  .menu-icon {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  .header-title {
+    flex: 1;
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
+    overflow: hidden;
   }
 
-  .menu-icon .line {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: center;
-  }
-
-  .menu-icon.collapsed .line.top {
-    transform: rotate(45deg) translate(0, 6px);
-  }
-
-  .menu-icon.collapsed .line.middle {
+  .header-title.hidden {
     opacity: 0;
-    transform: scaleX(0);
-  }
-
-  .menu-icon.collapsed .line.bottom {
-    transform: rotate(-45deg) translate(0, -6px);
+    transform: translateX(-20px);
+    pointer-events: none;
   }
 
   .sidebar-header h2 {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
+    color: var(--text-accent); /* Fallback color */
     background: linear-gradient(
       45deg,
-      var(--accent-primary),
-      var(--accent-secondary)
+      var(--color-gold),
+      var(--color-gold-lighter)
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
