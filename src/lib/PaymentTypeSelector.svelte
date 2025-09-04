@@ -325,8 +325,8 @@
   }
 
   .table-title {
-    margin: 0 0 0.5rem 0 !important;
-    padding: 0 !important;
+    margin: 0 !important;
+    padding: 0.4rem 0.7rem 0.2rem 0.7rem !important;
     color: var(--text-accent) !important;
     font-size: 0.8rem !important;
     font-weight: 600 !important;
@@ -336,7 +336,7 @@
   .installments-table-container {
     background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
     border-radius: 6px;
-    padding: 0.6rem;
+    padding: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     border: 1px solid #333;
   }
@@ -349,7 +349,7 @@
   /* Header da tabela */
   .grid-header {
     display: grid;
-    grid-template-columns: 60px 1fr 100px;
+    grid-template-columns: 80px 1.2fr 90px;
     gap: 0.5rem;
     padding: 0.5rem 0.7rem;
     background: linear-gradient(135deg, var(--primary-color) 0%, #e6b800 100%);
@@ -375,7 +375,7 @@
 
   .grid-row {
     display: grid;
-    grid-template-columns: 60px 1fr 100px;
+    grid-template-columns: 80px 1.2fr 90px;
     gap: 0.5rem;
     padding: 0.4rem 0.7rem;
     background: #1a1a1a;
@@ -428,7 +428,7 @@
   /* Footer da tabela */
   .grid-footer {
     display: grid;
-    grid-template-columns: 60px 1fr 100px;
+    grid-template-columns: 80px 1.2fr 90px;
     gap: 0.5rem;
     padding: 0.5rem 0.7rem;
     background: linear-gradient(135deg, #333 0%, #2a2a2a 100%);
@@ -469,13 +469,13 @@
     }
 
     .installments-table-container {
-      padding: 0.5rem;
+      padding: 0;
     }
 
     .grid-header,
     .grid-row,
     .grid-footer {
-      grid-template-columns: 50px 1fr 90px;
+      grid-template-columns: 65px 1.2fr 80px;
       gap: 0.4rem;
       padding: 0.4rem 0.6rem;
     }
@@ -503,13 +503,13 @@
     .grid-header,
     .grid-row,
     .grid-footer {
-      grid-template-columns: 45px 1fr 80px;
+      grid-template-columns: 55px 1.2fr 70px;
       gap: 0.3rem;
       padding: 0.3rem 0.5rem;
     }
 
     .installments-table-container {
-      padding: 0.4rem;
+      padding: 0;
     }
   }
 </style>
