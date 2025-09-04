@@ -9,8 +9,24 @@
   export let searchTerm = "";
   export let propertyDefinitions: any[] = [];
 
-  // Função para obter preço (duplicada do componente pai por enquanto)
+  // Função para obter preço do produto
   function getPrice(item: StockItem): number {
+    // Primeiro tenta usar o preço definido no produto
+    if (item.properties.price) {
+      const price = parseFloat(item.properties.price);
+      if (!isNaN(price)) {
+        console.log(
+          `ProductsList - Produto ${item.properties.brand} ${item.properties.type}: usando preço definido ${price}`
+        );
+        return price;
+      }
+    }
+
+    console.log(
+      `ProductsList - Produto ${item.properties.brand} ${item.properties.type}: sem preço definido, usando fallback`
+    );
+
+    // Fallback para preços baseados no tipo (para compatibilidade com produtos antigos)
     const type = item.properties.type?.toLowerCase();
     switch (type) {
       case "terno":

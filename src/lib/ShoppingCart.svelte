@@ -14,7 +14,30 @@
   const dispatch = createEventDispatcher();
 
   function getPrice(item: StockItem): number {
-    switch (item.properties.type) {
+    // Primeiro tenta usar o preço definido no produto
+    if (item.properties.price) {
+      const price = parseFloat(item.properties.price);
+      if (!isNaN(price)) {
+        console.log(
+          `ShoppingCart - Produto ${item.properties.brand} ${item.properties.type}: usando preço definido ${price}`
+        );
+        return price;
+      }
+    }
+
+    console.log(
+      `ShoppingCart - Produto ${item.properties.brand} ${item.properties.type}: sem preço definido, usando fallback`
+    );
+
+    // Fallback para preços baseados no tipo (para compatibilidade com produtos antigos)
+    const type = item.properties.type?.toLowerCase();
+    switch (type) {
+      case "terno":
+        return 299.99;
+      case "palitó":
+        return 199.99;
+      case "camisa":
+        return 89.99;
       case "camiseta":
       case "blusa":
         return 49.99;
@@ -24,7 +47,6 @@
         return 99.99;
     }
   }
-
   function updateCartQuantity(itemId: number, newQuantity: number) {
     dispatch("updateQuantity", { itemId, newQuantity });
   }
@@ -60,34 +82,32 @@
               {cartItem.item.properties.brand}
             </div>
             <div class="item-details">
-              {cartItem.item.properties.color} - {cartItem.item.properties.size}
-            </div>
-            <div class="item-price">
-              R$ {getPrice(cartItem.item).toFixed(2)} cada
+              {cartItem.item.properties.fabric} - {cartItem.item.properties.color} - {cartItem.item.properties.size}
             </div>
           </div>
 
-          <div class="quantity-controls">
-            <button
-              class="qty-btn"
-              on:click={() =>
-                updateCartQuantity(cartItem.item.id, cartItem.quantity - 1)}
-            >
-              -
-            </button>
-            <span class="quantity">{cartItem.quantity}</span>
-            <button
-              class="qty-btn"
-              on:click={() =>
-                updateCartQuantity(cartItem.item.id, cartItem.quantity + 1)}
-              disabled={cartItem.quantity >= cartItem.item.quantity}
-            >
-              +
-            </button>
-          </div>
-
-          <div class="item-total">
-            R$ {(cartItem.quantity * getPrice(cartItem.item)).toFixed(2)}
+          <div class="item-controls">
+            <div class="item-total">
+              R$ {(cartItem.quantity * getPrice(cartItem.item)).toFixed(2)}
+            </div>
+            <div class="quantity-controls">
+              <button
+                class="qty-btn"
+                on:click={() =>
+                  updateCartQuantity(cartItem.item.id, cartItem.quantity - 1)}
+              >
+                -
+              </button>
+              <span class="quantity">{cartItem.quantity}</span>
+              <button
+                class="qty-btn"
+                on:click={() =>
+                  updateCartQuantity(cartItem.item.id, cartItem.quantity + 1)}
+                disabled={cartItem.quantity >= cartItem.item.quantity}
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <button
@@ -187,9 +207,9 @@
 
   .cart-item {
     display: grid;
-    grid-template-columns: 1fr auto auto auto;
+    grid-template-columns: 1fr auto auto;
     gap: 0.75rem;
-    align-items: center;
+    align-items: start;
     padding: 0.75rem;
     border: 2px solid #555;
     border-radius: 6px;
@@ -216,12 +236,19 @@
   .item-details {
     font-size: 0.8rem;
     color: #cccccc;
-    margin-bottom: 0.2rem;
   }
 
-  .item-price {
-    font-size: 0.8rem;
+  .item-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .item-total {
+    font-weight: 600;
     color: #4ade80;
+    text-align: right;
   }
 
   .quantity-controls {
@@ -264,12 +291,6 @@
     color: #ffffff;
   }
 
-  .item-total {
-    font-weight: 600;
-    color: #4ade80;
-    text-align: right;
-  }
-
   .remove-btn {
     background: none;
     border: none;
@@ -277,6 +298,8 @@
     font-size: 1rem;
     padding: 0.25rem;
     transition: transform 0.2s;
+    align-self: center;
+    justify-self: end;
   }
 
   .remove-btn:hover {

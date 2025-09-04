@@ -195,9 +195,17 @@
     return 1 - distance / maxLen;
   }
 
-  // Função para obter preço (por enquanto usando um valor fixo, pode ser expandido)
+  // Função para obter preço do produto
   function getPrice(item: StockItem): number {
-    // Por enquanto, vamos usar um preço baseado no tipo de produto
+    // Primeiro tenta usar o preço definido no produto
+    if (item.properties.price) {
+      const price = parseFloat(item.properties.price);
+      if (!isNaN(price)) {
+        return price;
+      }
+    }
+
+    // Fallback para preços baseados no tipo (para compatibilidade com produtos antigos)
     const type = item.properties.type?.toLowerCase();
     switch (type) {
       case "terno":

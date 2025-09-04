@@ -48,6 +48,11 @@ const initialProperties: PropertyDefinition[] = [
     name: 'Cor',
     type: 'text',
   },
+  {
+    id: 'price',
+    name: 'Preço',
+    type: 'text',
+  },
 ];
 
 export const propertyDefinitions = createPersistentStore<PropertyDefinition[]>('property-definitions', initialProperties);
@@ -63,7 +68,8 @@ const initialStock: StockItem[] = [
       type: 'Camisa',
       fabric: 'Poliéster',
       size: 'GG',
-      color: 'Preto'
+      color: 'Preto',
+      price: '99.99'
     }
   },
   {
@@ -74,7 +80,8 @@ const initialStock: StockItem[] = [
       type: 'Camisa',
       fabric: 'Algodão',
       size: 'M',
-      color: 'Azul'
+      color: 'Azul',
+      price: '89.99'
     }
   },
   {
@@ -85,7 +92,8 @@ const initialStock: StockItem[] = [
       type: 'Terno',
       fabric: 'Lã',
       size: 'G',
-      color: 'Preto'
+      color: 'Preto',
+      price: '299.99'
     }
   },
   {
@@ -96,7 +104,8 @@ const initialStock: StockItem[] = [
       type: 'Palitó',
       fabric: 'Poliéster',
       size: 'P',
-      color: 'Cinza'
+      color: 'Cinza',
+      price: '199.99'
     }
   },
   {
@@ -107,7 +116,8 @@ const initialStock: StockItem[] = [
       type: 'Camiseta',
       fabric: 'Algodão',
       size: 'M',
-      color: 'Branco'
+      color: 'Branco',
+      price: '49.99'
     }
   },
   {
@@ -118,7 +128,8 @@ const initialStock: StockItem[] = [
       type: 'Sapato',
       fabric: 'Couro',
       size: '42',
-      color: 'Marrom'
+      color: 'Marrom',
+      price: '159.99'
     }
   }
 ];
