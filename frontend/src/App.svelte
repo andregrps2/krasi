@@ -51,10 +51,11 @@
   }
 
   function handleStoreSelect(store: Store) {
+    console.log("🏪 [APP] Selecionando loja:", store);
     selectedStore = store;
     currentStoreId.set(store.id);
     selectedStoreStore.set(store); // Atualizar o store global também
-    console.log("Loja selecionada:", store.name);
+    console.log("✅ [APP] Loja selecionada:", store.name, "ID:", store.id);
   }
 
   function handleStoreChange() {

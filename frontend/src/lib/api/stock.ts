@@ -34,8 +34,18 @@ export const stockApi = {
     if (filters?.lowStock) params.append('lowStock', String(filters.lowStock));
     if (filters?.search) params.append('search', filters.search);
 
+    console.log('🔄 [STOCK API] Fazendo requisição para:', `/stock?${params.toString()}`);
     const response = await api.get(`/stock?${params.toString()}`);
-    return response.data;
+    console.log('✅ [STOCK API] Resposta recebida:', response.data);
+    
+    // Verificar se a resposta tem a estrutura esperada (success, data)
+    if (response.data && response.data.success && response.data.data) {
+      console.log('📦 [STOCK API] Retornando dados:', response.data.data);
+      return response.data.data;
+    } else {
+      console.log('📦 [STOCK API] Retornando resposta direta:', response.data);
+      return response.data;
+    }
   },
 
   // Get stock item by ID

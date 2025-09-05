@@ -55,8 +55,13 @@
 
   // Filtrar produtos disponíveis com busca fuzzy
   $: availableProducts = (() => {
+    console.log("🛒 [SALES PAGE] Stock atual:", $stock);
+    console.log("🛒 [SALES PAGE] Termo de busca:", searchTerm);
+
     if (!searchTerm.trim()) {
-      return $stock.filter((item) => item.quantity > 0);
+      const filtered = $stock.filter((item) => item.quantity > 0);
+      console.log("🛒 [SALES PAGE] Produtos filtrados (sem busca):", filtered);
+      return filtered;
     }
 
     const searchTerms = searchTerm

@@ -132,11 +132,14 @@ export const stock = writable<StockItem[]>([]);
 
 // Função para carregar estoque da loja atual
 export async function loadStockForStore(storeId: string) {
+  console.log('🏪 [STORE] Carregando estoque para loja:', storeId);
   try {
     const storeStock = await stockService.getStockByStore(storeId);
+    console.log('✅ [STORE] Estoque carregado:', storeStock);
     stock.set(storeStock);
+    console.log('📦 [STORE] Estoque definido no store');
   } catch (error) {
-    console.error('Erro ao carregar estoque:', error);
+    console.error('❌ [STORE] Erro ao carregar estoque:', error);
     stock.set([]);
   }
 }
@@ -189,15 +192,18 @@ export async function loadInstallmentsForStore(storeId: string) {
 // --- Store reativo que carrega dados quando a loja muda ---
 
 currentStoreId.subscribe(async (storeId) => {
+  console.log('🔄 [STORE SUBSCRIPTION] currentStoreId mudou para:', storeId);
   if (storeId) {
-    console.log('Carregando dados para loja:', storeId);
+    console.log('🏪 [STORE SUBSCRIPTION] Carregando dados para loja:', storeId);
     await Promise.all([
       loadStockForStore(storeId),
       loadCustomersForStore(storeId),
       loadSalesForStore(storeId),
       loadInstallmentsForStore(storeId)
     ]);
+    console.log('✅ [STORE SUBSCRIPTION] Todos os dados carregados');
   } else {
+    console.log('🧹 [STORE SUBSCRIPTION] Limpando dados - nenhuma loja selecionada');
     // Limpar dados quando não há loja selecionada
     stock.set([]);
     customers.set([]);

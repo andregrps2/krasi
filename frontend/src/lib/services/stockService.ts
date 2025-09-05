@@ -5,27 +5,34 @@ class StockService {
   private stockCache = new Map<string, StockItemOld[]>();
   
   async getStockByStore(storeId: string): Promise<StockItemOld[]> {
+    console.log('🏪 [STOCK SERVICE] Carregando estoque para loja:', storeId);
+    
     // Verificar cache primeiro
     if (this.stockCache.has(storeId)) {
+      console.log('💾 [STOCK SERVICE] Retornando do cache');
       return this.stockCache.get(storeId)!;
     }
 
     try {
+      console.log('🌐 [STOCK SERVICE] Buscando estoque via API');
       // Buscar todos os itens de estoque
       const allStock = await stockApi.getAll();
+      console.log('📦 [STOCK SERVICE] Todos os itens recebidos:', allStock);
       
       // Filtrar apenas os itens da loja específica
       const storeStock = allStock.filter(item => item.storeId === storeId);
+      console.log('🏪 [STOCK SERVICE] Itens filtrados para a loja:', storeStock);
       
       // Converter para formato antigo
       const convertedStock = this.convertToOldFormat(storeStock);
+      console.log('🔄 [STOCK SERVICE] Itens convertidos:', convertedStock);
       
       // Salvar no cache
       this.stockCache.set(storeId, convertedStock);
       
       return convertedStock;
     } catch (error) {
-      console.error('Erro ao carregar estoque:', error);
+      console.error('❌ [STOCK SERVICE] Erro ao carregar estoque:', error);
       return [];
     }
   }
