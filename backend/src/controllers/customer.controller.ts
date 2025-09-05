@@ -11,16 +11,23 @@ export class CustomerController {
 
   async getAll(req: Request, res: Response) {
     try {
+      console.log('👥 [CUSTOMER CONTROLLER] getAll - Parâmetros recebidos:', req.query);
       const { storeId } = req.query;
+      console.log('👥 [CUSTOMER CONTROLLER] getAll - StoreId extraído:', storeId);
+      
       const customers = await this.customerService.findAll(storeId as string);
+      console.log('👥 [CUSTOMER CONTROLLER] getAll - Clientes encontrados:', customers.length);
+      console.log('👥 [CUSTOMER CONTROLLER] getAll - Lista de clientes:', customers);
       
       const response: ApiResponse = {
         success: true,
         data: customers
       };
       
+      console.log('📤 [CUSTOMER CONTROLLER] getAll - Enviando resposta:', response);
       res.json(response);
     } catch (error) {
+      console.error('❌ [CUSTOMER CONTROLLER] getAll - Erro:', error);
       this.handleError(res, error);
     }
   }
@@ -43,8 +50,12 @@ export class CustomerController {
 
   async create(req: Request, res: Response) {
     try {
+      console.log('👥 [CUSTOMER CONTROLLER] Dados recebidos no backend:', JSON.stringify(req.body, null, 2));
       const data = CreateCustomerSchema.parse(req.body);
+      console.log('✅ [CUSTOMER CONTROLLER] Dados validados pelo Zod:', data);
+      
       const customer = await this.customerService.create(data);
+      console.log('✅ [CUSTOMER CONTROLLER] Cliente criado:', customer);
       
       const response: ApiResponse = {
         success: true,
@@ -52,8 +63,10 @@ export class CustomerController {
         message: 'Cliente criado com sucesso'
       };
       
+      console.log('📤 [CUSTOMER CONTROLLER] Enviando resposta:', response);
       res.status(201).json(response);
     } catch (error) {
+      console.error('❌ [CUSTOMER CONTROLLER] Erro ao criar cliente:', error);
       this.handleError(res, error);
     }
   }

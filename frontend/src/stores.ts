@@ -150,11 +150,15 @@ export const customers = writable<Customer[]>([]);
 
 // Função para carregar clientes da loja atual
 export async function loadCustomersForStore(storeId: string) {
+  console.log('👥 [STORES] Carregando clientes para loja:', storeId);
   try {
     const storeCustomers = await customersService.getCustomersByStore(storeId);
+    console.log('👥 [STORES] Clientes carregados:', storeCustomers.length, 'clientes');
+    console.log('👥 [STORES] Lista de clientes:', storeCustomers);
     customers.set(storeCustomers);
+    console.log('✅ [STORES] Store de clientes atualizado');
   } catch (error) {
-    console.error('Erro ao carregar clientes:', error);
+    console.error('❌ [STORES] Erro ao carregar clientes:', error);
     customers.set([]);
   }
 }

@@ -49,18 +49,29 @@
   ) {
     const customerData = event.detail;
 
+    console.log(
+      "👥 [CUSTOMERS PAGE] Recebendo dados do cliente:",
+      customerData
+    );
+    console.log("👥 [CUSTOMERS PAGE] Store ID atual:", $currentStoreId);
+
     if (!$currentStoreId) {
+      console.log("❌ [CUSTOMERS PAGE] Nenhuma loja selecionada");
       alert("Nenhuma loja selecionada!");
       return;
     }
 
     try {
       if (customerData.id) {
+        console.log(
+          "🔄 [CUSTOMERS PAGE] Atualizando cliente existente:",
+          customerData.id
+        );
         // Update existing customer (será implementado depois)
         console.log("Atualização de cliente ainda não implementada");
       } else {
-        // Add new customer via API
-        await customersService.createCustomer($currentStoreId, {
+        console.log("🆕 [CUSTOMERS PAGE] Criando novo cliente");
+        console.log("📤 [CUSTOMERS PAGE] Dados para criação:", {
           name: customerData.name,
           congregation: customerData.congregation,
           whatsappNumber: customerData.whatsappNumber,
@@ -73,13 +84,49 @@
           uf: customerData.uf,
         });
 
+        // Add new customer via API
+        const result = await customersService.createCustomer($currentStoreId, {
+          name: customerData.name,
+          phone: customerData.phone || customerData.whatsappNumber, // Mapear whatsappNumber para phone
+          address: customerData.address, // Endereço completo já formatado
+          // Manter campos customizados para compatibilidade
+          congregation: customerData.congregation,
+          whatsappNumber: customerData.whatsappNumber,
+          cep: customerData.cep,
+          logradouro: customerData.logradouro,
+          numero: customerData.numero,
+          complemento: customerData.complemento,
+          bairro: customerData.bairro,
+          localidade: customerData.localidade,
+          uf: customerData.uf,
+        });
+
+        console.log("✅ [CUSTOMERS PAGE] Cliente criado:", result);
+
+        // Limpar cache do serviço para forçar nova busca
+        console.log("🧹 [CUSTOMERS PAGE] Limpando cache do serviço");
+        customersService.clearCache();
+
         // Recarregar lista de clientes
+        console.log("🔄 [CUSTOMERS PAGE] Recarregando lista de clientes");
         await loadCustomersForStore($currentStoreId);
+        console.log("✅ [CUSTOMERS PAGE] Lista recarregada");
+
+        // Forçar atualização do store reativo
+        console.log("🔄 [CUSTOMERS PAGE] Forçando atualização do store");
+        $customers =
+          await customersService.getCustomersByStore($currentStoreId);
+        console.log(
+          "✅ [CUSTOMERS PAGE] Store atualizado com",
+          $customers.length,
+          "clientes"
+        );
       }
 
       showCustomerModal = false;
+      console.log("🚪 [CUSTOMERS PAGE] Modal fechado");
     } catch (error) {
-      console.error("Erro ao salvar cliente:", error);
+      console.error("❌ [CUSTOMERS PAGE] Erro ao salvar cliente:", error);
       alert("Erro ao salvar cliente. Tente novamente.");
     }
   }

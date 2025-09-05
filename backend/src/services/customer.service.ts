@@ -4,15 +4,22 @@ import { CreateCustomerData, UpdateCustomerData, AppError } from '../types';
 export class CustomerService {
   async findAll(storeId?: string) {
     try {
+      console.log('👥 [CUSTOMER SERVICE] findAll - Parâmetro storeId:', storeId);
       const where: any = { isActive: true };
       if (storeId) where.storeId = storeId;
+      console.log('👥 [CUSTOMER SERVICE] findAll - Condição WHERE:', where);
 
-      return await prisma.customer.findMany({
+      const customers = await prisma.customer.findMany({
         where,
         orderBy: { name: 'asc' }
       });
+      
+      console.log('👥 [CUSTOMER SERVICE] findAll - Resultados encontrados:', customers.length);
+      console.log('👥 [CUSTOMER SERVICE] findAll - Clientes:', customers);
+      
+      return customers;
     } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
+      console.error('❌ [CUSTOMER SERVICE] Erro ao buscar clientes:', error);
       throw new AppError('Erro ao buscar clientes', 500);
     }
   }

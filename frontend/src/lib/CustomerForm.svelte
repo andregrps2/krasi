@@ -70,17 +70,42 @@
   function handleSubmit(event: Event) {
     event.preventDefault();
 
+    console.log("👤 [CUSTOMER FORM] Iniciando submissão do formulário");
+    console.log("👤 [CUSTOMER FORM] Dados do formulário:", {
+      name: name.trim(),
+      congregation: congregation.trim(),
+      whatsappNumber: whatsappNumber.trim(),
+      cep: cep.trim(),
+      logradouro: logradouro.trim(),
+      numero: numero.trim(),
+      complemento: complemento.trim(),
+      bairro: bairro.trim(),
+      localidade: localidade.trim(),
+      uf: uf.trim(),
+    });
+    console.log("👤 [CUSTOMER FORM] Validação:", { isValid });
+
     if (!isValid) {
+      console.log("❌ [CUSTOMER FORM] Formulário inválido");
       alert("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
+    // Mapear os dados do formulário para o formato esperado pelo backend
     const customerData = {
       id: customer?.id,
       name: name.trim(),
+      // Mapear congregation para address (ou um campo personalizado se disponível)
+      address:
+        `${logradouro.trim()} ${numero.trim()}, ${bairro.trim()}, ${localidade.trim()}-${uf.trim()}, CEP: ${cep.trim()}`
+          .replace(/\s+/g, " ")
+          .trim() || undefined,
+      phone: whatsappNumber.trim() || undefined,
+      // Manter campos para compatibilidade
       congregation: congregation.trim(),
       whatsappNumber: whatsappNumber.trim(),
       createdAt: customer?.createdAt || new Date(),
+      // Campos de endereço separados (para compatibilidade)
       cep: cep.trim() || undefined,
       logradouro: logradouro.trim() || undefined,
       numero: numero.trim() || undefined,
@@ -90,7 +115,9 @@
       uf: uf.trim() || undefined,
     };
 
+    console.log("📤 [CUSTOMER FORM] Enviando dados:", customerData);
     dispatch("save", customerData);
+    console.log('✅ [CUSTOMER FORM] Evento "save" disparado');
   }
 
   function handleCancel() {

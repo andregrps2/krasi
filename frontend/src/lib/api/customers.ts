@@ -13,12 +13,23 @@ export interface CustomerFilters {
 export const customersApi = {
   // Get all customers
   getAll: async (filters?: CustomerFilters): Promise<CustomerWithStats[]> => {
+    console.log('🌐 [CUSTOMERS API] getAll chamado com filtros:', filters);
+    
     const params = new URLSearchParams();
-    if (filters?.storeId) params.append('storeId', filters.storeId);
+    if (filters?.storeId) {
+      params.append('storeId', filters.storeId);
+      console.log('🏪 [CUSTOMERS API] Adicionando filtro storeId:', filters.storeId);
+    }
     if (filters?.search) params.append('search', filters.search);
     if (filters?.active !== undefined) params.append('active', String(filters.active));
 
-    const response = await api.get(`/customers?${params.toString()}`);
+    const url = `/customers?${params.toString()}`;
+    console.log('🌐 [CUSTOMERS API] Fazendo requisição para:', url);
+    
+    const response = await api.get(url);
+    console.log('🌐 [CUSTOMERS API] Resposta recebida:', response.data);
+    console.log('🌐 [CUSTOMERS API] Quantidade de clientes:', response.data?.length || 0);
+    
     return response.data;
   },
 
@@ -30,8 +41,25 @@ export const customersApi = {
 
   // Create customer
   create: async (data: CustomerFormData & { storeId: string }): Promise<CustomerWithStats> => {
-    const response = await api.post('/customers', data);
-    return response.data;
+    console.log('🌐 [CUSTOMERS API] Enviando requisição POST para /customers');
+    console.log('📤 [CUSTOMERS API] Dados enviados:', data);
+    
+    try {
+      const response = await api.post('/customers', data);
+      console.log('✅ [CUSTOMERS API] Resposta recebida:', response.data);
+      
+      // Verificar se a resposta tem a estrutura esperada (success, data)
+      if (response.data && response.data.success && response.data.data) {
+        console.log('📦 [CUSTOMERS API] Retornando dados do cliente:', response.data.data);
+        return response.data.data;
+      } else {
+        console.log('📦 [CUSTOMERS API] Retornando resposta direta:', response.data);
+        return response.data;
+      }
+    } catch (error) {
+      console.error('❌ [CUSTOMERS API] Erro na requisição:', error);
+      throw error;
+    }
   },
 
   // Update customer
