@@ -7,7 +7,10 @@
   import InstallmentsPage from "./lib/InstallmentsPage.svelte";
   import StoreSelector from "./lib/components/StoreSelector.svelte";
   import StoreDashboardSimple from "./lib/components/StoreDashboardSimple.svelte";
-  import { currentStoreId } from "./stores";
+  import {
+    currentStoreId,
+    selectedStore as selectedStoreStore,
+  } from "./stores";
   import type { Store } from "./types-new";
 
   // Estado da navegação
@@ -50,12 +53,14 @@
   function handleStoreSelect(store: Store) {
     selectedStore = store;
     currentStoreId.set(store.id);
+    selectedStoreStore.set(store); // Atualizar o store global também
     console.log("Loja selecionada:", store.name);
   }
 
   function handleStoreChange() {
     selectedStore = null;
     currentStoreId.set(null);
+    selectedStoreStore.set(null); // Limpar o store global também
     currentPage = "estoque";
   }
 </script>

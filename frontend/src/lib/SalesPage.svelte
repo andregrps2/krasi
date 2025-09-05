@@ -239,7 +239,29 @@
     return 1 - distance / maxLen;
   }
 
-  // Função para obter o productId correto baseado no stockItemId
+  // Função para obter o productId correto baseado no item
+  function getProductIdFromItem(item: any): string {
+    // 1. Se o item já tem productId diretamente, usar ele
+    if (item.productId) {
+      console.log(
+        `✅ [MAPPING] ProductId encontrado no item: ${item.id} -> ${item.productId}`
+      );
+      return item.productId;
+    }
+
+    // 2. Verificar se é um StockItemWithRelations e tem produto
+    if (item.product && item.product.id) {
+      console.log(
+        `✅ [MAPPING] ProductId encontrado via relação: ${item.id} -> ${item.product.id}`
+      );
+      return item.product.id;
+    }
+
+    // 3. Fallback para o mapeamento manual (dados antigos)
+    return getProductIdFromStockId(item.id);
+  }
+
+  // Função para obter o productId correto baseado no stockItemId (fallback)
   function getProductIdFromStockId(stockItemId: string): string {
     // Mapping dos stockItemIds para productIds corretos (baseado nos dados do banco)
     const stockToProductMap: Record<string, string> = {
@@ -253,7 +275,10 @@
       console.warn(
         `⚠️ [MAPPING] ProductId não encontrado para stockItemId: ${stockItemId}`
       );
-      // Como fallback, assumir que o stockItemId é o productId (para casos antigos)
+      // Como último fallback, usar o próprio stockItemId (isso pode causar erro no backend)
+      console.warn(
+        `⚠️ [MAPPING] Usando stockItemId como productId (pode causar erro): ${stockItemId}`
+      );
       return stockItemId;
     }
 
@@ -394,8 +419,7 @@
           fullItem: cartItem.item,
         });
 
-        const finalProductId =
-          cartItem.item.productId || getProductIdFromStockId(cartItem.item.id);
+        const finalProductId = getProductIdFromItem(cartItem.item);
         console.log(
           `🔄 [MAPPING] Item ${index + 1}: stockId=${cartItem.item.id} -> productId=${finalProductId}`
         );
@@ -642,6 +666,17 @@
   <div class="sales-header">
     <div class="header-content">
       <h1>🛒 Ponto de Venda</h1>
+      <div class="header-actions">
+        <button
+          on:click={() => {
+            if (confirm("Limpar carrinho?")) clearCart();
+          }}
+          class="btn-danger"
+          title="Limpar carrinho atual"
+        >
+          🗑️ Limpar Carrinho
+        </button>
+      </div>
     </div>
   </div>
 
@@ -734,8 +769,29 @@
 
   .header-content {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
+    width: 100%;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background-color 0.2s;
+  }
+
+  .btn-danger:hover {
+    background-color: #c82333;
   }
 
   .sales-header h1 {

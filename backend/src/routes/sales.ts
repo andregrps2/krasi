@@ -16,7 +16,9 @@ const saleItemSchema = z.object({
 const installmentSchema = z.object({
   number: z.number().min(1),
   amount: z.number().min(0),
-  dueDate: z.string()
+  dueDate: z.string(),
+  isDownPayment: z.boolean().optional(),
+  isPaid: z.boolean().optional()
 });
 
 const saleCreateSchema = z.object({
@@ -111,10 +113,15 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST /api/sales - Criar venda
 router.post('/', async (req: Request, res: Response) => {
   try {
+    console.log('📥 [SALES] Dados recebidos:', JSON.stringify(req.body, null, 2));
+    
     const data = saleCreateSchema.parse(req.body);
+    console.log('✅ [SALES] Validação do schema passou');
     
     // Start transaction
     const result = await prisma.$transaction(async (tx: any) => {
+      console.log('🔄 [SALES] Iniciando transação');
+      
       // Create sale
       const saleData: any = {
         storeId: data.storeId,
@@ -131,13 +138,43 @@ router.post('/', async (req: Request, res: Response) => {
         saleData.userId = data.userId;
       }
 
+      console.log('💾 [SALES] Criando venda com dados:', JSON.stringify(saleData, null, 2));
       const sale = await tx.sale.create({
         data: saleData
       });
+      console.log('✅ [SALES] Venda criada com ID:', sale.id);
 
       // Create sale items and update stock
-      for (const item of data.items) {
+      console.log('📦 [SALES] Processando', data.items.length, 'itens');
+      for (const [index, item] of data.items.entries()) {
+        console.log(`📦 [SALES] Processando item ${index + 1}:`, JSON.stringify(item, null, 2));
+        
+        // Verify if product exists
+        const product = await tx.product.findUnique({
+          where: { id: item.productId }
+        });
+        
+        if (!product) {
+          throw new Error(`Produto com ID ${item.productId} não encontrado`);
+        }
+        console.log('✅ [SALES] Produto encontrado:', product.name);
+        
+        // Verify if stock item exists
+        const stockItem = await tx.stockItem.findUnique({
+          where: { id: item.stockItemId }
+        });
+        
+        if (!stockItem) {
+          throw new Error(`Item de estoque com ID ${item.stockItemId} não encontrado`);
+        }
+        console.log('✅ [SALES] Item de estoque encontrado, quantidade atual:', stockItem.quantity);
+        
+        if (stockItem.quantity < item.quantity) {
+          throw new Error(`Quantidade insuficiente em estoque. Disponível: ${stockItem.quantity}, Solicitado: ${item.quantity}`);
+        }
+        
         // Create sale item
+        console.log('💾 [SALES] Criando item da venda');
         await tx.saleItem.create({
           data: {
             saleId: sale.id,
@@ -150,6 +187,7 @@ router.post('/', async (req: Request, res: Response) => {
         });
 
         // Update stock quantity
+        console.log('📉 [SALES] Atualizando estoque, decrementando', item.quantity);
         await tx.stockItem.update({
           where: { id: item.stockItemId },
           data: {
@@ -158,11 +196,19 @@ router.post('/', async (req: Request, res: Response) => {
             }
           }
         });
+        console.log('✅ [SALES] Item processado com sucesso');
       }
 
       // Create installments if payment type is INSTALLMENTS or FIADO
       if (data.installments && data.installments.length > 0) {
-        for (const installment of data.installments) {
+        console.log('💳 [SALES] Processando', data.installments.length, 'parcelas');
+        for (const [index, installment] of data.installments.entries()) {
+          console.log(`💳 [SALES] Processando parcela ${index + 1}:`, JSON.stringify(installment, null, 2));
+          
+          // Determine status based on isPaid field
+          const status = installment.isPaid ? 'PAID' : 'PENDING';
+          const paidDate = installment.isPaid ? new Date() : undefined;
+          
           await tx.installment.create({
             data: {
               saleId: sale.id,
@@ -170,16 +216,20 @@ router.post('/', async (req: Request, res: Response) => {
               number: installment.number,
               amount: installment.amount,
               dueDate: new Date(installment.dueDate),
-              status: 'PENDING'
+              status: status,
+              paidDate: paidDate
             }
           });
+          console.log('✅ [SALES] Parcela criada com status:', status);
         }
       }
 
+      console.log('✅ [SALES] Transação concluída com sucesso');
       return sale;
     });
 
     // Fetch complete sale data
+    console.log('📊 [SALES] Buscando dados completos da venda');
     const completeSale = await prisma.sale.findUnique({
       where: { id: result.id },
       include: {
@@ -198,13 +248,15 @@ router.post('/', async (req: Request, res: Response) => {
       }
     });
 
+    console.log('🎉 [SALES] Venda finalizada com sucesso:', result.id);
     res.status(201).json(completeSale);
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('❌ [SALES] Erro de validação:', error.errors);
       return res.status(400).json({ error: 'Dados inválidos', details: error.errors });
     }
-    console.error('Erro ao criar venda:', error);
-    res.status(500).json({ error: 'Erro ao criar venda' });
+    console.error('💥 [SALES] Erro ao criar venda:', error);
+    res.status(500).json({ error: 'Erro ao criar venda', details: error instanceof Error ? error.message : 'Erro desconhecido' });
   }
 });
 

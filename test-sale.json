@@ -1,0 +1,52 @@
+{
+  "storeId": "cmf5uuylq00023knzgxthebdy",
+  "customerId": "cmf5uwdux00043knzbfdtje42",
+  "total": 89.99,
+  "paymentType": "INSTALLMENTS",
+  "items": [
+    {
+      "productId": "1757035552325",
+      "stockItemId": "1757035552325",
+      "quantity": 1,
+      "price": 89.99,
+      "total": 89.99
+    }
+  ],
+  "installments": [
+    {
+      "number": 1,
+      "amount": 50,
+      "dueDate": "2025-09-05T01:26:15.894Z",
+      "isDownPayment": true,
+      "isPaid": true
+    },
+    {
+      "number": 2,
+      "amount": 10,
+      "dueDate": "2025-09-10T00:00:00.000Z",
+      "isDownPayment": false,
+      "isPaid": false
+    },
+    {
+      "number": 3,
+      "amount": 10,
+      "dueDate": "2025-10-10T00:00:00.000Z",
+      "isDownPayment": false,
+      "isPaid": false
+    },
+    {
+      "number": 4,
+      "amount": 10,
+      "dueDate": "2025-11-10T00:00:00.000Z",
+      "isDownPayment": false,
+      "isPaid": false
+    },
+    {
+      "number": 5,
+      "amount": 9.989999999999995,
+      "dueDate": "2025-12-10T00:00:00.000Z",
+      "isDownPayment": false,
+      "isPaid": false
+    }
+  ]
+}

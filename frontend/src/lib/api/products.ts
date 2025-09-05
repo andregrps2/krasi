@@ -27,13 +27,14 @@ export const productsApi = {
   // Create product
   create: async (data: ProductFormData): Promise<ProductWithStock> => {
     const response = await api.post('/products', data);
-    return response.data;
+    console.log('🔄 [API] Resposta completa da criação do produto:', response.data);
+    return response.data.data; // Retornar apenas o produto, não a resposta completa
   },
 
   // Update product
   update: async (id: string, data: Partial<ProductFormData>): Promise<ProductWithStock> => {
     const response = await api.put(`/products/${id}`, data);
-    return response.data;
+    return response.data.data; // Corrigir aqui também
   },
 
   // Delete product (soft delete)

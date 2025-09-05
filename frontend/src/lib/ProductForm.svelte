@@ -32,6 +32,8 @@
   const dispatch = createEventDispatcher();
 
   function handleSubmit() {
+    console.log("📝 [FORM] formData antes de criar savedItem:", formData);
+
     const savedItem: Partial<StockItem> = {
       id: item?.id,
       name: formData.name || "",
@@ -41,6 +43,8 @@
       category: formData.category || "",
       properties: { ...formData },
     };
+
+    console.log("💾 [FORM] savedItem criado:", savedItem);
     dispatch("save", savedItem);
   }
 </script>

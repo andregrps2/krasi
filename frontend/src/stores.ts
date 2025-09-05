@@ -28,6 +28,11 @@ export const selectedStore = writable<Store | null>(null);
 
 const initialProperties: PropertyDefinition[] = [
   {
+    id: 'name',
+    name: 'Nome',
+    type: 'text',
+  },
+  {
     id: 'brand',
     name: 'Marca',
     type: 'text',
@@ -58,9 +63,68 @@ const initialProperties: PropertyDefinition[] = [
     name: 'Preço',
     type: 'text',
   },
+  {
+    id: 'category',
+    name: 'Categoria',
+    type: 'text',
+  },
 ];
 
-export const propertyDefinitions = createPersistentStore<PropertyDefinition[]>('property-definitions', initialProperties);
+// Função para garantir que as propriedades incluam 'name' e 'category'
+function ensureRequiredProperties(properties: PropertyDefinition[]): PropertyDefinition[] {
+  const hasName = properties.some(prop => prop.id === 'name');
+  const hasCategory = properties.some(prop => prop.id === 'category');
+  
+  let updatedProperties = [...properties];
+  
+  if (!hasName) {
+    updatedProperties.unshift({
+      id: 'name',
+      name: 'Nome',
+      type: 'text',
+    });
+  }
+  
+  if (!hasCategory) {
+    updatedProperties.push({
+      id: 'category',
+      name: 'Categoria',
+      type: 'text',
+    });
+  }
+  
+  return updatedProperties;
+}
+
+// Store das propriedades customizáveis
+function createPropertyStore() {
+  const PROPERTIES_VERSION = '3.0'; // Incrementar para forçar reset
+  const versionKey = 'property-definitions-version';
+  const currentVersion = localStorage.getItem(versionKey);
+  
+  if (currentVersion !== PROPERTIES_VERSION) {
+    // Limpar localStorage se a versão mudou
+    localStorage.removeItem('property-definitions');
+    localStorage.setItem(versionKey, PROPERTIES_VERSION);
+    console.log('🔄 [PROPERTIES] Forçando atualização das propriedades para versão', PROPERTIES_VERSION);
+    
+    // Forçar recriação imediata das propriedades
+    localStorage.setItem('property-definitions', JSON.stringify(initialProperties));
+  }
+  
+  const store = createPersistentStore<PropertyDefinition[]>('property-definitions', initialProperties);
+  
+  // Garantir que as propriedades essenciais estejam presentes
+  store.update(properties => {
+    const updated = ensureRequiredProperties(properties);
+    console.log('📋 [PROPERTIES] Propriedades carregadas:', updated.map(p => p.id));
+    return updated;
+  });
+  
+  return store;
+}
+
+export const propertyDefinitions = createPropertyStore();
 
 // --- Estoque Dinâmico ---
 

@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
+import { prisma, PrismaService } from './services/prisma.service';
 
-// Routes imports
+// Routes imports - OLD
 import productRoutes from './routes/products';
 import storeRoutes from './routes/stores';
 import customerRoutes from './routes/customers';
@@ -11,8 +11,14 @@ import stockRoutes from './routes/stock';
 import installmentRoutes from './routes/installments';
 import companyRoutes from './routes/companies';
 
+// Routes imports - NEW
+import productRoutesNew from './routes/products-new';
+import customerRoutesNew from './routes/customers-new';
+import stockRoutesNew from './routes/stock-new';
+import saleRoutesNew from './routes/sales-new';
+import installmentRoutesNew from './routes/installments-new';
+
 const app = express();
-const prisma = new PrismaClient();
 const port = process.env.PORT || 3001;
 
 // Middleware
@@ -27,14 +33,23 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// API Routes
+// API Routes - OLD (mantidas para compatibilidade)
 app.use('/api/companies', companyRoutes);
-app.use('/api/products', productRoutes);
 app.use('/api/stores', storeRoutes);
-app.use('/api/customers', customerRoutes);
-app.use('/api/sales', saleRoutes);
-app.use('/api/stock', stockRoutes);
-app.use('/api/installments', installmentRoutes);
+
+// API Routes - NEW (arquitetura limpa)
+app.use('/api/products', productRoutesNew);
+app.use('/api/customers', customerRoutesNew);
+app.use('/api/sales', saleRoutesNew);
+app.use('/api/stock', stockRoutesNew);
+app.use('/api/installments', installmentRoutesNew);
+
+// API Routes - OLD (fallback para rotas não migradas)
+// app.use('/api/products-old', productRoutes);
+// app.use('/api/customers-old', customerRoutes);
+// app.use('/api/sales-old', saleRoutes);
+// app.use('/api/stock-old', stockRoutes);
+// app.use('/api/installments-old', installmentRoutes);
 
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -53,7 +68,13 @@ app.use('*', (req, res) => {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('\nDesconectando do banco de dados...');
-  await prisma.$disconnect();
+  await PrismaService.disconnect();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Recebido SIGTERM. Desconectando do banco de dados...');
+  await PrismaService.disconnect();
   process.exit(0);
 });
 
@@ -63,4 +84,5 @@ app.listen(port, () => {
   console.log(`🔗 API Base URL: http://localhost:${port}/api`);
 });
 
+// Export prisma for backwards compatibility
 export { prisma };

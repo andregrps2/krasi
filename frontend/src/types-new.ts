@@ -245,6 +245,7 @@ export interface StockItemOld {
   brand: string;
   category: string;
   properties: Record<string, string>;
+  productId?: string; // ID real do produto no banco de dados
 }
 
 export interface CustomerOld {
